@@ -1,4 +1,4 @@
-import { Usuario } from "../schemas/Usuario_schema.js";
+import { Usuario } from "../schemas/Usuario.js";
 
 export class UsuarioModel {
 

@@ -1,10 +1,10 @@
 import { UsuarioModel } from "../models/UsuarioModel.js";
 
 export class UsuarioController {
-    static async getUsuarios(req, res) {
+    static async getUsuario(req, res) {
         try {
-            const usuarios = await UsuarioModel.getAll();
-            res.json(usuarios);
+            const usuario = await UsuarioModel.getAll();
+            res.json(usuario);
         } catch (error) {
             res.status(500).json(error);
         }

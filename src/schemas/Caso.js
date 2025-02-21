@@ -58,7 +58,7 @@ export const Caso = sequelize.define('Caso', {
     Caso_Derivacion: DataTypes.STRING(100),
     Caso_NoCausa: DataTypes.STRING(30),
     Caso_Juicio: DataTypes.STRING(250),
-    Caso_TipoJudicatura: DataTypes.STRING(256),
+    Caso_TipoJudicatura: DataTypes.STRING(255),
     Caso_ResolucionJudicial: DataTypes.STRING(255),
     Caso_TipoCliente: DataTypes.STRING(50),
     Caso_FechaFin: DataTypes.DATE,
