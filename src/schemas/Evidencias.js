@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
 import { Caso } from "./Caso.js";
-
+import { Actividad } from "./Actividad.js";
 /*
 CREATE TABLE Evidencias (
     Id_Evidencia INT PRIMARY KEY AUTO_INCREMENT,

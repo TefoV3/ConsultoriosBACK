@@ -1,4 +1,4 @@
-import { PrimerasConsultas } from "../schemas/PrimerasConsultas_schema.js";
+import { PrimerasConsultas } from "../schemas/Primeras_consultas.js";
 
 export class PrimerasConsultasModel {
 

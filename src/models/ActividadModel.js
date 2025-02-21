@@ -1,4 +1,4 @@
-import { Actividad } from "../schemas/Actividad_schema.js";
+import { Actividad } from "../schemas/Actividad.js";
 
 export class ActividadModel {
 

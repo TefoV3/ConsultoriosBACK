@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize';
 
 export const sequelize = new Sequelize(
-    'consultoriosjbd', 
+    'consultoriosjuridicos', 
     'root', 
     '2444', 
     {

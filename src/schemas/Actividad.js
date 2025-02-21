@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
 import { Caso } from "./Caso.js";
+import { UsuarioInterno } from "./Usuario_interno.js";
 
 /*
 CREATE TABLE Actividad (
@@ -31,7 +32,10 @@ export const Actividad = sequelize.define('Actividad', {
         type: DataTypes.CHAR(50),
         allowNull: false
     },
-    Interno_Cedula: DataTypes.CHAR(10),
+    Interno_Cedula: {
+        type: DataTypes.CHAR(10),
+        allowNull: false
+    },
     Act_Ultima_Actividad: DataTypes.STRING(250),
     Act_Fecha_Actv: DataTypes.DATE,
     Act_Tipo: DataTypes.STRING(100),
@@ -47,3 +51,6 @@ export const Actividad = sequelize.define('Actividad', {
 
 Actividad.belongsTo(Caso, { foreignKey: "Caso_Codigo" });
 Caso.hasMany(Actividad, { foreignKey: "Caso_Codigo" });
+
+Actividad.belongsTo(UsuarioInterno, { foreignKey: "Interno_Cedula" });
+UsuarioInterno.hasMany(Actividad, { foreignKey: "Interno_Cedula" });

@@ -1,4 +1,4 @@
-import { Asignacion } from "../schemas/Asignacion_schema.js";
+import { Asignacion } from "../schemas/Asignacion.js";
 
 export class AsignacionModel {
 

@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
 import { Usuario } from "./Usuario.js";
+import { PrimerasConsultas } from "./Primeras_consultas.js";
 
 /*
 CREATE TABLE CASO (
