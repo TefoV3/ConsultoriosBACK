@@ -9,7 +9,6 @@ import { PrimerasConsultas } from "./schemas/Primeras_consultas.js";
 import { UsuarioInterno } from "./schemas/Usuario_interno.js";
 import { Usuario } from "./schemas/Usuario.js";
 
-
 async function main(){
    try {
       await sequelize.sync();
