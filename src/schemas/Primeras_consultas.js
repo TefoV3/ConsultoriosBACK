@@ -32,15 +32,19 @@ export const PrimerasConsultas = sequelize.define('Primeras_Consultas', {
     Prim_TipoCliente: DataTypes.STRING(100),
     Prim_Materia: DataTypes.STRING(250),
     Prim_Abogado: DataTypes.STRING(250),
+    Prim_Fecha: DataTypes.DATE,
     Prim_Consultorio: DataTypes.STRING(100),
     Prim_Tema: DataTypes.STRING(250),
-    Prim_Servicio: DataTypes.STRING(100),
     Prim_Derivacion: DataTypes.STRING(100),
     Prim_Estado: DataTypes.BOOLEAN,
+    Prim_Provincia: DataTypes.STRING(25),
+    Prim_Ciudad: DataTypes.STRING(25),
+    Prim_Observaciones: DataTypes.STRING(255),
     Usuario_Cedula: {
         type: DataTypes.CHAR(10),
         allowNull: false
     }
+
 }, { timestamps: false });
 
 PrimerasConsultas.belongsTo(UsuarioInterno, { foreignKey: "Interno_Cedula" });

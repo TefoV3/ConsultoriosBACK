@@ -6,8 +6,6 @@ import {EvidenciaRouter} from './routes/evidencias_routes.js'
 import {PrimerasConsultasRouter} from './routes/primeras_consultas_routes.js'
 import {UsuarioInternoRouter} from './routes/usuario_interno_routes.js'
 import {UsuarioRouter} from './routes/usuario_routes.js'
-import {Asesoriarouter} from "./routes/asesorias_routes.js";
-import {Patrociniorouter} from "./routes/patrocinios_routes.js";
 
 const app = express()
 // middleware
@@ -22,8 +20,6 @@ app.use(EvidenciaRouter)
 app.use(PrimerasConsultasRouter)
 app.use(UsuarioInternoRouter)
 app.use(UsuarioRouter)
-app.use(Asesoriarouter)
-app.use(Patrociniorouter)
 
 
 export default app
