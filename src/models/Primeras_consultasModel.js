@@ -25,6 +25,8 @@ export class PrimerasConsultasModel {
 
     static async createPrimerasConsultas(data) {
         const t = await sequelize.transaction();
+        let usuarioCreado = false;
+        
         try {
             // 1️⃣ Verificar si el usuario ya existe, si no, crearlo con todos sus atributos
             let usuario = await Usuario.findOne({ where: { Usuario_Cedula: data.Usuario_Cedula }, transaction: t });
@@ -56,7 +58,10 @@ export class PrimerasConsultasModel {
                     Usuario_NombreReferencia: data.Usuario_NombreReferencia,
                     Usuario_TelReferencia: data.Usuario_TelReferencia
                 }, { transaction: t });
+                usuarioCreado = true; // ✅ Marca que el usuario fue creado en esta transacción
             }
+
+           
 
             // 2️⃣ Verificar si el abogado/coordinador ya existe en UsuarioInterno
             /*
@@ -91,7 +96,11 @@ export class PrimerasConsultasModel {
             return { message: "Primera consulta creada correctamente", data: nuevaConsulta };
         } catch (error) {
             await t.rollback();
+            if (usuarioCreado) {
+                await Usuario.destroy({ where: { Usuario_Cedula: data.Usuario_Cedula } });
+            }
             throw new Error(`Error al crear primera consulta: ${error.message}`);
+
         }
     }
 
