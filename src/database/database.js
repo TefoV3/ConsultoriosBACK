@@ -2,10 +2,10 @@ import Sequelize from 'sequelize';
 
 export const sequelize = new Sequelize(
     'consultoriosjuridicos', 
-    'root', 
-    '2444', 
+    'fvelasco', 
+    'ltic', 
     {
-        host: 'localhost',
+        host: '192.168.56.102',
         dialect: 'mysql'
     }
 );

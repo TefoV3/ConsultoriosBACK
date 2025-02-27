@@ -20,7 +20,11 @@ export const UsuarioInterno = sequelize.define('Usuario_Interno', {
     },
     Interno_Nombre: DataTypes.STRING(50),
     Interno_Apellido: DataTypes.STRING(50),
-    Interno_Correo: DataTypes.STRING(50),
+    Interno_Correo: {
+        type: DataTypes.STRING(50),
+        unique: true
+    },
+    Interno_Password: DataTypes.STRING(255),
     Interno_Tipo: DataTypes.STRING(50), // Puede ser "Coordinador", "Estudiante", etc.
     Interno_Area: DataTypes.STRING(50), // Área en la que trabaja (Civil, Penal, etc.)
     Interno_Telefono: DataTypes.STRING(10)

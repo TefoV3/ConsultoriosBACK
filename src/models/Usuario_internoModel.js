@@ -20,6 +20,19 @@ export class UsuarioInternoModel {
         }
     }
 
+    static async getByCorreo(correo) {
+        try {
+            return await UsuarioInterno.findOne({
+                where: { Interno_Correo: correo }
+            });
+        } catch (error) {
+            throw new Error(`Error al obtener usuario interno: ${error.message}`);
+        }
+    }
+
+    
+    // Método para crear un usuario, asegurándose de que no haya un usuario con el mismo correo
+
     static async create(data) {
         try {
             return await UsuarioInterno.create(data);
@@ -55,4 +68,38 @@ export class UsuarioInternoModel {
             throw new Error(`Error al eliminar usuario interno: ${error.message}`);
         }
     }
+
+    // Método para iniciar sesión con un usuario interno registrado
+    static async login(correo, password) {
+        try {
+            return await UsuarioInterno.findOne({
+                where: {
+                    Interno_Correo: correo,
+                    Interno_Password: password
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error al iniciar sesión: ${error.message}`);
+        }
+    }
+
+    static async logout(req, res) {
+        try {
+            req.session.user = null;
+            res.json({ message: "Sesión cerrada" });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }   
+
+
+
+
+
+
+
+
+
+
+
 }
