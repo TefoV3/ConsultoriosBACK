@@ -5,6 +5,6 @@ export const PrimerasConsultasRouter = Router();
 
 PrimerasConsultasRouter.get('/primerasconsultas', PrimerasConsultasController.getPrimerasConsultas);
 PrimerasConsultasRouter.get('/primerasconsultas/:id', PrimerasConsultasController.getById);
-PrimerasConsultasRouter.post('/primerasconsultas', PrimerasConsultasController.createPrimeraConsulta);
+PrimerasConsultasRouter.post('/primerasconsultas', PrimerasConsultasController.createPrimerasConsultas);
 PrimerasConsultasRouter.put('/primerasconsultas/:id', PrimerasConsultasController.update);
 PrimerasConsultasRouter.delete('/primerasconsultas/:id', PrimerasConsultasController.delete);

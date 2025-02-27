@@ -45,8 +45,16 @@ export class UsuarioController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
+
+            // Validación antes de llamar a delete()
+            if (!id) {
+                return res.status(400).json({ error: "El ID del usuario es obligatorio para eliminarlo" });
+            }
+
             const deletedUsuario = await UsuarioModel.delete(id);
-            if (!deletedUsuario) return res.status(404).json({ message: "Usuario no encontrado" });
+            if (!deletedUsuario) {
+                return res.status(404).json({ message: "Usuario no encontrado" });
+            }
 
             return res.json({ message: "Usuario eliminado lógicamente", usuario: deletedUsuario });
         } catch (error) {

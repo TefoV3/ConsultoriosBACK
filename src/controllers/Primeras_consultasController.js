@@ -21,12 +21,22 @@ export class PrimerasConsultasController {
         }
     }
 
+    /*
     static async createPrimeraConsulta(req, res) {
         try {
             const newConsulta = await PrimerasConsultasModel.create(req.body);
             return res.status(201).json(newConsulta);
         } catch (error) {
             return res.status(500).json({ error: error.message });
+        }
+    }*/
+
+    static async createPrimerasConsultas(req, res) {
+        try {
+            const response = await PrimerasConsultasModel.createPrimerasConsultas(req.body);
+            res.status(201).json(response);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
         }
     }
 

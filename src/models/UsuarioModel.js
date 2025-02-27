@@ -46,9 +46,14 @@ export class UsuarioModel {
 
     static async delete(id) {
         try {
+            // Validar que el ID no esté vacío
+            if (!id) {
+                throw new Error("El campo Usuario_Cedula es obligatorio para eliminar el usuario");
+            }
+    
             const usuario = await this.getById(id);
             if (!usuario) return null;
-
+    
             await Usuario.update(
                 { Usuario_IsDeleted: true },
                 { where: { Usuario_Cedula: id, Usuario_IsDeleted: false } }
