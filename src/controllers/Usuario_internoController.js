@@ -49,10 +49,10 @@ export class UsuarioInternoController {
             Interno_Cedula: z
               .string()
               .length(10, { message: "La cédula debe tener 10 caracteres" }),
-            Interno_Correo: z.string().email({ message: "Correo inválido" }),
-            Interno_Password: z.string().min(1, { message: "La contraseña es obligatoria" }),
             Interno_Nombre: z.string().min(1, { message: "El nombre es obligatorio" }),
-            Interno_Apellido: z.string().min(1, { message: "El apellido es obligatorio" }), 
+            Interno_Apellido: z.string().min(1, { message: "El apellido es obligatorio" }),
+            Interno_Correo: z.string().email({ message: "Correo no válido" }),
+            Interno_Password: z.string().min(1, { message: "La contraseña es obligatoria" }),
             Interno_Tipo: z.string().min(1, { message: "El tipo es obligatorio" }),
             Interno_Area: z.string().min(1, { message: "El area es obligatoria" }),
           });
@@ -70,13 +70,13 @@ export class UsuarioInternoController {
           // Verificar si ya existe un usuario con esa cédula
           const existingCedula = await UsuarioInternoModel.getById(data.Interno_Cedula);
           if (existingCedula) {
-            return res.status(400).json({ message: "Ya existe un usuario con esa cédula" });
+            return res.status(401).json({ message: "Ya existe un usuario con esa cédula" });
           }
       
           // Verificar si ya existe un usuario con ese correo
           const existingEmail = await UsuarioInternoModel.getByCorreo(data.Interno_Correo);
           if (existingEmail) {
-            return res.status(400).json({ message: "Ya existe un usuario con ese correo" });
+            return res.status(401).json({ message: "Ya existe un usuario con ese correo" });
           }
       
           // Hashear la contraseña
@@ -151,7 +151,8 @@ export class UsuarioInternoController {
               id: usuarioInterno.Interno_Cedula,
               name: `${usuarioInterno.Interno_Nombre} ${usuarioInterno.Interno_Apellido}`,
               email: usuarioInterno.Interno_Correo,
-              type: usuarioInterno.Interno_Tipo
+              type: usuarioInterno.Interno_Tipo,
+              area: usuarioInterno.Interno_Area
             },
             SECRET_JWT_KEY,
             { expiresIn: '1h' }
