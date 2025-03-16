@@ -32,7 +32,9 @@ export class InitialConsultationsModel {
             let user = await User.findOne({ where: { User_ID: data.User_ID }, transaction: t });
             if (!user) {
                 user = await User.create({
-                    User_ID: data.User_ID,
+                    User_ID: data.User_ID, 
+                    User_ID_Type: data.User_ID_Type,
+                    User_Academic_Instruction: data.User_Academic_Instruction,
                     User_FirstName: data.User_FirstName,
                     User_LastName: data.User_LastName,
                     User_Email: data.User_Email,
@@ -51,7 +53,6 @@ export class InitialConsultationsModel {
                     User_Benefits: data.User_Benefits,
                     User_BirthDate: data.User_BirthDate,
                     User_IncomeLevel: data.User_IncomeLevel,
-                    User_Age: data.User_Age,
                     User_FamilyIncome: data.User_FamilyIncome,
                     User_OwnsHouse: data.User_OwnsHouse,
                     User_OwnsCar: data.User_OwnsCar,
@@ -76,13 +77,11 @@ export class InitialConsultationsModel {
                 Init_Date: data.Init_Date,
                 Init_Subject: data.Init_Subject,
                 Init_Lawyer: data.Init_Lawyer,
-                Init_Province: data.Init_Province,
                 Init_Notes: data.Init_Notes,
                 Init_Office: data.Init_Office,
                 Init_Topic: data.Init_Topic,
                 Init_Referral: data.Init_Referral,
                 Init_Status: data.Init_Status,
-                Init_City: data.Init_City,
             }, { transaction: t });
 
             await t.commit(); // Confirmar la transacción

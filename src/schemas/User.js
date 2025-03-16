@@ -37,6 +37,8 @@ export const User = sequelize.define('User', {
         type: DataTypes.CHAR(10),
         primaryKey: true
     },
+    User_ID_Type: DataTypes.STRING(10),
+    User_Academic_Instruction: DataTypes.STRING(50),
     User_FirstName: DataTypes.STRING(50),
     User_LastName: DataTypes.STRING(50),
     User_Email: DataTypes.STRING(70),
@@ -55,7 +57,6 @@ export const User = sequelize.define('User', {
     User_SocialBenefit: DataTypes.BOOLEAN,
     User_BirthDate: DataTypes.DATE,
     User_IncomeLevel: DataTypes.STRING(5),
-    User_Age: DataTypes.INTEGER,
     User_FamilyIncome: DataTypes.FLOAT,
     User_OwnsHouse: DataTypes.BOOLEAN,
     User_OwnsCar: DataTypes.BOOLEAN,
