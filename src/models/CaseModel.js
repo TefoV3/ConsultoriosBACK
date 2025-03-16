@@ -1,4 +1,4 @@
-import { Case } from "../schemas/Caso.js";
+import { Case } from "../schemas/Case.js";
 
 export class CaseModel {
 

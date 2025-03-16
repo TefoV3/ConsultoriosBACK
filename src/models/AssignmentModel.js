@@ -1,4 +1,4 @@
-import { Assignment } from "../schemas/Asignacion.js";
+import { Assignment } from "../schemas/Assignment.js";
 
 export class AssignmentModel {
 

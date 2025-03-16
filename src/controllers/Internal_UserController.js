@@ -1,4 +1,4 @@
-import { InternalUserModel } from "../models/Usuario_internoModel.js";
+import { InternalUserModel } from "../models/Internal_UserModel.js";
 
 export class InternalUserController {
     static async getInternalUsers(req, res) {

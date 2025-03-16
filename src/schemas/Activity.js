@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
-import { Case } from "./Caso.js";
-import { InternalUser } from "./Usuario_interno.js";
+import { Case } from "./Case.js";
+import { InternalUser } from "./Internal_User.js";
 
 /*
 CREATE TABLE Activity (

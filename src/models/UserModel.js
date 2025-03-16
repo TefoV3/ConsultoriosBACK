@@ -1,4 +1,4 @@
-import { User } from "../schemas/Usuario.js"; // Nombre traducido del esquema
+import { User } from "../schemas/User.js"; // Nombre traducido del esquema
 
 export class UserModel {
 

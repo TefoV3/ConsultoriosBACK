@@ -1,4 +1,4 @@
-import { InternalUser } from "../schemas/Usuario_interno.js"; 
+import { InternalUser } from "../schemas/Internal_User.js"; 
 
 export class InternalUserModel {
 

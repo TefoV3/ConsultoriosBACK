@@ -1,4 +1,4 @@
-import { EvidenceModel } from "../models/EvidenciasModel.js";
+import { EvidenceModel } from "../models/EvidencesModel.js";
 
 export class EvidenceController {
     static async getEvidences(req, res) {

@@ -1,4 +1,4 @@
-import { AssignmentModel } from "../models/AsignacionModel.js";
+import { AssignmentModel } from "../models/AssignmentModel.js";
 
 export class AssignmentController {
     static async getAssignments(req, res) {

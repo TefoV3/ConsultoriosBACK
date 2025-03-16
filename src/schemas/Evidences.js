@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
-import { Case } from "./Caso.js";
-import { Activity } from "./Actividad.js";
+import { Case } from "./Case.js";
+import { Activity } from "./Activity.js";
 
 /*
 CREATE TABLE Evidences (

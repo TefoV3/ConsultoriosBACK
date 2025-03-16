@@ -1,4 +1,4 @@
-import { UserModel } from "../models/UsuarioModel.js";
+import { UserModel } from "../models/UserModel.js";
 
 export class UserController {
     static async getUsers(req, res) {

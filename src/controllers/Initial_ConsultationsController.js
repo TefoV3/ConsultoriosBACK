@@ -1,4 +1,4 @@
-import { InitialConsultationsModel } from "../models/Primeras_consultasModel.js";
+import { InitialConsultationsModel } from "../models/Initial_ConsultationsModel.js";
 
 export class FirstConsultationsController {
     static async getFirstConsultations(req, res) {

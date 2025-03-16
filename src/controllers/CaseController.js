@@ -1,4 +1,4 @@
-import { CaseModel } from "../models/CasoModel.js";
+import { CaseModel } from "../models/CaseModel.js";
 
 export class CaseController {
     static async getCases(req, res) {

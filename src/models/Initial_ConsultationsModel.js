@@ -1,7 +1,7 @@
 import { sequelize } from "../database/database.js";
-import { InitialConsultations } from "../schemas/Primeras_consultas.js";
-import { User } from "../schemas/Usuario.js";
-import { InternalUser } from "../schemas/Usuario_interno.js";
+import { InitialConsultations } from "../schemas/Initial_Consultations.js";
+import { User } from "../schemas/User.js";
+import { InternalUser } from "../schemas/Internal_User.js";
 
 export class InitialConsultationsModel {
 

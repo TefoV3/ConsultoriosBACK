@@ -1,4 +1,4 @@
-import { Evidence } from "../schemas/Evidencias.js";
+import { Evidence } from "../schemas/Evidences.js";
 
 export class EvidenceModel {
 

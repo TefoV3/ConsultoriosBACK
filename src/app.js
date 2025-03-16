@@ -1,11 +1,11 @@
 import express from 'express'
-import {ActividadRouter} from './routes/actividad_routes.js'
-import {AsignacionRouter} from './routes/asignacion_routes.js'
-import {CasoRouter} from './routes/caso_routes.js'
-import {EvidenciaRouter} from './routes/evidencias_routes.js'
-import {PrimerasConsultasRouter} from './routes/primeras_consultas_routes.js'
-import {UsuarioInternoRouter} from './routes/usuario_interno_routes.js'
-import {UsuarioRouter} from './routes/usuario_routes.js'
+import {ActivityRouter} from './routes/activity_routes.js'
+import {AssignmentRouter} from './routes/assignment_routes.js'
+import {CaseRouter} from './routes/case_routes.js'
+import {EvidenceRouter} from './routes/evidences_routes.js'
+import {InitialConsultationsRouter} from './routes/initial_consultations_routes.js'
+import {InternalUserRouter} from './routes/internal_user_routes.js'
+import {UserRouter} from './routes/user_routes.js'
 
 const app = express()
 // middleware
@@ -13,13 +13,13 @@ const app = express()
 app.use(express.json())
 
 //app.use(corsMiddleware())
-app.use(ActividadRouter)
-app.use(AsignacionRouter)
-app.use(CasoRouter)
-app.use(EvidenciaRouter)
-app.use(PrimerasConsultasRouter)
-app.use(UsuarioInternoRouter)
-app.use(UsuarioRouter)
+app.use(ActivityRouter)
+app.use(AssignmentRouter)
+app.use(CaseRouter)
+app.use(EvidenceRouter)
+app.use(InitialConsultationsRouter)
+app.use(InternalUserRouter)
+app.use(UserRouter)
 
 
 export default app
