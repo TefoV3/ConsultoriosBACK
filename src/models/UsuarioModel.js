@@ -1,66 +1,66 @@
-import { Usuario } from "../schemas/Usuario.js";
+import { User } from "../schemas/Usuario.js"; // Nombre traducido del esquema
 
-export class UsuarioModel {
+export class UserModel {
 
     static async getAll() {
         try {
-            return await Usuario.findAll({ where: { Usuario_IsDeleted: false } });
+            return await User.findAll({ where: { IsDeleted: false } });
         } catch (error) {
-            throw new Error(`Error al obtener usuarios: ${error.message}`);
+            throw new Error(`Error retrieving users: ${error.message}`);
         }
     }
 
     static async getById(id) {
         try {
-            return await Usuario.findOne({
-                where: { Usuario_Cedula: id, Usuario_IsDeleted: false }
+            return await User.findOne({
+                where: { User_ID: id, IsDeleted: false }
             });
         } catch (error) {
-            throw new Error(`Error al obtener usuario: ${error.message}`);
+            throw new Error(`Error retrieving user: ${error.message}`);
         }
     }
 
     static async create(data) {
         try {
-            return await Usuario.create(data);
+            return await User.create(data);
         } catch (error) {
-            throw new Error(`Error al crear usuario: ${error.message}`);
+            throw new Error(`Error creating user: ${error.message}`);
         }
     }
 
     static async update(id, data) {
         try {
-            const usuario = await this.getById(id);
-            if (!usuario) return null;
+            const user = await this.getById(id);
+            if (!user) return null;
 
-            const [rowsUpdated] = await Usuario.update(data, {
-                where: { Usuario_Cedula: id, Usuario_IsDeleted: false }
+            const [rowsUpdated] = await User.update(data, {
+                where: { User_ID: id, IsDeleted: false }
             });
 
             if (rowsUpdated === 0) return null;
             return await this.getById(id);
         } catch (error) {
-            throw new Error(`Error al actualizar usuario: ${error.message}`);
+            throw new Error(`Error updating user: ${error.message}`);
         }
     }
 
     static async delete(id) {
         try {
-            // Validar que el ID no esté vacío
+            // Ensure the ID is not empty
             if (!id) {
-                throw new Error("El campo Usuario_Cedula es obligatorio para eliminar el usuario");
+                throw new Error("The User_ID field is required to delete a user");
             }
-    
-            const usuario = await this.getById(id);
-            if (!usuario) return null;
-    
-            await Usuario.update(
-                { Usuario_IsDeleted: true },
-                { where: { Usuario_Cedula: id, Usuario_IsDeleted: false } }
+
+            const user = await this.getById(id);
+            if (!user) return null;
+
+            await User.update(
+                { IsDeleted: true },
+                { where: { User_ID: id, IsDeleted: false } }
             );
-            return usuario;
+            return user;
         } catch (error) {
-            throw new Error(`Error al eliminar usuario: ${error.message}`);
+            throw new Error(`Error deleting user: ${error.message}`);
         }
     }
 }

@@ -1,72 +1,74 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
-import { Usuario } from "./Usuario.js";
-import { PrimerasConsultas } from "./Primeras_consultas.js";
+import { User } from "./Usuario.js";
+import { InitialConsultations } from "./Primeras_consultas.js";
 
 /*
-CREATE TABLE CASO (
-    Caso_Codigo CHAR(50) PRIMARY KEY,
-    Usuario_Cedula CHAR(10) NOT NULL,
-    Prim_Codigo CHAR(50) NOT NULL,
-    Caso_FechaInicio DATE,
-    Caso_FechaUM DATE,
-    Caso_Estado VARCHAR(50),
-    Caso_Observacion VARCHAR(250),
-    Caso_NoCarpeta VARCHAR(50),
-    Caso_Viabilidad TINYINT(1),
-    Caso_Tema VARCHAR(250),
-    Caso_Sede VARCHAR(100),
-    Caso_TipoPatrocinio VARCHAR(25),
-    Caso_Provincia VARCHAR(25),
-    Caso_Ciudad VARCHAR(25),
-    Caso_Derivacion VARCHAR(100),
-    Caso_NoCausa VARCHAR(30),
-    Caso_Juicio VARCHAR(250),
-    Caso_TipoJudicatura VARCHAR(256),
-    Caso_ResolucionJudicial VARCHAR(255),
-    Caso_TipoCliente VARCHAR(50),
-    Caso_FechaFin DATE,
-    Caso_IsDeleted TINYINT(1) DEFAULT FALSE
+CREATE TABLE Case (
+    Case_Code CHAR(50) PRIMARY KEY,
+    User_ID CHAR(10) NOT NULL,
+    Init_Code CHAR(50) NOT NULL,
+    Case_StartDate DATE,
+    Case_LastModifiedDate DATE,
+    Case_Status VARCHAR(50),
+    Case_Observation VARCHAR(250),
+    Case_FolderNumber VARCHAR(50),
+    Case_Viability TINYINT(1),
+    Case_Topic VARCHAR(250),
+    Case_Office VARCHAR(100),
+    Case_SponsorshipType VARCHAR(25),
+    Case_Province VARCHAR(25),
+    Case_City VARCHAR(25),
+    Case_Referral VARCHAR(100),
+    Case_CauseNumber VARCHAR(30),
+    Case_Trial VARCHAR(250),
+    Case_JudiciaryType VARCHAR(256),
+    Case_JudicialResolution VARCHAR(255),
+    Case_ClientType VARCHAR(50),
+    Case_EndDate DATE,
+    Case_IsDeleted TINYINT(1) DEFAULT FALSE
 );
 */
 
-export const Caso = sequelize.define('Caso', {
-    Caso_Codigo: {
+export const Case = sequelize.define('Cases', {
+    Case_Code: {
         type: DataTypes.CHAR(50),
         primaryKey: true
     },
-    Usuario_Cedula: {
+    User_ID: {
         type: DataTypes.CHAR(10),
         allowNull: false
     },
-    Prim_Codigo: {
+    Init_Code: {
         type: DataTypes.CHAR(50),
         allowNull: false
     },
-    
-    Prim_Codigo: DataTypes.CHAR(50),
-    Caso_FechaInicio: DataTypes.DATE,
-    Caso_FechaUM: DataTypes.DATE,
-    Caso_Estado: DataTypes.STRING(50),
-    Caso_NoCarpeta: DataTypes.STRING(50),
-    Caso_Viabilidad: DataTypes.BOOLEAN,
-    Caso_Tema: DataTypes.STRING(250),
-    Caso_Sede: DataTypes.STRING(100),
-    Caso_TipoPatrocinio: DataTypes.STRING(25),
-    Caso_Derivacion: DataTypes.STRING(100),
-    Caso_NoCausa: DataTypes.STRING(30),
-    Caso_Juicio: DataTypes.STRING(250),
-    Caso_TipoJudicatura: DataTypes.STRING(255),
-    Caso_ResolucionJudicial: DataTypes.STRING(255),
-    Caso_TipoCliente: DataTypes.STRING(50),
-    Caso_FechaFin: DataTypes.DATE,
-    Caso_IsDeleted: {
+    Case_StartDate: DataTypes.DATE,
+    Case_LastModifiedDate: DataTypes.DATE,
+    Case_Status: DataTypes.STRING(50),
+    Case_Observation: DataTypes.STRING(250),
+    Case_FolderNumber: DataTypes.STRING(50),
+    Case_Viability: DataTypes.BOOLEAN,
+    Case_Topic: DataTypes.STRING(250),
+    Case_Office: DataTypes.STRING(100),
+    Case_SponsorshipType: DataTypes.STRING(25),
+    Case_Province: DataTypes.STRING(25),
+    Case_City: DataTypes.STRING(25),
+    Case_Referral: DataTypes.STRING(100),
+    Case_CauseNumber: DataTypes.STRING(30),
+    Case_Trial: DataTypes.STRING(250),
+    Case_JudiciaryType: DataTypes.STRING(255),
+    Case_JudicialResolution: DataTypes.STRING(255),
+    Case_ClientType: DataTypes.STRING(50),
+    Case_EndDate: DataTypes.DATE,
+    Case_IsDeleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     }
 }, { timestamps: false });
 
-Caso.belongsTo(Usuario, { foreignKey: "Usuario_Cedula" });
-Caso.belongsTo(PrimerasConsultas, { foreignKey: "Prim_Codigo" });
-Usuario.hasMany(Caso, { foreignKey: "Usuario_Cedula" });
-PrimerasConsultas.hasOne(Caso, { foreignKey: "Prim_Codigo" });
+// Define associations
+Case.belongsTo(User, { foreignKey: "User_ID" });
+Case.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
+User.hasMany(Case, { foreignKey: "User_ID" });
+InitialConsultations.hasOne(Case, { foreignKey: "Init_Code" });

@@ -1,10 +1,10 @@
-import { EvidenciaController } from "../controllers/EvidenciasController.js";
+import { EvidenceController } from "../controllers/EvidenciasController.js";
 import { Router } from "express";
 
 export const EvidenciaRouter = Router();
 
-EvidenciaRouter.get('/evidencia', EvidenciaController.getEvidencias);
-EvidenciaRouter.get('/evidencia/:id', EvidenciaController.getById);
-EvidenciaRouter.post('/evidencia', EvidenciaController.createEvidencia);
-EvidenciaRouter.put('/evidencia/:id', EvidenciaController.update);
-EvidenciaRouter.delete('/evidencia/:id', EvidenciaController.delete);
+EvidenciaRouter.get('/evidencia', EvidenceController.getEvidences);
+EvidenciaRouter.get('/evidencia/:id', EvidenceController.getById);
+EvidenciaRouter.post('/evidencia', EvidenceController.createEvidence);
+EvidenciaRouter.put('/evidencia/:id', EvidenceController.update);
+EvidenciaRouter.delete('/evidencia/:id', EvidenceController.delete);

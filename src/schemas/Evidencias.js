@@ -1,45 +1,47 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
-import { Caso } from "./Caso.js";
-import { Actividad } from "./Actividad.js";
+import { Case } from "./Caso.js";
+import { Activity } from "./Actividad.js";
+
 /*
-CREATE TABLE Evidencias (
-    Id_Evidencia INT PRIMARY KEY AUTO_INCREMENT,
-    Interno_Cedula CHAR(10) NOT NULL,
-    Caso_Codigo CHAR(50) NOT NULL,
-    Id_Actividad INT NOT NULL,
-    Evi_Nombre CHAR(250),
-    Evi_Tipo_Documento LONGBLOB,
-    Evi_URL CHAR(255),
-    Evi_Fecha DATE
+CREATE TABLE Evidences (
+    Evidence_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Internal_ID CHAR(10) NOT NULL,
+    Case_Code CHAR(50) NOT NULL,
+    Activity_ID INT NOT NULL,
+    Evidence_Name CHAR(250),
+    Evidence_Document_Type LONGBLOB,
+    Evidence_URL CHAR(255),
+    Evidence_Date DATE
 );
 */
 
-export const Evidencia = sequelize.define('Evidencias', {
-    Id_Evidencia: {
+export const Evidence = sequelize.define('Evidences', {
+    Evidence_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    Interno_Cedula: {
+    Internal_ID: {
         type: DataTypes.CHAR(10),
         allowNull: false
     },
-    Caso_Codigo: {
+    Case_Code: {
         type: DataTypes.CHAR(50),
         allowNull: false
     },
-    Id_Actividad: {
+    Activity_ID: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    Evi_Nombre: DataTypes.STRING(250),
-    Evi_Tipo_Documento: DataTypes.BLOB("long"),
-    Evi_URL: DataTypes.STRING(255),
-    Evi_Fecha: DataTypes.DATE
+    Evidence_Name: DataTypes.STRING(250),
+    Evidence_Document_Type: DataTypes.BLOB("long"),
+    Evidence_URL: DataTypes.STRING(255),
+    Evidence_Date: DataTypes.DATE
 }, { timestamps: false });
 
-Evidencia.belongsTo(Caso, { foreignKey: "Caso_Codigo" });
-Evidencia.belongsTo(Actividad, { foreignKey: "Id_Actividad" });
-Caso.hasMany(Evidencia, { foreignKey: "Caso_Codigo" });
-Actividad.hasMany(Evidencia, { foreignKey: "Id_Actividad" });
+// Define associations
+Evidence.belongsTo(Case, { foreignKey: "Case_Code" });
+Evidence.belongsTo(Activity, { foreignKey: "Activity_ID" });
+Case.hasMany(Evidence, { foreignKey: "Case_Code" });
+Activity.hasMany(Evidence, { foreignKey: "Activity_ID" });

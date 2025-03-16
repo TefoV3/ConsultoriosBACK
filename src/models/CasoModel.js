@@ -1,61 +1,61 @@
-import { Caso } from "../schemas/Caso.js";
+import { Case } from "../schemas/Caso.js";
 
-export class CasoModel {
+export class CaseModel {
 
     static async getAll() {
         try {
-            return await Caso.findAll({ where: { Caso_IsDeleted: false } });
+            return await Case.findAll({ where: { Case_IsDeleted: false } });
         } catch (error) {
-            throw new Error(`Error al obtener casos: ${error.message}`);
+            throw new Error(`Error retrieving cases: ${error.message}`);
         }
     }
 
     static async getById(id) {
         try {
-            return await Caso.findOne({
-                where: { Caso_Codigo: id, Caso_IsDeleted: false }
+            return await Case.findOne({
+                where: { Case_Code: id, Case_IsDeleted: false }
             });
         } catch (error) {
-            throw new Error(`Error al obtener caso: ${error.message}`);
+            throw new Error(`Error retrieving case: ${error.message}`);
         }
     }
 
     static async create(data) {
         try {
-            return await Caso.create(data);
+            return await Case.create(data);
         } catch (error) {
-            throw new Error(`Error al crear caso: ${error.message}`);
+            throw new Error(`Error creating case: ${error.message}`);
         }
     }
 
     static async update(id, data) {
         try {
-            const caso = await this.getById(id);
-            if (!caso) return null;
+            const caseRecord = await this.getById(id);
+            if (!caseRecord) return null;
 
-            const [rowsUpdated] = await Caso.update(data, {
-                where: { Caso_Codigo: id, Caso_IsDeleted: false }
+            const [rowsUpdated] = await Case.update(data, {
+                where: { Case_Code: id, Case_IsDeleted: false }
             });
 
             if (rowsUpdated === 0) return null;
             return await this.getById(id);
         } catch (error) {
-            throw new Error(`Error al actualizar caso: ${error.message}`);
+            throw new Error(`Error updating case: ${error.message}`);
         }
     }
 
     static async delete(id) {
         try {
-            const caso = await this.getById(id);
-            if (!caso) return null;
+            const caseRecord = await this.getById(id);
+            if (!caseRecord) return null;
 
-            await Caso.update(
-                { Caso_IsDeleted: true },
-                { where: { Caso_Codigo: id, Caso_IsDeleted: false } }
+            await Case.update(
+                { Case_IsDeleted: true },
+                { where: { Case_Code: id, Case_IsDeleted: false } }
             );
-            return caso;
+            return caseRecord;
         } catch (error) {
-            throw new Error(`Error al eliminar caso: ${error.message}`);
+            throw new Error(`Error deleting case: ${error.message}`);
         }
     }
 }

@@ -1,10 +1,10 @@
-import { EvidenciaModel } from "../models/EvidenciasModel.js";
+import { EvidenceModel } from "../models/EvidenciasModel.js";
 
-export class EvidenciaController {
-    static async getEvidencias(req, res) {
+export class EvidenceController {
+    static async getEvidences(req, res) {
         try {
-            const evidencias = await EvidenciaModel.getAll();
-            res.json(evidencias);
+            const evidences = await EvidenceModel.getAll();
+            res.json(evidences);
         } catch (error) {
             res.status(500).json(error);
         }
@@ -13,18 +13,18 @@ export class EvidenciaController {
     static async getById(req, res) {
         const { id } = req.params;
         try {
-            const evidencia = await EvidenciaModel.getById(id);
-            if (evidencia) return res.json(evidencia);
-            res.status(404).json({ message: "Evidencia no encontrada" });
+            const evidence = await EvidenceModel.getById(id);
+            if (evidence) return res.json(evidence);
+            res.status(404).json({ message: "Evidence not found" });
         } catch (error) {
             res.status(500).json(error);
         }
     }
 
-    static async createEvidencia(req, res) {
+    static async createEvidence(req, res) {
         try {
-            const newEvidencia = await EvidenciaModel.create(req.body);
-            return res.status(201).json(newEvidencia);
+            const newEvidence = await EvidenceModel.create(req.body);
+            return res.status(201).json(newEvidence);
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
@@ -33,10 +33,10 @@ export class EvidenciaController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const updatedEvidencia = await EvidenciaModel.update(id, req.body);
-            if (!updatedEvidencia) return res.status(404).json({ message: "Evidencia no encontrada" });
+            const updatedEvidence = await EvidenceModel.update(id, req.body);
+            if (!updatedEvidence) return res.status(404).json({ message: "Evidence not found" });
 
-            return res.json(updatedEvidencia);
+            return res.json(updatedEvidence);
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
@@ -45,10 +45,10 @@ export class EvidenciaController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const deletedEvidencia = await EvidenciaModel.delete(id);
-            if (!deletedEvidencia) return res.status(404).json({ message: "Evidencia no encontrada" });
+            const deletedEvidence = await EvidenceModel.delete(id);
+            if (!deletedEvidence) return res.status(404).json({ message: "Evidence not found" });
 
-            return res.json({ message: "Evidencia eliminada", evidencia: deletedEvidencia });
+            return res.json({ message: "Evidence deleted", evidence: deletedEvidence });
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }

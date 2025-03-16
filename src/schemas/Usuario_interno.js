@@ -1,27 +1,28 @@
-import { DatabaseError, DataTypes } from "sequelize";
+import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
 
 /*
-CREATE TABLE Usuario_Interno (
-    Interno_Cedula CHAR(10) PRIMARY KEY,
-    Interno_Nombre CHAR(50),
-    Interno_Apellido CHAR(50),
-    Interno_Correo CHAR(50),
-    Interno_Tipo CHAR(50),
-    Interno_Area CHAR(50),
-    Interno_Telefono CHAR(10)
+CREATE TABLE Internal_User (
+    Internal_ID CHAR(10) PRIMARY KEY,
+    Internal_FullName CHAR(75),
+    Internal_Email CHAR(50),
+    Internal_Type CHAR(50), -- e.g., "Coordinator", "Student", etc.
+    Internal_Area CHAR(50), -- The area they work in (Civil, Criminal, etc.)
+    Internal_Phone CHAR(10),
+    Internal_Password CHAR(50)
 );
 */
 
-export const UsuarioInterno = sequelize.define('Usuario_Interno', {
-    Interno_Cedula: {
+export const InternalUser = sequelize.define('Internal_User', {
+    Internal_ID: {
         type: DataTypes.CHAR(10),
         primaryKey: true
     },
-    Interno_Nombre_Completo: DataTypes.STRING(75),
-    Interno_Correo: DataTypes.STRING(50),
-    Interno_Tipo: DataTypes.STRING(50), // Puede ser "Coordinador", "Estudiante", etc.
-    Interno_Area: DataTypes.STRING(50), // Área en la que trabaja (Civil, Penal, etc.)
-    Interno_Telefono: DataTypes.STRING(10),
-    Interno_Contraseña: DataTypes.STRING(50)
+    Internal_FullName: DataTypes.STRING(75),
+    Internal_Email: DataTypes.STRING(50),
+    Internal_Type: DataTypes.STRING(50), // Example: "Coordinator", "Student", etc.
+    Internal_Area: DataTypes.STRING(50), // The area of work (e.g., Civil, Criminal, etc.)
+    Internal_Phone: DataTypes.STRING(10),
+    Internal_Password: DataTypes.STRING(50)
 }, { timestamps: false });
+

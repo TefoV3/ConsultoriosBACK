@@ -1,37 +1,38 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
-import { Caso } from "./Caso.js";
-import { UsuarioInterno } from "./Usuario_interno.js";
+import { Case } from "./Caso.js";
+import { InternalUser } from "./Usuario_interno.js";
 
 /*
-CREATE TABLE Asignacion (
-    Id_Asignacion INT PRIMARY KEY AUTO_INCREMENT,
-    Caso_Codigo CHAR(50) NOT NULL,
-    Fecha_Asignacion DATE,
-    Interno_Cedula_Est CHAR(10),
-    Interno_Cedula CHAR(10) NOT NULL
+CREATE TABLE Assignment (
+    Assignment_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Case_Code CHAR(50) NOT NULL,
+    Assignment_Date DATE,
+    Internal_User_ID_Student CHAR(10),
+    Internal_User_ID CHAR(10) NOT NULL
 );
 */
 
-export const Asignacion = sequelize.define('Asignacion', {
-    Id_Asignacion: {
+export const Assignment = sequelize.define('Assignments', {
+    Assignment_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    Caso_Codigo: {
+    Case_Code: {
         type: DataTypes.CHAR(50),
         allowNull: false
     },
-    Fecha_Asignacion: DataTypes.DATE,
-    Interno_Cedula_Est: DataTypes.CHAR(10), // Cédula del estudiante asignado
-    Interno_Cedula: {
+    Assignment_Date: DataTypes.DATE,
+    Internal_User_ID_Student: DataTypes.CHAR(10), // ID of the assigned student
+    Internal_User_ID: {
         type: DataTypes.CHAR(10),
         allowNull: false
     }
 }, { timestamps: false });
 
-Asignacion.belongsTo(Caso, { foreignKey: "Caso_Codigo" });
-Asignacion.belongsTo(UsuarioInterno, { foreignKey: "Interno_Cedula" });
-Caso.hasMany(Asignacion, { foreignKey: "Caso_Codigo" });
-UsuarioInterno.hasMany(Asignacion, { foreignKey: "Interno_Cedula" });
+// Define associations
+Assignment.belongsTo(Case, { foreignKey: "Case_Code" });
+Assignment.belongsTo(InternalUser, { foreignKey: "Internal_User_ID" });
+Case.hasMany(Assignment, { foreignKey: "Case_Code" });
+InternalUser.hasMany(Assignment, { foreignKey: "Internal_User_ID" });

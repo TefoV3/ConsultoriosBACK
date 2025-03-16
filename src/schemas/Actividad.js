@@ -1,56 +1,57 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
-import { Caso } from "./Caso.js";
-import { UsuarioInterno } from "./Usuario_interno.js";
+import { Case } from "./Caso.js";
+import { InternalUser } from "./Usuario_interno.js";
 
 /*
-CREATE TABLE Actividad (
-    Id_Actividad INT PRIMARY KEY AUTO_INCREMENT,
-    Caso_Codigo CHAR(50) NOT NULL,
-    Interno_Cedula CHAR(10) NOT NULL,
-    Act_Ultima_Actividad CHAR(250),
-    Act_Fecha_Actv DATE,
-    Act_Tipo CHAR(100),
-    Act_Ubicacion CHAR(250),
-    Act_Hora TIME,
-    Act_Duracion TIME,
-    Act_Contraparte CHAR(50),
-    Act_NombreJuez CHAR(50),
-    Act_ExpeReferente CHAR(25),
-    Act_Estado CHAR(50),
-    Act_Documentos CHAR(250)
+CREATE TABLE Activity (
+    Activity_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Case_Code CHAR(50) NOT NULL,
+    Internal_User_ID CHAR(10) NOT NULL,
+    Last_Activity CHAR(250),
+    Activity_Date DATE,
+    Activity_Type CHAR(100),
+    Location CHAR(250),
+    Time TIME,
+    Duration TIME,
+    Counterparty CHAR(50),
+    Judge_Name CHAR(50),
+    Reference_File CHAR(25),
+    Status CHAR(50),
+    Documents CHAR(250)
 );
 */
 
-export const Actividad = sequelize.define('Actividad', {
-    Id_Actividad: {
+export const Activity = sequelize.define('Activity', {
+    Activity_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    Caso_Codigo: {
+    Case_Code: {
         type: DataTypes.CHAR(50),
         allowNull: false
     },
-    Interno_Cedula: {
+    Internal_User_ID: {
         type: DataTypes.CHAR(10),
         allowNull: false
     },
-    Act_Ultima_Actividad: DataTypes.STRING(250),
-    Act_Fecha_Actv: DataTypes.DATE,
-    Act_Tipo: DataTypes.STRING(100),
-    Act_Ubicacion: DataTypes.STRING(250),
-    Act_Hora: DataTypes.TIME,
-    Act_Duracion: DataTypes.TIME,
-    Act_Contraparte: DataTypes.STRING(50),
-    Act_NombreJuez: DataTypes.STRING(50),
-    Act_ExpeReferente: DataTypes.STRING(25),
-    Act_Estado: DataTypes.STRING(50),
-    Act_Documentos: DataTypes.STRING(250)
+    Last_Activity: DataTypes.STRING(250),
+    Activity_Date: DataTypes.DATE,
+    Activity_Type: DataTypes.STRING(100),
+    Location: DataTypes.STRING(250),
+    Time: DataTypes.TIME,
+    Duration: DataTypes.TIME,
+    Counterparty: DataTypes.STRING(50),
+    Judge_Name: DataTypes.STRING(50),
+    Reference_File: DataTypes.STRING(25),
+    Status: DataTypes.STRING(50),
+    Documents: DataTypes.STRING(250)
 }, { timestamps: false });
 
-Actividad.belongsTo(Caso, { foreignKey: "Caso_Codigo" });
-Caso.hasMany(Actividad, { foreignKey: "Caso_Codigo" });
+// Define associations
+Activity.belongsTo(Case, { foreignKey: "Case_Code" });
+Case.hasMany(Activity, { foreignKey: "Case_Code" });
 
-Actividad.belongsTo(UsuarioInterno, { foreignKey: "Interno_Cedula" });
-UsuarioInterno.hasMany(Actividad, { foreignKey: "Interno_Cedula" });
+Activity.belongsTo(InternalUser, { foreignKey: "Internal_User_ID" });
+InternalUser.hasMany(Activity, { foreignKey: "Internal_User_ID" });

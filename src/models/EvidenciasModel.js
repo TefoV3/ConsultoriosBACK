@@ -1,58 +1,58 @@
-import { Evidencia } from "../schemas/Evidencias.js";
+import { Evidence } from "../schemas/Evidencias.js";
 
-export class EvidenciaModel {
+export class EvidenceModel {
 
     static async getAll() {
         try {
-            return await Evidencia.findAll();
+            return await Evidence.findAll();
         } catch (error) {
-            throw new Error(`Error al obtener evidencias: ${error.message}`);
+            throw new Error(`Error retrieving evidence: ${error.message}`);
         }
     }
 
     static async getById(id) {
         try {
-            return await Evidencia.findOne({
-                where: { Id_Evidencia: id }
+            return await Evidence.findOne({
+                where: { Evidence_ID: id }
             });
         } catch (error) {
-            throw new Error(`Error al obtener evidencia: ${error.message}`);
+            throw new Error(`Error retrieving evidence: ${error.message}`);
         }
     }
 
     static async create(data) {
         try {
-            return await Evidencia.create(data);
+            return await Evidence.create(data);
         } catch (error) {
-            throw new Error(`Error al crear evidencia: ${error.message}`);
+            throw new Error(`Error creating evidence: ${error.message}`);
         }
     }
 
     static async update(id, data) {
         try {
-            const evidencia = await this.getById(id);
-            if (!evidencia) return null;
+            const evidence = await this.getById(id);
+            if (!evidence) return null;
 
-            const [rowsUpdated] = await Evidencia.update(data, {
-                where: { Id_Evidencia: id }
+            const [rowsUpdated] = await Evidence.update(data, {
+                where: { Evidence_ID: id }
             });
 
             if (rowsUpdated === 0) return null;
             return await this.getById(id);
         } catch (error) {
-            throw new Error(`Error al actualizar evidencia: ${error.message}`);
+            throw new Error(`Error updating evidence: ${error.message}`);
         }
     }
 
     static async delete(id) {
         try {
-            const evidencia = await this.getById(id);
-            if (!evidencia) return null;
+            const evidence = await this.getById(id);
+            if (!evidence) return null;
 
-            await Evidencia.destroy({ where: { Id_Evidencia: id } });
-            return evidencia;
+            await Evidence.destroy({ where: { Evidence_ID: id } });
+            return evidence;
         } catch (error) {
-            throw new Error(`Error al eliminar evidencia: ${error.message}`);
+            throw new Error(`Error deleting evidence: ${error.message}`);
         }
     }
 }

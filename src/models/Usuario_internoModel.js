@@ -1,58 +1,58 @@
-import { UsuarioInterno } from "../schemas/Usuario_interno.js";
+import { InternalUser } from "../schemas/Usuario_interno.js"; 
 
-export class UsuarioInternoModel {
+export class InternalUserModel {
 
     static async getAll() {
         try {
-            return await UsuarioInterno.findAll();
+            return await InternalUser.findAll();
         } catch (error) {
-            throw new Error(`Error al obtener usuarios internos: ${error.message}`);
+            throw new Error(`Error retrieving internal users: ${error.message}`);
         }
     }
 
     static async getById(id) {
         try {
-            return await UsuarioInterno.findOne({
-                where: { Interno_Cedula: id }
+            return await InternalUser.findOne({
+                where: { Internal_ID: id }
             });
         } catch (error) {
-            throw new Error(`Error al obtener usuario interno: ${error.message}`);
+            throw new Error(`Error retrieving internal user: ${error.message}`);
         }
     }
 
     static async create(data) {
         try {
-            return await UsuarioInterno.create(data);
+            return await InternalUser.create(data);
         } catch (error) {
-            throw new Error(`Error al crear usuario interno: ${error.message}`);
+            throw new Error(`Error creating internal user: ${error.message}`);
         }
     }
 
     static async update(id, data) {
         try {
-            const usuarioInterno = await this.getById(id);
-            if (!usuarioInterno) return null;
+            const internalUser = await this.getById(id);
+            if (!internalUser) return null;
 
-            const [rowsUpdated] = await UsuarioInterno.update(data, {
-                where: { Interno_Cedula: id }
+            const [rowsUpdated] = await InternalUser.update(data, {
+                where: { Internal_ID: id }
             });
 
             if (rowsUpdated === 0) return null;
             return await this.getById(id);
         } catch (error) {
-            throw new Error(`Error al actualizar usuario interno: ${error.message}`);
+            throw new Error(`Error updating internal user: ${error.message}`);
         }
     }
 
     static async delete(id) {
         try {
-            const usuarioInterno = await this.getById(id);
-            if (!usuarioInterno) return null;
+            const internalUser = await this.getById(id);
+            if (!internalUser) return null;
 
-            await UsuarioInterno.destroy({ where: { Interno_Cedula: id } });
-            return usuarioInterno;
+            await InternalUser.destroy({ where: { Internal_ID: id } });
+            return internalUser;
         } catch (error) {
-            throw new Error(`Error al eliminar usuario interno: ${error.message}`);
+            throw new Error(`Error deleting internal user: ${error.message}`);
         }
     }
 }

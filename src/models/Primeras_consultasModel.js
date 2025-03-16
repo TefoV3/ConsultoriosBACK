@@ -1,159 +1,127 @@
 import { sequelize } from "../database/database.js";
-import { PrimerasConsultas } from "../schemas/Primeras_consultas.js";
-import { Usuario } from "../schemas/Usuario.js";
-import { UsuarioInterno } from "../schemas/Usuario_interno.js";
+import { InitialConsultations } from "../schemas/Primeras_consultas.js";
+import { User } from "../schemas/Usuario.js";
+import { InternalUser } from "../schemas/Usuario_interno.js";
 
-export class PrimerasConsultasModel {
+export class InitialConsultationsModel {
 
     static async getAll() {
         try {
-            return await PrimerasConsultas.findAll();
+            return await InitialConsultations.findAll();
         } catch (error) {
-            throw new Error(`Error al obtener primeras consultas: ${error.message}`);
+            throw new Error(`Error retrieving initial consultations: ${error.message}`);
         }
     }
 
     static async getById(id) {
         try {
-            return await PrimerasConsultas.findOne({
-                where: { Prim_Codigo: id }
+            return await InitialConsultations.findOne({
+                where: { Initial_Code: id }
             });
         } catch (error) {
-            throw new Error(`Error al obtener primera consulta: ${error.message}`);
+            throw new Error(`Error retrieving initial consultation: ${error.message}`);
         }
     }
 
-    static async createPrimerasConsultas(data) {
-        const t = await sequelize.transaction();
-        let usuarioCreado = false;
-        
+    static async createInitialConsultation(data) {
+        const t = await sequelize.transaction(); // Inicia una transacción
+        let userCreated = false;
+
         try {
-            // 1️⃣ Verificar si el usuario ya existe, si no, crearlo con todos sus atributos
-            let usuario = await Usuario.findOne({ where: { Usuario_Cedula: data.Usuario_Cedula }, transaction: t });
-            if (!usuario) {
-                usuario = await Usuario.create({
-                    Usuario_Cedula: data.Usuario_Cedula,
-                    Usuario_Nombres: data.Usuario_Nombres,
-                    Usuario_Apellidos: data.Usuario_Apellidos,
-                    Usuario_Correo: data.Usuario_Correo,
-                    Usuario_Telefono: data.Usuario_Telefono,
-                    Usuario_Genero: data.Usuario_Genero,
-                    Usuario_Etnia: data.Usuario_Etnia,
-                    Usuario_Instruccion: data.Usuario_Instruccion,
-                    Usuario_Ocupacion: data.Usuario_Ocupacion,
-                    Usuario_Direccion: data.Usuario_Direccion,
-                    Usuario_Nacionalidad: data.Usuario_Nacionalidad,
-                    Usuario_CargasFamiliares: data.Usuario_CargasFamiliares,
-                    Usuario_Sector: data.Usuario_Sector,
-                    Usuario_Zona: data.Usuario_Zona,
-                    Usuario_EstadoCivil: data.Usuario_EstadoCivil,
-                    Usuario_Discapacidad: data.Usuario_Discapacidad,
-                    Usuario_Bono: data.Usuario_Bono,
-                    Usuario_FechaNacimiento: data.Usuario_FechaNacimiento,
-                    Usuario_NivelDeIngresos: data.Usuario_NivelDeIngresos,
-                    Usuario_Edad: data.Usuario_Edad,
-                    Usuario_Ingresos_familiares: data.Usuario_Ingresos_familiares,
-                    Usuario_CasaPropia: data.Usuario_CasaPropia,
-                    Usuario_AutoPropio: data.Usuario_AutoPropio,
-                    Usuario_NombreReferencia: data.Usuario_NombreReferencia,
-                    Usuario_TelReferencia: data.Usuario_TelReferencia
+            // Verificar si el usuario externo existe, si no, crearlo
+            let user = await User.findOne({ where: { User_ID: data.User_ID }, transaction: t });
+            if (!user) {
+                user = await User.create({
+                    User_ID: data.User_ID,
+                    User_FirstName: data.User_FirstName,
+                    User_LastName: data.User_LastName,
+                    User_Email: data.User_Email,
+                    User_Phone: data.User_Phone,
+                    User_Gender: data.User_Gender,
+                    User_Ethnicity: data.User_Ethnicity,
+                    User_Education: data.User_Education,
+                    User_Occupation: data.User_Occupation,
+                    User_Address: data.User_Address,
+                    User_Nationality: data.User_Nationality,
+                    User_Dependents: data.User_Dependents,
+                    User_Sector: data.User_Sector,
+                    User_Zone: data.User_Zone,
+                    User_MaritalStatus: data.User_MaritalStatus,
+                    User_Disability: data.User_Disability,
+                    User_Benefits: data.User_Benefits,
+                    User_BirthDate: data.User_BirthDate,
+                    User_IncomeLevel: data.User_IncomeLevel,
+                    User_Age: data.User_Age,
+                    User_FamilyIncome: data.User_FamilyIncome,
+                    User_OwnsHouse: data.User_OwnsHouse,
+                    User_OwnsCar: data.User_OwnsCar,
+                    User_ReferenceName: data.User_ReferenceName,
+                    User_ReferencePhone: data.User_ReferencePhone,
                 }, { transaction: t });
-                usuarioCreado = true; // ✅ Marca que el usuario fue creado en esta transacción
+                userCreated = true; // Marcar que el usuario fue creado en esta transacción
             }
 
-           
-
-            // 2️⃣ Verificar si el abogado/coordinador ya existe en UsuarioInterno
-            /*
-            let usuarioInterno = await UsuarioInterno.findOne({ where: { Interno_Cedula: data.Interno_Cedula }, transaction: t });
-            if (!usuarioInterno) {
-                usuarioInterno = await UsuarioInterno.create({
-                    Interno_Cedula: data.Interno_Cedula,
-                    Interno_Nombre: data.Interno_Nombre_Completo
-                }, { transaction: t });
+            // Verificar si el usuario interno existe
+            const internalUser = await InternalUser.findOne({ where: { Internal_ID: data.Internal_ID }, transaction: t });
+            if (!internalUser) {
+                throw new Error(`El usuario interno con ID ${data.Internal_ID} no existe.`);
             }
-            */
 
-            // 3️⃣ Crear el registro en Primeras Consultas
-            const nuevaConsulta = await PrimerasConsultas.create({
-                Prim_Codigo: data.Prim_Codigo,
-                Interno_Cedula: data.Interno_Cedula,
-                Usuario_Cedula: data.Usuario_Cedula,
-                Prim_TipoCliente: data.Prim_TipoCliente,
-                Prim_Fecha: data.Prim_Fecha,
-                Prim_Materia: data.Prim_Materia,
-                Prim_Abogado: data.Prim_Abogado,
-                Prim_Provincia: data.Prim_Provincia,
-                Prim_Observaciones: data.Prim_Observaciones,
-                Prim_Consultorio: data.Prim_Consultorio,
-                Prim_Tema: data.Prim_Tema,
-                Prim_Derivacion: data.Prim_Derivacion,
-                Prim_Estado: data.Prim_Estado,
-                Prim_Ciudad: data.Prim_Ciudad,
+            // Crear la consulta inicial
+            const newConsultation = await InitialConsultations.create({
+                Init_Code: data.Init_Code,
+                Internal_ID: data.Internal_ID,
+                User_ID: data.User_ID,
+                Init_ClientType: data.Init_ClientType,
+                Init_Date: data.Init_Date,
+                Init_Subject: data.Init_Subject,
+                Init_Lawyer: data.Init_Lawyer,
+                Init_Province: data.Init_Province,
+                Init_Notes: data.Init_Notes,
+                Init_Office: data.Init_Office,
+                Init_Topic: data.Init_Topic,
+                Init_Referral: data.Init_Referral,
+                Init_Status: data.Init_Status,
+                Init_City: data.Init_City,
             }, { transaction: t });
 
-            await t.commit();
-            return { message: "Primera consulta creada correctamente", data: nuevaConsulta };
+            await t.commit(); // Confirmar la transacción
+            return { message: "Consulta inicial creada exitosamente", data: newConsultation };
         } catch (error) {
-            await t.rollback();
-            if (usuarioCreado) {
-                await Usuario.destroy({ where: { Usuario_Cedula: data.Usuario_Cedula } });
+            await t.rollback(); // Revertir la transacción en caso de error
+            if (userCreated) {
+                // Eliminar el usuario creado si se genera un error
+                await User.destroy({ where: { User_ID: data.User_ID } });
             }
-            throw new Error(`Error al crear primera consulta: ${error.message}`);
-
+            throw new Error(`Error al crear la consulta inicial: ${error.message}`);
         }
     }
-
-
-    /*
-    static async create(data) {
-        try {
-            return await PrimerasConsultas.create(data);
-        } catch (error) {
-            throw new Error(`Error al crear primera consulta: ${error.message}`);
-        }
-    }
-
-    
-    static async create(data) {
-        const userData = { /* extract user data from data  };
-        try {
-            const newUser = await UsuarioModel.create(userData);
-            if (!newUser) throw new Error("User creation failed");
-    
-            const consultaData = { ...data, userId: newUser.Usuario_Cedula }; // Assuming userId is needed
-            return await PrimerasConsultas.create(consultaData);
-        } catch (error) {
-            throw new Error(`Error al crear primera consulta: ${error.message}`);
-        }
-    }
-    */
 
     static async update(id, data) {
         try {
-            const consulta = await this.getById(id);
-            if (!consulta) return null;
+            const consultation = await this.getById(id);
+            if (!consultation) return null;
 
-            const [rowsUpdated] = await PrimerasConsultas.update(data, {
-                where: { Prim_Codigo: id }
+            const [rowsUpdated] = await InitialConsultations.update(data, {
+                where: { Initial_Code: id }
             });
 
             if (rowsUpdated === 0) return null;
             return await this.getById(id);
         } catch (error) {
-            throw new Error(`Error al actualizar primera consulta: ${error.message}`);
+            throw new Error(`Error updating initial consultation: ${error.message}`);
         }
     }
 
     static async delete(id) {
         try {
-            const consulta = await this.getById(id);
-            if (!consulta) return null;
+            const consultation = await this.getById(id);
+            if (!consultation) return null;
 
-            await PrimerasConsultas.destroy({ where: { Prim_Codigo: id } });
-            return consulta;
+            await InitialConsultations.destroy({ where: { Initial_Code: id } });
+            return consultation;
         } catch (error) {
-            throw new Error(`Error al eliminar primera consulta: ${error.message}`);
+            throw new Error(`Error deleting initial consultation: ${error.message}`);
         }
     }
 }

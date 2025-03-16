@@ -1,10 +1,10 @@
-import { ActividadModel } from "../models/ActividadModel.js";
+import { ActivityModel } from "../models/ActividadModel.js";
 
-export class ActividadController {
-    static async getActividades(req, res) {
+export class ActivityController {
+    static async getActivities(req, res) {
         try {
-            const actividades = await ActividadModel.getAll();
-            res.json(actividades);
+            const activities = await ActivityModel.getAll();
+            res.json(activities);
         } catch (error) {
             res.status(500).json(error);
         }
@@ -13,18 +13,18 @@ export class ActividadController {
     static async getById(req, res) {
         const { id } = req.params;
         try {
-            const actividad = await ActividadModel.getById(id);
-            if (actividad) return res.json(actividad);
-            res.status(404).json({ message: "Actividad no encontrada" });
+            const activity = await ActivityModel.getById(id);
+            if (activity) return res.json(activity);
+            res.status(404).json({ message: "Activity not found" });
         } catch (error) {
             res.status(500).json(error);
         }
     }
 
-    static async createActividad(req, res) {
+    static async createActivity(req, res) {
         try {
-            const newActividad = await ActividadModel.create(req.body);
-            return res.status(201).json(newActividad);
+            const newActivity = await ActivityModel.create(req.body);
+            return res.status(201).json(newActivity);
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
@@ -33,10 +33,10 @@ export class ActividadController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const updatedActividad = await ActividadModel.update(id, req.body);
-            if (!updatedActividad) return res.status(404).json({ message: "Actividad no encontrada" });
+            const updatedActivity = await ActivityModel.update(id, req.body);
+            if (!updatedActivity) return res.status(404).json({ message: "Activity not found" });
 
-            return res.json(updatedActividad);
+            return res.json(updatedActivity);
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
@@ -45,10 +45,10 @@ export class ActividadController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const deletedActividad = await ActividadModel.delete(id);
-            if (!deletedActividad) return res.status(404).json({ message: "Actividad no encontrada" });
+            const deletedActivity = await ActivityModel.delete(id);
+            if (!deletedActivity) return res.status(404).json({ message: "Activity not found" });
 
-            return res.json({ message: "Actividad eliminada", actividad: deletedActividad });
+            return res.json({ message: "Activity deleted", activity: deletedActivity });
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }

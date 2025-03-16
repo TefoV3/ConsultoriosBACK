@@ -1,9 +1,9 @@
 import Sequelize from 'sequelize';
 
 export const sequelize = new Sequelize(
-    'consultoriosjuridicos', 
+    'prueba', 
     'root', 
-    '2444', 
+    '12345678', 
     {
         host: 'localhost',
         dialect: 'mysql'

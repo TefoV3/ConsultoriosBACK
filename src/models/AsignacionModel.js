@@ -1,58 +1,58 @@
-import { Asignacion } from "../schemas/Asignacion.js";
+import { Assignment } from "../schemas/Asignacion.js";
 
-export class AsignacionModel {
+export class AssignmentModel {
 
     static async getAll() {
         try {
-            return await Asignacion.findAll();
+            return await Assignment.findAll();
         } catch (error) {
-            throw new Error(`Error al obtener asignaciones: ${error.message}`);
+            throw new Error(`Error retrieving assignments: ${error.message}`);
         }
     }
 
     static async getById(id) {
         try {
-            return await Asignacion.findOne({
-                where: { Id_Asignacion: id }
+            return await Assignment.findOne({
+                where: { Assignment_Id: id }
             });
         } catch (error) {
-            throw new Error(`Error al obtener asignación: ${error.message}`);
+            throw new Error(`Error retrieving assignment: ${error.message}`);
         }
     }
 
     static async create(data) {
         try {
-            return await Asignacion.create(data);
+            return await Assignment.create(data);
         } catch (error) {
-            throw new Error(`Error al crear asignación: ${error.message}`);
+            throw new Error(`Error creating assignment: ${error.message}`);
         }
     }
 
     static async update(id, data) {
         try {
-            const asignacion = await this.getById(id);
-            if (!asignacion) return null;
+            const assignment = await this.getById(id);
+            if (!assignment) return null;
 
-            const [rowsUpdated] = await Asignacion.update(data, {
-                where: { Id_Asignacion: id }
+            const [rowsUpdated] = await Assignment.update(data, {
+                where: { Assignment_Id: id }
             });
 
             if (rowsUpdated === 0) return null;
             return await this.getById(id);
         } catch (error) {
-            throw new Error(`Error al actualizar asignación: ${error.message}`);
+            throw new Error(`Error updating assignment: ${error.message}`);
         }
     }
 
     static async delete(id) {
         try {
-            const asignacion = await this.getById(id);
-            if (!asignacion) return null;
+            const assignment = await this.getById(id);
+            if (!assignment) return null;
 
-            await Asignacion.destroy({ where: { Id_Asignacion: id } });
-            return asignacion;
+            await Assignment.destroy({ where: { Assignment_Id: id } });
+            return assignment;
         } catch (error) {
-            throw new Error(`Error al eliminar asignación: ${error.message}`);
+            throw new Error(`Error deleting assignment: ${error.message}`);
         }
     }
 }

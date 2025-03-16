@@ -1,10 +1,10 @@
-import { UsuarioModel } from "../models/UsuarioModel.js";
+import { UserModel } from "../models/UsuarioModel.js";
 
-export class UsuarioController {
-    static async getUsuario(req, res) {
+export class UserController {
+    static async getUsers(req, res) {
         try {
-            const usuario = await UsuarioModel.getAll();
-            res.json(usuario);
+            const users = await UserModel.getAll();
+            res.json(users);
         } catch (error) {
             res.status(500).json(error);
         }
@@ -13,18 +13,18 @@ export class UsuarioController {
     static async getById(req, res) {
         const { id } = req.params;
         try {
-            const usuario = await UsuarioModel.getById(id);
-            if (usuario) return res.json(usuario);
-            res.status(404).json({ message: "Usuario no encontrado" });
+            const user = await UserModel.getById(id);
+            if (user) return res.json(user);
+            res.status(404).json({ message: "User not found" });
         } catch (error) {
             res.status(500).json(error);
         }
     }
 
-    static async createUsuario(req, res) {
+    static async createUser(req, res) {
         try {
-            const newUsuario = await UsuarioModel.create(req.body);
-            return res.status(201).json(newUsuario);
+            const newUser = await UserModel.create(req.body);
+            return res.status(201).json(newUser);
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
@@ -33,10 +33,10 @@ export class UsuarioController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const updatedUsuario = await UsuarioModel.update(id, req.body);
-            if (!updatedUsuario) return res.status(404).json({ message: "Usuario no encontrado" });
+            const updatedUser = await UserModel.update(id, req.body);
+            if (!updatedUser) return res.status(404).json({ message: "User not found" });
 
-            return res.json(updatedUsuario);
+            return res.json(updatedUser);
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
@@ -46,17 +46,17 @@ export class UsuarioController {
         try {
             const { id } = req.params;
 
-            // Validación antes de llamar a delete()
+            // Validation before calling delete()
             if (!id) {
-                return res.status(400).json({ error: "El ID del usuario es obligatorio para eliminarlo" });
+                return res.status(400).json({ error: "User ID is required to delete" });
             }
 
-            const deletedUsuario = await UsuarioModel.delete(id);
-            if (!deletedUsuario) {
-                return res.status(404).json({ message: "Usuario no encontrado" });
+            const deletedUser = await UserModel.delete(id);
+            if (!deletedUser) {
+                return res.status(404).json({ message: "User not found" });
             }
 
-            return res.json({ message: "Usuario eliminado lógicamente", usuario: deletedUsuario });
+            return res.json({ message: "User logically deleted", user: deletedUser });
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }

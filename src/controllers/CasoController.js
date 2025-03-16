@@ -1,10 +1,10 @@
-import { CasoModel } from "../models/CasoModel.js";
+import { CaseModel } from "../models/CasoModel.js";
 
-export class CasoController {
-    static async getCasos(req, res) {
+export class CaseController {
+    static async getCases(req, res) {
         try {
-            const casos = await CasoModel.getAll();
-            res.json(casos);
+            const cases = await CaseModel.getAll();
+            res.json(cases);
         } catch (error) {
             res.status(500).json(error);
         }
@@ -13,18 +13,18 @@ export class CasoController {
     static async getById(req, res) {
         const { id } = req.params;
         try {
-            const caso = await CasoModel.getById(id);
-            if (caso) return res.json(caso);
-            res.status(404).json({ message: "Caso no encontrado" });
+            const caseData = await CaseModel.getById(id);
+            if (caseData) return res.json(caseData);
+            res.status(404).json({ message: "Case not found" });
         } catch (error) {
             res.status(500).json(error);
         }
     }
 
-    static async createCaso(req, res) {
+    static async createCase(req, res) {
         try {
-            const newCaso = await CasoModel.create(req.body);
-            return res.status(201).json(newCaso);
+            const newCase = await CaseModel.create(req.body);
+            return res.status(201).json(newCase);
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
@@ -33,10 +33,10 @@ export class CasoController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const updatedCaso = await CasoModel.update(id, req.body);
-            if (!updatedCaso) return res.status(404).json({ message: "Caso no encontrado" });
+            const updatedCase = await CaseModel.update(id, req.body);
+            if (!updatedCase) return res.status(404).json({ message: "Case not found" });
 
-            return res.json(updatedCaso);
+            return res.json(updatedCase);
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
@@ -45,10 +45,10 @@ export class CasoController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const deletedCaso = await CasoModel.delete(id);
-            if (!deletedCaso) return res.status(404).json({ message: "Caso no encontrado" });
+            const deletedCase = await CaseModel.delete(id);
+            if (!deletedCase) return res.status(404).json({ message: "Case not found" });
 
-            return res.json({ message: "Caso eliminado lógicamente", caso: deletedCaso });
+            return res.json({ message: "Case logically deleted", case: deletedCase });
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
