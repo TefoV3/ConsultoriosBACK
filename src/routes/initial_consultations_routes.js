@@ -1,4 +1,4 @@
-import { FirstConsultationsController } from "../controllers/Initial_ConsultationsController.js";
+import { FirstConsultationsController } from "../controllers/InitialConsultationsController.js";
 import { Router } from "express";
 
 export const InitialConsultationsRouter = Router();

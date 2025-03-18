@@ -18,11 +18,15 @@ export const InternalUser = sequelize.define('Internal_User', {
         type: DataTypes.CHAR(10),
         primaryKey: true
     },
-    Internal_FullName: DataTypes.STRING(75),
-    Internal_Email: DataTypes.STRING(50),
+    Internal_Name: DataTypes.STRING(50),
+    Internal_LastName: DataTypes.STRING(50),
+    Internal_Email: {
+        type: DataTypes.STRING(50),
+        unique: true
+    },
+    Internal_Password: DataTypes.STRING(256),
     Internal_Type: DataTypes.STRING(50), // Example: "Coordinator", "Student", etc.
     Internal_Area: DataTypes.STRING(50), // The area of work (e.g., Civil, Criminal, etc.)
     Internal_Phone: DataTypes.STRING(10),
-    Internal_Password: DataTypes.STRING(50)
 }, { timestamps: false });
 
