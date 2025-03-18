@@ -71,7 +71,10 @@ export class InternalUserModel {
             const internalUser = await this.getById(id);
             if (!internalUser) return null;
 
-            await InternalUser.destroy({ where: { Internal_ID: id } });
+            await InternalUser.update(
+                { Internal_Status: "Inactivo" },
+                { where: { Internal_ID: id } }
+            );
             return internalUser;
         } catch (error) {
             throw new Error(`Error deleting internal user: ${error.message}`);
@@ -103,7 +106,8 @@ export class InternalUserModel {
                     email: internalUser.Internal_Email,
                     type: internalUser.Internal_Type,
                     area: internalUser.Internal_Area,
-                    phone: internalUser.Internal_Phone
+                    phone: internalUser.Internal_Phone,
+                    status: internalUser.Internal_Status
                 },
                 SECRET_JWT_KEY,
                 { expiresIn: "6h" }

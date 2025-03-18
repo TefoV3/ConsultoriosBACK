@@ -28,5 +28,6 @@ export const InternalUser = sequelize.define('Internal_User', {
     Internal_Type: DataTypes.STRING(50), // Example: "Coordinator", "Student", etc.
     Internal_Area: DataTypes.STRING(50), // The area of work (e.g., Civil, Criminal, etc.)
     Internal_Phone: DataTypes.STRING(10),
+    Internal_Status: DataTypes.STRING(50), // Example: "Active", "Inactive", etc.
 }, { timestamps: false });
 
