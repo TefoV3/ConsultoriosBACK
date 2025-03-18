@@ -58,7 +58,7 @@ export class InternalUserController {
                 Internal_Type: z.string().min(1, { message: "El tipo es obligatorio" }),
                 Internal_Area: z.string().min(1, { message: "El area es obligatoria" }),
                 Internal_Phone: z.string().length(10, { message: "El teléfono debe tener 10 caracteres" }),
-                Internal_Status: z.string().min(1, { message: "El estado es obligatorio" }),
+                Internal_Status: z.string().min(1, { message: "El estado es obligatorio" }).default("")
             });
 
             // Validar el request body
