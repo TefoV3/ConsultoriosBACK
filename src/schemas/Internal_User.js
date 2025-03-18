@@ -15,7 +15,7 @@ CREATE TABLE Internal_User (
 
 export const InternalUser = sequelize.define('Internal_User', {
     Internal_ID: {
-        type: DataTypes.CHAR(10),
+        type: DataTypes.CHAR(15), //Cedula de identidad o Pasaporte
         primaryKey: true
     },
     Internal_Name: DataTypes.STRING(50),
