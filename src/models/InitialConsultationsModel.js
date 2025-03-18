@@ -16,7 +16,7 @@ export class InitialConsultationsModel {
     static async getById(id) {
         try {
             return await InitialConsultations.findOne({
-                where: { Initial_Code: id }
+                where: { Init_Code: id }
             });
         } catch (error) {
             throw new Error(`Error retrieving initial consultation: ${error.message}`);
@@ -102,7 +102,7 @@ export class InitialConsultationsModel {
             if (!consultation) return null;
 
             const [rowsUpdated] = await InitialConsultations.update(data, {
-                where: { Initial_Code: id }
+                where: { Init_Code: id }
             });
 
             if (rowsUpdated === 0) return null;
@@ -117,7 +117,7 @@ export class InitialConsultationsModel {
             const consultation = await this.getById(id);
             if (!consultation) return null;
 
-            await InitialConsultations.destroy({ where: { Initial_Code: id } });
+            await InitialConsultations.destroy({ where: { Init_Code: id } });
             return consultation;
         } catch (error) {
             throw new Error(`Error deleting initial consultation: ${error.message}`);

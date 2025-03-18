@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
-
+import { AuditModel } from "../models/AuditModel.js";
 /*
 CREATE TABLE USER (
     User_ID CHAR(10) PRIMARY KEY,
@@ -67,3 +67,30 @@ export const User = sequelize.define('User', {
         defaultValue: false
     }
 }, { timestamps: false });
+
+// 🔹 Hook para registrar acciones en `Audit`
+User.addHook("afterCreate", async (user) => {
+    await AuditModel.registerAudit(user.User_ID, "INSERT", "User", `Se creó el usuario ${user.User_ID}`);
+});
+
+// 🔹 Hook para registrar actualizaciones en `Audit`
+User.addHook("afterUpdate", async (user) => {
+    await AuditModel.registerAudit(
+        user.User_ID,
+        "UPDATE",
+        "User",
+        `Se actualizó el usuario ${user.User_ID}`
+    );
+});
+
+// 🔹 Hook para registrar eliminación lógica en `Audit`
+User.addHook("afterUpdate", async (user, options) => {
+    if (user.User_IsDeleted) {  // Verificar que sea una eliminación lógica
+        await AuditModel.registerAudit(
+            user.User_ID,
+            "DELETE",
+            "User",
+            `Se eliminó lógicamente el usuario ${user.User_ID}`
+        );
+    }
+});

@@ -9,6 +9,7 @@ import {EvidenceRouter} from './routes/evidences_routes.js'
 import {InitialConsultationsRouter} from './routes/initial_consultations_routes.js'
 import {InternalUserRouter} from './routes/internal_user_routes.js'
 import {UserRouter} from './routes/user_routes.js'
+import { AuditRouter } from './routes/audit_routes.js'
 import { corsMiddleware } from './middlewares/cors.js'
 
 const app = express()
@@ -27,6 +28,7 @@ app.use(EvidenceRouter)
 app.use(InitialConsultationsRouter)
 app.use(InternalUserRouter)
 app.use(UserRouter)
+app.use(AuditRouter)
 
 
 export default app
