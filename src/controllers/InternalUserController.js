@@ -50,7 +50,7 @@ export class InternalUserController {
         try {
             // Definir el esquema de validación con Zod
             const internalUserSchema = z.object({
-                Internal_ID: z.string().length(10, { message: "La cédula debe tener 10 caracteres" }),
+                Internal_ID:  z.string().min(1, { message: "El ID es obligatorio" }),
                 Internal_Name: z.string().min(1, { message: "El nombre es obligatorio" }),
                 Internal_LastName: z.string().min(1, { message: "El apellido es obligatorio" }),
                 Internal_Email: z.string().email({ message: "Correo no válido" }),
