@@ -2,6 +2,13 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
 
 export const Parameters = sequelize.define("Parameters", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+    allowNull: false,
+    comment: "Primary key, autoincrementable",
+  },
   zone: {
     type: DataTypes.STRING(10),
     allowNull: true,
