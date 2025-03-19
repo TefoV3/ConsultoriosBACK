@@ -1,4 +1,5 @@
 import { Parameters } from "../schemas/Parameters.js";
+import { AuditModel } from "../models/AuditModel.js";
 
 export class Parameters_model {
     static async getByZone(zone) {
@@ -11,7 +12,7 @@ export class Parameters_model {
             throw new Error(`Error retrieving sectors for zone ${zone}: ${error.message}`);
         }
     }
-    static async create({ zone, sector }) {
+    static async create({ zone, sector }, internalId) {
         try {
             // Validar que se envíen únicamente zone y sector
             if (!zone || !sector) {
@@ -54,36 +55,62 @@ export class Parameters_model {
             };
 
             // Insertar el registro
-            return await Parameters.create(data);
+            const newParameter = await Parameters.create(data);
+
+            // 🔹 Registrar en Audit que un usuario interno creó un parámetro
+            await AuditModel.registerAudit(
+                internalId, 
+                "INSERT",
+                "Parameters",
+                `El usuario interno ${internalId} creó un nuevo parámetro con ID ${newParameter.id}`
+            );
+
+            return newParameter;
         } catch (error) {
             throw new Error(`Error creating parameter: ${error.message}`);
         }
     }
-    static async update(id, { zone, sector }) {
+    static async update(id, { zone, sector }, internalId) {
         try {
             if (!zone || !sector) {
                 throw new Error("Both 'zone' and 'sector' are required for update.");
             }
-            const data = {
-                zone,
-                sector,
-            };
-            const [rowsUpdated] = await Parameters.update(data, {
-                where: { id },
-            });
+            const data = { zone, sector };
+
+            const [rowsUpdated] = await Parameters.update(data, { where: { id } });
+
             if (rowsUpdated === 0) return null;
-            return await Parameters.findByPk(id);
+
+            const updatedParameter = await Parameters.findByPk(id);
+
+            // 🔹 Registrar en Audit que un usuario interno actualizó un parámetro
+            await AuditModel.registerAudit(
+                internalId, 
+                "UPDATE",
+                "Parameters",
+                `El usuario interno ${internalId} actualizó el parámetro con ID ${id}`
+            );
+
+            return updatedParameter;
         } catch (error) {
             throw new Error(`Error updating parameter with id ${id}: ${error.message}`);
         }
     }
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
-            const rowsDeleted = await Parameters.destroy({
-                where: { id },
-            });
+            const parameter = await Parameters.findByPk(id);
+            if (!parameter) return null;
 
-            if (rowsDeleted === 0) return null;
+            await Parameters.destroy({ where: { id } });
+
+            // 🔹 Registrar en Audit que un usuario interno eliminó un parámetro
+            await AuditModel.registerAudit(
+                internalId, 
+                "DELETE",
+                "Parameters",
+                `El usuario interno ${internalId} eliminó el parámetro con ID ${id}`
+            );
+
             return { message: `Parameter with id ${id} deleted successfully.` };
         } catch (error) {
             throw new Error(`Error deleting parameter with id ${id}: ${error.message}`);

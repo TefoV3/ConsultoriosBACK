@@ -19,29 +19,42 @@ export class ParametersController {
             res.status(500).json({ error: `Error fetching sectors: ${error.message}` });
         }
     }
+
     static async create(req, res) {
         try {
             const { zone, sector } = req.body;
+            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            }
 
             if (!zone || !sector) {
                 return res.status(400).json({ error: "Both 'zone' and 'sector' fields are required." });
             }
 
-            const newParameter = await Parameters_model.create({ zone, sector });
+            const newParameter = await Parameters_model.create({ zone, sector }, internalId);
             res.status(201).json({ message: "Parameter created successfully.", data: newParameter });
         } catch (error) {
             res.status(500).json({ error: `Error creating parameter: ${error.message}` });
         }
     }
+
     static async update(req, res) {
         try {
             const { id } = req.params;
             const { zone, sector } = req.body;
+            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            }
+
             if (!zone || !sector) {
                 return res.status(400).json({ error: "Both 'zone' and 'sector' fields are required." });
             }
 
-            const updatedParameter = await Parameters_model.update(id, { zone, sector });
+            const updatedParameter = await Parameters_model.update(id, { zone, sector }, internalId);
 
             if (!updatedParameter) {
                 return res.status(404).json({ error: `Parameter with ID ${id} not found.` });
@@ -51,11 +64,17 @@ export class ParametersController {
             res.status(500).json({ error: `Error updating parameter: ${error.message}` });
         }
     }
+
     static async delete(req, res) {
         try {
             const { id } = req.params;
+            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
 
-            const result = await Parameters_model.delete(id);
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            }
+
+            const result = await Parameters_model.delete(id, internalId);
 
             if (!result) {
                 return res.status(404).json({ error: `Parameter with ID ${id} not found.` });
