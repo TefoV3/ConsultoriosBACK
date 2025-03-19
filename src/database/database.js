@@ -1,5 +1,5 @@
 import Sequelize from 'sequelize';
-
+/*
 export const sequelize = new Sequelize(
     'ConsultoriosJuridicos', 
     'root', 
@@ -8,17 +8,16 @@ export const sequelize = new Sequelize(
         host: 'localhost', 
         dialect: 'mysql'
     }
-);
+);*/
 
 //USO LOCAL
-
-// export const sequelize = new Sequelize(
-//     'prueba', 
-//     'root', 
-//     '12345678', 
-//     {
-//         host: 'localhost',
-//         dialect: 'mysql'
-//     }
-// );
+ export const sequelize = new Sequelize(
+     'prueba', 
+     'root', 
+     '12345678', 
+     {
+        host: 'localhost',
+        dialect: 'mysql'
+     }
+ );
 

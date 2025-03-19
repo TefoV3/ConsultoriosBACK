@@ -3,8 +3,8 @@ import { ParametersController } from "../controllers/ParametersController.js";
 
 export const ParametersRouter = Router();
 
-router.get("/parameters/zone/:zone", ParametersController.getByZone);
-router.post("/parameters", ParametersController.create);
-router.put("/parameters/:zone/:sector", ParametersController.update);
-router.delete("/parameters/:zone/:sector", ParametersController.delete);
+ParametersRouter.get("/parameters/zone/:zone", ParametersController.getByZone);
+ParametersRouter.post("/parameters", ParametersController.create);
+ParametersRouter.put("/parameters/:zone/:sector", ParametersController.update);
+ParametersRouter.delete("/parameters/:zone/:sector", ParametersController.delete);
 
