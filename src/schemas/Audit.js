@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
+import { InternalUser } from "./Internal_User.js";
 
 export const Audit = sequelize.define("Audit", {
     Id_Audit: {
@@ -28,3 +29,6 @@ export const Audit = sequelize.define("Audit", {
         defaultValue: DataTypes.NOW
     }
 }, { timestamps: false });
+
+Audit.belongsTo(InternalUser, { foreignKey: "Internal_ID" });
+InternalUser.hasMany(Audit, { foreignKey: "Internal_ID" });

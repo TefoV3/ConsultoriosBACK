@@ -33,8 +33,15 @@ export class FirstConsultationsController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const updatedConsultation = await InitialConsultationsModel.update(id, req.body);
-            if (!updatedConsultation) return res.status(404).json({ message: "First consultation not found" });
+            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            }
+
+            const updatedConsultation = await InitialConsultationsModel.update(id, req.body, internalId);
+
+            if (!updatedConsultation) return res.status(404).json({ message: "Consulta inicial no encontrada" });
 
             return res.json(updatedConsultation);
         } catch (error) {
@@ -45,10 +52,17 @@ export class FirstConsultationsController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const deletedConsultation = await InitialConsultationsModel.delete(id);
-            if (!deletedConsultation) return res.status(404).json({ message: "First consultation not found" });
+            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
 
-            return res.json({ message: "First consultation deleted", consultation: deletedConsultation });
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            }
+
+            const deletedConsultation = await InitialConsultationsModel.delete(id, internalId);
+
+            if (!deletedConsultation) return res.status(404).json({ message: "Consulta inicial no encontrada" });
+
+            return res.json({ message: "Consulta inicial eliminada", data: deletedConsultation });
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }

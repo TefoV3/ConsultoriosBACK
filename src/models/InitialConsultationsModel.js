@@ -133,7 +133,10 @@ export class InitialConsultationsModel {
         }
     }
 
-    static async update(id, data) {
+    
+
+
+    static async update(id, data, internalId) {
         try {
             const consultation = await this.getById(id);
             if (!consultation) return null;
@@ -143,18 +146,38 @@ export class InitialConsultationsModel {
             });
 
             if (rowsUpdated === 0) return null;
-            return await this.getById(id);
+
+            const updatedConsultation = await this.getById(id);
+
+            // 🔹 Registrar en Audit que un usuario interno actualizó una consulta inicial
+            await AuditModel.registerAudit(
+                internalId, 
+                "UPDATE",
+                "Initial_Consultations",
+                `El usuario interno ${internalId} actualizó la consulta inicial ${id}`
+            );
+
+            return updatedConsultation;
         } catch (error) {
             throw new Error(`Error updating initial consultation: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const consultation = await this.getById(id);
             if (!consultation) return null;
 
             await InitialConsultations.destroy({ where: { Init_Code: id } });
+
+            // 🔹 Registrar en Audit que un usuario interno eliminó una consulta inicial
+            await AuditModel.registerAudit(
+                internalId, 
+                "DELETE",
+                "Initial_Consultations",
+                `El usuario interno ${internalId} eliminó la consulta inicial ${id}`
+            );
+
             return consultation;
         } catch (error) {
             throw new Error(`Error deleting initial consultation: ${error.message}`);
