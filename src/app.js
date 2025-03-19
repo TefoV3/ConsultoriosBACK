@@ -11,7 +11,7 @@ import {InternalUserRouter} from './routes/internal_user_routes.js'
 import {UserRouter} from './routes/user_routes.js'
 import { AuditRouter } from './routes/audit_routes.js'
 import { corsMiddleware } from './middlewares/cors.js'
-
+import {ParametersRouter} from './routes/parameters_routes.js'
 const app = express()
 
 // middleware
@@ -29,6 +29,6 @@ app.use(InitialConsultationsRouter)
 app.use(InternalUserRouter)
 app.use(UserRouter)
 app.use(AuditRouter)
-
+app.use(ParametersRouter)
 
 export default app
