@@ -21,15 +21,26 @@ export class UserModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await User.create(data);
+            // ✅ Crear usuario
+            const newUser = await User.create(data);
+
+            // ✅ Registrar en Audit quién creó el usuario
+            await AuditModel.registerAudit(
+                internalId, 
+                "INSERT",
+                "User",
+                `El usuario interno ${internalId} creó al usuario ${data.User_ID}`
+            );
+
+            return newUser;
         } catch (error) {
-            throw new Error(`Error creating user: ${error.message}`);
+            throw new Error(`Error al crear usuario: ${error.message}`);
         }
     }
 
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const user = await this.getById(id);
             if (!user) return null;
@@ -41,14 +52,22 @@ export class UserModel {
             });
             await user.update(data, { individualHooks: true });
 
+            await AuditModel.registerAudit(
+                internalId, 
+                "UPDATE",
+                "User",
+                `El usuario interno ${internalId} actualizó al usuario ${id}`
+            );
+
             if (rowsUpdated === 0) return null;
             return await this.getById(id);
+
         } catch (error) {
             throw new Error(`Error updating user: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             if (!id) {
                 throw new Error("The User_ID field is required to delete a user");
@@ -63,10 +82,10 @@ export class UserModel {
             );
 
             await AuditModel.registerAudit(
-                id,
+                internalId, 
                 "DELETE",
                 "User",
-                `Se eliminó lógicamente el usuario ${id}`
+                `El usuario interno ${internalId} eliminó lógicamente al usuario ${id}`
             );
     
             return user;

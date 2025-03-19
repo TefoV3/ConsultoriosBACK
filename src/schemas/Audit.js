@@ -7,7 +7,7 @@ export const Audit = sequelize.define("Audit", {
         primaryKey: true,
         autoIncrement: true
     },
-    User_ID: {
+    Internal_ID: {  // ✅ Cambiado de Usuario_Cedula a Internal_ID
         type: DataTypes.STRING(10),
         allowNull: false
     },

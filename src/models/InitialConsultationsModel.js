@@ -2,6 +2,8 @@ import { sequelize } from "../database/database.js";
 import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { User } from "../schemas/User.js";
 import { InternalUser } from "../schemas/Internal_User.js";
+import {AuditModel} from "../models/AuditModel.js"
+import { UserModel } from "../models/UserModel.js";
 
 export class InitialConsultationsModel {
 
@@ -24,14 +26,14 @@ export class InitialConsultationsModel {
     }
 
     static async createInitialConsultation(data) {
-        const t = await sequelize.transaction(); // Inicia una transacción
+        const t = await sequelize.transaction();
         let userCreated = false;
 
         try {
             // Verificar si el usuario externo existe, si no, crearlo
             let user = await User.findOne({ where: { User_ID: data.User_ID }, transaction: t });
             if (!user) {
-                user = await User.create({
+                user = await UserModel.create({
                     User_ID: data.User_ID, 
                     User_ID_Type: data.User_ID_Type,
                     User_Academic_Instruction: data.User_Academic_Instruction,
@@ -59,7 +61,16 @@ export class InitialConsultationsModel {
                     User_ReferenceName: data.User_ReferenceName,
                     User_ReferencePhone: data.User_ReferencePhone,
                 }, { transaction: t });
+
                 userCreated = true; // Marcar que el usuario fue creado en esta transacción
+
+                // 🔹 Registrar en Audit que un usuario interno creó este usuario externo
+                await AuditModel.registerAudit(
+                    data.Internal_ID, 
+                    "INSERT",
+                    "User",
+                    `El usuario interno ${data.Internal_ID} creó al usuario externo ${data.User_ID}`
+                );
             }
 
             // Verificar si el usuario interno existe
@@ -84,14 +95,40 @@ export class InitialConsultationsModel {
                 Init_Status: data.Init_Status,
             }, { transaction: t });
 
+            // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
+            await AuditModel.registerAudit(
+                data.Internal_ID, 
+                "INSERT",
+                "Initial_Consultations",
+                `El usuario interno ${data.Internal_ID} creó la consulta inicial ${data.Init_Code} para el usuario ${data.User_ID}`
+            );
+
             await t.commit(); // Confirmar la transacción
             return { message: "Consulta inicial creada exitosamente", data: newConsultation };
         } catch (error) {
             await t.rollback(); // Revertir la transacción en caso de error
+
             if (userCreated) {
                 // Eliminar el usuario creado si se genera un error
                 await User.destroy({ where: { User_ID: data.User_ID } });
+
+                // 🔹 Registrar en Audit que se eliminó el usuario por error en la transacción
+                await AuditModel.registerAudit(
+                    data.Internal_ID, 
+                    "DELETE",
+                    "User",
+                    `El usuario interno ${data.Internal_ID} eliminó al usuario externo ${data.User_ID} debido a un error en la creación de la consulta inicial`
+                );
             }
+
+            // 🔹 Registrar el error en Audit
+            await AuditModel.registerAudit(
+                data.Internal_ID, 
+                "ERROR",
+                "Initial_Consultations",
+                `Error al crear la consulta inicial ${data.Init_Code} para el usuario ${data.User_ID}: ${error.message}`
+            );
+
             throw new Error(`Error al crear la consulta inicial: ${error.message}`);
         }
     }

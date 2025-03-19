@@ -23,7 +23,14 @@ export class UserController {
 
     static async createUser(req, res) {
         try {
-            const newUser = await UserModel.create(req.body);
+            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            }
+
+            const newUser = await UserModel.create(req.body, internalId);
+
             return res.status(201).json(newUser);
         } catch (error) {
             return res.status(500).json({ error: error.message });
@@ -33,7 +40,11 @@ export class UserController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const updatedUser = await UserModel.update(id, req.body);
+            const internalId = req.headers["internal-id"];
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            }
+            const updatedUser = await UserModel.update(id, req.body, internalId);
             if (!updatedUser) return res.status(404).json({ message: "User not found" });
 
             return res.json(updatedUser);
@@ -45,18 +56,17 @@ export class UserController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
+            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
 
-            // Validation before calling delete()
-            if (!id) {
-                return res.status(400).json({ error: "User ID is required to delete" });
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
             }
 
-            const deletedUser = await UserModel.delete(id);
-            if (!deletedUser) {
-                return res.status(404).json({ message: "User not found" });
-            }
+            const deletedUser = await UserModel.delete(id, internalId);
 
-            return res.json({ message: "User logically deleted", user: deletedUser });
+            if (!deletedUser) return res.status(404).json({ message: "Usuario no encontrado" });
+
+            return res.json({ message: "Usuario eliminado lógicamente", usuario: deletedUser });
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
