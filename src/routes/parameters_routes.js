@@ -122,18 +122,23 @@ ParametersRouter.post("/parameters/attachments", ParametersController.createAtta
 ParametersRouter.get("/parameters/attachments", ParametersController.getAllAttachments);
 ParametersRouter.put("/parameters/attachments/:id", ParametersController.updateAttachments);
 ParametersRouter.delete("/parameters/attachments/:id", ParametersController.deleteAttachments);
+
+//COMENTADO PORQUE NO EXISTE EN EL CONTROLADOR
+
 /* AttentionType */
-ParametersRouter.post("/parameters/attentionType", ParametersController.createAttentionType);
-ParametersRouter.get("/parameters/attentionTypes", ParametersController.getAllAttentionTypes);
-ParametersRouter.put("/parameters/attentionType/:id", ParametersController.updateAttentionType);
-ParametersRouter.delete("/parameters/attentionType/:id", ParametersController.deleteAttentionType);
+// ParametersRouter.post("/parameters/attentionType", ParametersController.createAttentionType);
+// ParametersRouter.get("/parameters/attentionTypes", ParametersController.getAllAttentionTypes);
+// ParametersRouter.put("/parameters/attentionType/:id", ParametersController.updateAttentionType);
+// ParametersRouter.delete("/parameters/attentionType/:id", ParametersController.deleteAttentionType);
+
 /* CaseStatus */
-ParametersRouter.post("/parameters/caseStatus", ParametersController.createCaseStatus);
-ParametersRouter.get("/parameters/caseStatuses", ParametersController.getAllCaseStatuses);
-ParametersRouter.put("/parameters/caseStatus/:id", ParametersController.updateCaseStatus);
-ParametersRouter.delete("/parameters/caseStatus/:id", ParametersController.deleteCaseStatus);
+// ParametersRouter.post("/parameters/caseStatus", ParametersController.createCaseStatus);
+// ParametersRouter.get("/parameters/caseStatuses", ParametersController.getAllCaseStatuses);
+// ParametersRouter.put("/parameters/caseStatus/:id", ParametersController.updateCaseStatus);
+// ParametersRouter.delete("/parameters/caseStatus/:id", ParametersController.deleteCaseStatus);
+
 /* Area and Topic */
-ParametersRouter.post("/parameters/areaTopic", ParametersController.createAreaTopic);
-ParametersRouter.get("/parameters/areaTopics", ParametersController.getAllAreaTopics);
-ParametersRouter.put("/parameters/areaTopic/:id", ParametersController.updateAreaTopic);
-ParametersRouter.delete("/parameters/areaTopic/:id", ParametersController.deleteAreaTopic);
+// ParametersRouter.post("/parameters/areaTopic", ParametersController.createAreaTopic);
+// ParametersRouter.get("/parameters/areaTopics", ParametersController.getAllAreaTopics);
+// ParametersRouter.put("/parameters/areaTopic/:id", ParametersController.updateAreaTopic);
+// ParametersRouter.delete("/parameters/areaTopic/:id", ParametersController.deleteAreaTopic);

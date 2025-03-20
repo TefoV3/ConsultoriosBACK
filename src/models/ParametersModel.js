@@ -1,7 +1,7 @@
 import { Parameters } from "../schemas/Parameters.js";
-import { AuditModel } from "../models/AuditModel.js";
+import { AuditModel } from "./AuditModel.js";
 
-export class Parameters_model {
+export class ParametersModel {
     static async getByZone(zone) {
         try {
             return await Parameters.findAll({
