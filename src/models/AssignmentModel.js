@@ -1,5 +1,5 @@
 import { AuditModel } from "../models/AuditModel.js";
-import { Assignment } from "../schemas/Assignment_schema.js";
+import { Assignment } from "../schemas/Assignment.js";
 
 export class AssignmentModel {
 
