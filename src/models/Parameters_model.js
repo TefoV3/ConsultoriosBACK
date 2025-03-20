@@ -117,13 +117,12 @@ export class Parameters_model {
         }
     }
 /************************************************************************************************************************************* */
-static async createProvince({ province }) {
+static async createProvince({ province }, internalId) {
     try {
         if (!province) {
             throw new Error("The 'province' field is required.");
         }
 
-        // Crear el objeto con los valores por defecto
         const newRecord = await Parameters.create({
             province,
             zone: null,
@@ -158,219 +157,340 @@ static async createProvince({ province }) {
             topic: null,
         });
 
+        // 🔹 Registrar en Audit que un usuario interno creó una provincia
+        await AuditModel.registerAudit(
+            internalId, 
+            "INSERT",
+            "Parameters",
+            `El usuario interno ${internalId} creó la provincia ${province} con ID ${newRecord.id}`
+        );
+
         return newRecord;
     } catch (error) {
         throw new Error(`Error creating province: ${error.message}`);
     }
+}
+
+static async getAllProvince(internalId) {
+    try {
+        const provinces = await Parameters.findAll({
+            attributes: ["id", "province"],
+            where: {
+                province: { [Op.ne]: null }, 
+            },
+        });
+
+        if (provinces.length === 0) return null;
+
+        // 🔹 Registrar en Audit que un usuario interno consultó todas las provincias
+        await AuditModel.registerAudit(
+            internalId, 
+            "SELECT",
+            "Parameters",
+            `El usuario interno ${internalId} consultó todas las provincias registradas`
+        );
+
+        return provinces;
+    } catch (error) {
+        throw new Error(`Error fetching provinces: ${error.message}`);
     }
-    static async getAllProvince() {
-        try {
-            const provinces = await Parameters.findAll({
-                attributes: ['id', 'province'],
-                where: {
-                    province: { [Op.ne]: null }, 
-                },
-            });
-            return provinces;
-        } catch (error) {
-            throw new Error(`Error fetching provinces: ${error.message}`);
+}
+
+static async updateProvince(id, { province }, internalId) {
+    try {
+        if (!province) {
+            throw new Error("The 'province' field is required.");
         }
+
+        const parameter = await Parameters.findByPk(id);
+        if (!parameter) return null;
+
+        await Parameters.update({ province }, { where: { id } });
+
+        // 🔹 Registrar en Audit que un usuario interno actualizó una provincia
+        await AuditModel.registerAudit(
+            internalId, 
+            "UPDATE",
+            "Parameters",
+            `El usuario interno ${internalId} actualizó la provincia con ID ${id} a ${province}`
+        );
+
+        return { message: `Province with ID ${id} updated successfully.` };
+    } catch (error) {
+        throw new Error(`Error updating province with ID ${id}: ${error.message}`);
     }
-    static async updateProvince(id, { province }) {
-        try {
-            if (!province) {
-                throw new Error("The 'province' field is required.");
-            }
-            const [rowsUpdated] = await Parameters.update({ province }, {
-                where: { id },
-            });
-            if (rowsUpdated === 0) return null;
-            return { message: `Province with ID ${id} updated successfully.` };
-        } catch (error) {
-            throw new Error(`Error updating province with ID ${id}: ${error.message}`);
-        }
+}
+
+static async deleteProvince(id, internalId) {
+    try {
+        const parameter = await Parameters.findByPk(id);
+        if (!parameter) return null;
+
+        await Parameters.destroy({ where: { id } });
+
+        // 🔹 Registrar en Audit que un usuario interno eliminó una provincia
+        await AuditModel.registerAudit(
+            internalId, 
+            "DELETE",
+            "Parameters",
+            `El usuario interno ${internalId} eliminó la provincia con ID ${id}`
+        );
+
+        return { message: `Province with ID ${id} deleted successfully.` };
+    } catch (error) {
+        throw new Error(`Error deleting province with ID ${id}: ${error.message}`);
     }
-    static async deleteProvince(id) {
-        try {
-            const rowsDeleted = await Parameters.destroy({
-                where: { id },
-            });
-            if (rowsDeleted === 0) return null;
-            return { message: `Province with ID ${id} deleted successfully.` };
-        } catch (error) {
-            throw new Error(`Error deleting province with ID ${id}: ${error.message}`);
-        }
-    }
+}
 /************************************************************************************************************************************* */
-    static async createCity({ city }) {
-        try {
-            if (!city) {
-                throw new Error("The 'city' field is required.");
-            }
+static async createCity({ city }, internalId) {
+    try {
+        if (!city) {
+            throw new Error("The 'city' field is required.");
+        }
 
-            // Crear el objeto con los valores por defecto
-            const newRecord = await Parameters.create({
-                city,
-                zone: null,
-                sector: null,
-                province: null,
-                country: null,
-                ethnicity: null,
-                maritalStatus: null,
-                gender: null,
-                referredBy: null,
-                educationLevel: null,
-                occupation: null,
-                personalIncomeLevel: null,
-                familyGroup: null,
-                economicallyActivePersons: null,
-                familyIncome: null,
-                housingType: null,
-                ownAssets: null,
-                receivesBonus: null,
-                pensioner: null,
-                healthInsurance: null,
-                supportDocuments: null,
-                vulnerabilitySituation: null,
-                catastrophicIllness: null,
-                disability: null,
-                disabilityPercentage: null,
-                protocol: null,
-                attachments: null,
-                attentionType: null,
-                caseStatus: null,
-                area: null,
-                topic: null,
-            });
+        const newRecord = await Parameters.create({
+            city,
+            zone: null,
+            sector: null,
+            province: null,
+            country: null,
+            ethnicity: null,
+            maritalStatus: null,
+            gender: null,
+            referredBy: null,
+            educationLevel: null,
+            occupation: null,
+            personalIncomeLevel: null,
+            familyGroup: null,
+            economicallyActivePersons: null,
+            familyIncome: null,
+            housingType: null,
+            ownAssets: null,
+            receivesBonus: null,
+            pensioner: null,
+            healthInsurance: null,
+            supportDocuments: null,
+            vulnerabilitySituation: null,
+            catastrophicIllness: null,
+            disability: null,
+            disabilityPercentage: null,
+            protocol: null,
+            attachments: null,
+            attentionType: null,
+            caseStatus: null,
+            area: null,
+            topic: null,
+        });
 
-            return newRecord;
-        } catch (error) {
-            throw new Error(`Error creating city: ${error.message}`);
-        }
+        // 🔹 Registrar en Audit que un usuario interno creó una ciudad
+        await AuditModel.registerAudit(
+            internalId,
+            "INSERT",
+            "Parameters",
+            `El usuario interno ${internalId} creó la ciudad ${city} con ID ${newRecord.id}`
+        );
+
+        return newRecord;
+    } catch (error) {
+        throw new Error(`Error creating city: ${error.message}`);
     }
-    static async getAllCity() {
-        try {
-            const cities = await Parameters.findAll({
-                attributes: ['id', 'city'],
-                where: {
-                    city: { [Op.ne]: null }, 
-                },
-            });
-            return cities;
-        } catch (error) {
-            throw new Error(`Error fetching cities: ${error.message}`);
-        }
+}
+
+static async getAllCity(internalId) {
+    try {
+        const cities = await Parameters.findAll({
+            attributes: ["id", "city"],
+            where: {
+                city: { [Op.ne]: null },
+            },
+        });
+
+        if (cities.length === 0) return null;
+
+        // 🔹 Registrar en Audit que un usuario interno consultó todas las ciudades
+        await AuditModel.registerAudit(
+            internalId,
+            "SELECT",
+            "Parameters",
+            `El usuario interno ${internalId} consultó todas las ciudades registradas`
+        );
+
+        return cities;
+    } catch (error) {
+        throw new Error(`Error fetching cities: ${error.message}`);
     }
-    static async updateCity(id, { city }) {
-        try {
-            if (!city) {
-                throw new Error("The 'city' field is required.");
-            }
-            const [rowsUpdated] = await Parameters.update({ city }, {
-                where: { id },
-            });
-            if (rowsUpdated === 0) return null;
-            return { message: `City with ID ${id} updated successfully.` };
-        } catch (error) {
-            throw new Error(`Error updating city with ID ${id}: ${error.message}`);
+}
+
+static async updateCity(id, { city }, internalId) {
+    try {
+        if (!city) {
+            throw new Error("The 'city' field is required.");
         }
+
+        const parameter = await Parameters.findByPk(id);
+        if (!parameter) return null;
+
+        await Parameters.update({ city }, { where: { id } });
+
+        // 🔹 Registrar en Audit que un usuario interno actualizó una ciudad
+        await AuditModel.registerAudit(
+            internalId,
+            "UPDATE",
+            "Parameters",
+            `El usuario interno ${internalId} actualizó la ciudad con ID ${id} a ${city}`
+        );
+
+        return { message: `City with ID ${id} updated successfully.` };
+    } catch (error) {
+        throw new Error(`Error updating city with ID ${id}: ${error.message}`);
     }
-    static async deleteCity(id) {
-        try {
-            const rowsDeleted = await Parameters.destroy({
-                where: { id },
-            });
-            if (rowsDeleted === 0) return null;
-            return { message: `City with ID ${id} deleted successfully.` };
-        } catch (error) {
-            throw new Error(`Error deleting city with ID ${id}: ${error.message}`);
-        }
+}
+
+static async deleteCity(id, internalId) {
+    try {
+        const parameter = await Parameters.findByPk(id);
+        if (!parameter) return null;
+
+        await Parameters.destroy({ where: { id } });
+
+        // 🔹 Registrar en Audit que un usuario interno eliminó una ciudad
+        await AuditModel.registerAudit(
+            internalId,
+            "DELETE",
+            "Parameters",
+            `El usuario interno ${internalId} eliminó la ciudad con ID ${id}`
+        );
+
+        return { message: `City with ID ${id} deleted successfully.` };
+    } catch (error) {
+        throw new Error(`Error deleting city with ID ${id}: ${error.message}`);
     }
+}
 /************************************************************************************************************************************* */
-    static async createCountry({ country }) {
-        try {
-            if (!country) {
-                throw new Error("The 'country' field is required.");
-            }
+static async createCountry({ country }, internalId) {
+    try {
+        if (!country) {
+            throw new Error("The 'country' field is required.");
+        }
 
-            // Crear el objeto con los valores por defecto
-            const newRecord = await Parameters.create({
-                country,
-                zone: null,
-                sector: null,
-                city: null,
-                province: null,
-                ethnicity: null,
-                maritalStatus: null,
-                gender: null,
-                referredBy: null,
-                educationLevel: null,
-                occupation: null,
-                personalIncomeLevel: null,
-                familyGroup: null,
-                economicallyActivePersons: null,
-                familyIncome: null,
-                housingType: null,
-                ownAssets: null,
-                receivesBonus: null,
-                pensioner: null,
-                healthInsurance: null,
-                supportDocuments: null,
-                vulnerabilitySituation: null,
-                catastrophicIllness: null,
-                disability: null,
-                disabilityPercentage: null,
-                protocol: null,
-                attachments: null,
-                attentionType: null,
-                caseStatus: null,
-                area: null,
-                topic: null,
-            });
+        const newRecord = await Parameters.create({
+            country,
+            zone: null,
+            sector: null,
+            city: null,
+            province: null,
+            ethnicity: null,
+            maritalStatus: null,
+            gender: null,
+            referredBy: null,
+            educationLevel: null,
+            occupation: null,
+            personalIncomeLevel: null,
+            familyGroup: null,
+            economicallyActivePersons: null,
+            familyIncome: null,
+            housingType: null,
+            ownAssets: null,
+            receivesBonus: null,
+            pensioner: null,
+            healthInsurance: null,
+            supportDocuments: null,
+            vulnerabilitySituation: null,
+            catastrophicIllness: null,
+            disability: null,
+            disabilityPercentage: null,
+            protocol: null,
+            attachments: null,
+            attentionType: null,
+            caseStatus: null,
+            area: null,
+            topic: null,
+        });
 
-            return newRecord;
-        } catch (error) {
-            throw new Error(`Error creating country: ${error.message}`);
-        }
+        // 🔹 Registrar en Audit que un usuario interno creó un país
+        await AuditModel.registerAudit(
+            internalId,
+            "INSERT",
+            "Parameters",
+            `El usuario interno ${internalId} creó el país ${country} con ID ${newRecord.id}`
+        );
+
+        return newRecord;
+    } catch (error) {
+        throw new Error(`Error creating country: ${error.message}`);
     }
-    static async getAllCountry() {
-        try {
-            const countries = await Parameters.findAll({
-                attributes: ['id', 'country'],
-                where: {
-                    country: { [Op.ne]: null }, 
-                },
-            });
-            return countries;
-        } catch (error) {
-            throw new Error(`Error fetching countries: ${error.message}`);
-        }
+}
+
+static async getAllCountry(internalId) {
+    try {
+        const countries = await Parameters.findAll({
+            attributes: ["id", "country"],
+            where: {
+                country: { [Op.ne]: null },
+            },
+        });
+
+        if (countries.length === 0) return null;
+
+        // 🔹 Registrar en Audit que un usuario interno consultó todos los países
+        await AuditModel.registerAudit(
+            internalId,
+            "SELECT",
+            "Parameters",
+            `El usuario interno ${internalId} consultó todos los países registrados`
+        );
+
+        return countries;
+    } catch (error) {
+        throw new Error(`Error fetching countries: ${error.message}`);
     }
-    static async updateCountry(id, { country }) {
-        try {
-            if (!country) {
-                throw new Error("The 'country' field is required.");
-            }
-            const [rowsUpdated] = await Parameters.update({ country }, {
-                where: { id },
-            });
-            if (rowsUpdated === 0) return null;
-            return { message: `Country with ID ${id} updated successfully.` };
-        } catch (error) {
-            throw new Error(`Error updating country with ID ${id}: ${error.message}`);
+}
+
+static async updateCountry(id, { country }, internalId) {
+    try {
+        if (!country) {
+            throw new Error("The 'country' field is required.");
         }
+
+        const parameter = await Parameters.findByPk(id);
+        if (!parameter) return null;
+
+        await Parameters.update({ country }, { where: { id } });
+
+        // 🔹 Registrar en Audit que un usuario interno actualizó un país
+        await AuditModel.registerAudit(
+            internalId,
+            "UPDATE",
+            "Parameters",
+            `El usuario interno ${internalId} actualizó el país con ID ${id} a ${country}`
+        );
+
+        return { message: `Country with ID ${id} updated successfully.` };
+    } catch (error) {
+        throw new Error(`Error updating country with ID ${id}: ${error.message}`);
     }
-    static async deleteCountry(id) {
-        try {
-            const rowsDeleted = await Parameters.destroy({
-                where: { id },
-            });
-            if (rowsDeleted === 0) return null;
-            return { message: `Country with ID ${id} deleted successfully.` };
-        } catch (error) {
-            throw new Error(`Error deleting country with ID ${id}: ${error.message}`);
-        }
+}
+
+static async deleteCountry(id, internalId) {
+    try {
+        const parameter = await Parameters.findByPk(id);
+        if (!parameter) return null;
+
+        await Parameters.destroy({ where: { id } });
+
+        // 🔹 Registrar en Audit que un usuario interno eliminó un país
+        await AuditModel.registerAudit(
+            internalId,
+            "DELETE",
+            "Parameters",
+            `El usuario interno ${internalId} eliminó el país con ID ${id}`
+        );
+
+        return { message: `Country with ID ${id} deleted successfully.` };
+    } catch (error) {
+        throw new Error(`Error deleting country with ID ${id}: ${error.message}`);
     }
+}
 /************************************************************************************************************************************* */
     static async createEthnicity({ ethnicity }) {
         try {
