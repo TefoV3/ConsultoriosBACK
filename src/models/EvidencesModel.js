@@ -1,4 +1,6 @@
 import { Evidence } from "../schemas/Evidences.js";
+import { AuditModel } from "../models/AuditModel.js";
+import { sequelize } from "../database/database.js";
 
 export class EvidenceModel {
 
@@ -20,11 +22,46 @@ export class EvidenceModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, file) {
+        const t = await sequelize.transaction();
+
         try {
-            return await Evidence.create(data);
+            if (!file) {
+                throw new Error("Se requiere un archivo PDF para la evidencia.");
+            }
+
+            // Guardar la evidencia en la base de datos
+            const newEvidence = await Evidence.create({
+                Internal_ID: data.Internal_ID,
+                Init_Code: data.Init_Code,
+                Evidence_Name: data.Evidence_Name || file.originalname,
+                Evidence_Document_Type: file.mimetype,
+                Evidence_URL: null, // Se usa NULL ya que el PDF está en BLOB
+                Evidence_Date: new Date(),
+                Evidence_File: file.buffer // Guardar el archivo en formato BLOB
+            }, { transaction: t });
+
+            // Registrar en Audit
+            await AuditModel.registerAudit(
+                data.Internal_ID,
+                "INSERT",
+                "Evidences",
+                `El usuario interno ${data.Internal_ID} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
+            );
+
+            await t.commit();
+            return newEvidence;
         } catch (error) {
-            throw new Error(`Error creating evidence: ${error.message}`);
+            await t.rollback();
+            throw new Error(`Error al subir la evidencia: ${error.message}`);
+        }
+    }
+
+    static async getEvidenceById(id) {
+        try {
+            return await Evidence.findByPk(id);
+        } catch (error) {
+            throw new Error(`Error al obtener la evidencia: ${error.message}`);
         }
     }
 

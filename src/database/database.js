@@ -45,17 +45,18 @@ import dotenv from "dotenv";
 //  );
 
  
-// export const sequelize = new Sequelize(
-//     'ConsultoriosJuridicos', 
-//     'root', 
-//     '2444', 
-//     {
-//         host: 'localhost', 
-//         dialect: 'mysql'
-//     }
-// );
+export const sequelize = new Sequelize(
+    'ConsultoriosJuridicosevi', 
+    'root', 
+    '2444', 
+    {
+        host: 'localhost', 
+        dialect: 'mysql'
+    }
+);
 
 //Francis
+/*
 export const sequelize = new Sequelize(
     'consultoriosjuridicos', 
     'fvelasco', 
@@ -65,4 +66,4 @@ export const sequelize = new Sequelize(
        dialect: 'mysql'
     }
 );
-
+*/

@@ -25,7 +25,7 @@ export const InitialConsultations = sequelize.define('Initial_Consultations', {
         primaryKey: true
     },
     Internal_ID: {
-        type: DataTypes.CHAR(10),
+        type: DataTypes.CHAR(15),
         allowNull: false
     },
     Init_ClientType: DataTypes.STRING(100),

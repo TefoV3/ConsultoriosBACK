@@ -8,9 +8,9 @@ export const Audit = sequelize.define("Audit", {
         primaryKey: true,
         autoIncrement: true
     },
-    Internal_ID: {  // ✅ Cambiado de Usuario_Cedula a Internal_ID
-        type: DataTypes.STRING(10),
-        allowNull: false
+    Internal_ID: {
+        type: DataTypes.CHAR(15), //Cedula de identidad o Pasaporte
+        primaryKey: true
     },
     Audit_Accion: {
         type: DataTypes.STRING(10),
