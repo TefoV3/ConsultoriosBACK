@@ -1,5 +1,3 @@
-import { ActivityModel } from "../models/ActivityModel.js";
-
 export class ActivityController {
     static async getActivities(req, res) {
         try {
@@ -23,7 +21,13 @@ export class ActivityController {
 
     static async createActivity(req, res) {
         try {
-            const newActivity = await ActivityModel.create(req.body);
+            const internalId = req.headers["internal-id"]; // ✅ Se obtiene el usuario interno desde los headers
+
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            }
+
+            const newActivity = await ActivityModel.create(req.body, internalId);
             return res.status(201).json(newActivity);
         } catch (error) {
             return res.status(500).json({ error: error.message });
@@ -33,7 +37,13 @@ export class ActivityController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const updatedActivity = await ActivityModel.update(id, req.body);
+            const internalId = req.headers["internal-id"]; // ✅ Se obtiene el usuario interno desde los headers
+
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            }
+
+            const updatedActivity = await ActivityModel.update(id, req.body, internalId);
             if (!updatedActivity) return res.status(404).json({ message: "Activity not found" });
 
             return res.json(updatedActivity);
@@ -45,7 +55,13 @@ export class ActivityController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const deletedActivity = await ActivityModel.delete(id);
+            const internalId = req.headers["internal-id"]; // ✅ Se obtiene el usuario interno desde los headers
+
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            }
+
+            const deletedActivity = await ActivityModel.delete(id, internalId);
             if (!deletedActivity) return res.status(404).json({ message: "Activity not found" });
 
             return res.json({ message: "Activity deleted", activity: deletedActivity });
