@@ -43,7 +43,6 @@ export class InitialConsultationsModel {
                     User_Phone: data.User_Phone,
                     User_Gender: data.User_Gender,
                     User_Ethnicity: data.User_Ethnicity,
-                    User_Education: data.User_Education,
                     User_Occupation: data.User_Occupation,
                     User_Address: data.User_Address,
                     User_Nationality: data.User_Nationality,
