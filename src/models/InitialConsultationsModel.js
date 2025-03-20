@@ -91,6 +91,7 @@ export class InitialConsultationsModel {
                 Init_Notes: data.Init_Notes,
                 Init_Office: data.Init_Office,
                 Init_Topic: data.Init_Topic,
+                Init_Service: data.Init_Service,
                 Init_Referral: data.Init_Referral,
                 Init_Status: data.Init_Status,
             }, { transaction: t });
