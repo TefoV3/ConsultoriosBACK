@@ -66,4 +66,92 @@ export class ParametersController {
             res.status(500).json({ error: `Error deleting parameter: ${error.message}` });
         }
     }
+/*************************************************************************************************************************************/
+    static async createProvince(req, res) {
+        try {
+            const { province } = req.body;
+            const newRecord = await Parameters_model.create({ province });
+            res.status(201).json({ message: "Province created successfully.", data: newRecord });
+        } catch (error) {
+            res.status(500).json({ error: `Error creating province: ${error.message}` });
+        }
+    }
+    static async getAllProvince(req, res) {
+        try {
+            const records = await Parameters_model.getAll();
+            res.status(200).json(records);
+        } catch (error) {
+            res.status(500).json({ error: `Error fetching provinces: ${error.message}` });
+        }
+    }
+    static async updateProvince(req, res) {
+        try {
+            const { id } = req.params;
+            const { province } = req.body;
+            const result = await Parameters_model.update(id, { province });
+            if (!result) {
+                return res.status(404).json({ error: `Province with ID ${id} not found.` });
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: `Error updating province with ID ${id}: ${error.message}` });
+        }
+    }
+    static async deleteProvince(req, res) {
+        try {
+            const { id } = req.params;
+            const result = await Parameters_model.delete(id);
+            if (!result) {
+                return res.status(404).json({ error: `Province with ID ${id} not found.` });
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: `Error deleting province with ID ${id}: ${error.message}` });
+        }
+    }
+/*************************************************************************************************************************************/
+    static async createCity(req, res) {
+        try {
+            const { city } = req.body;
+            const newRecord = await Parameters_model.createCity({ city });
+            res.status(201).json({ message: "City created successfully.", data: newRecord });
+        } catch (error) {
+            res.status(500).json({ error: `Error creating city: ${error.message}` });
+        }
+    }
+    static async getAllCity(req, res) {
+        try {
+            const records = await Parameters_model.getAllCity();
+            res.status(200).json(records);
+        } catch (error) {
+            res.status(500).json({ error: `Error fetching cities: ${error.message}` });
+        }
+    }
+    static async updateCity(req, res) {
+        try {
+            const { id } = req.params;
+            const { city } = req.body;
+            const result = await Parameters_model.updateCity(id, { city });
+            if (!result) {
+                return res.status(404).json({ error: `City with ID ${id} not found.` });
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: `Error updating city with ID ${id}: ${error.message}` });
+        }
+    }
+    static async deleteCity(req, res) {
+        try {
+            const { id } = req.params;
+            const result = await Parameters_model.deleteCity(id);
+            if (!result) {
+                return res.status(404).json({ error: `City with ID ${id} not found.` });
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: `Error deleting city with ID ${id}: ${error.message}` });
+        }
+    }
+/*************************************************************************************************************************************/
+    
 }
