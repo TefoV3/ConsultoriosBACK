@@ -35,6 +35,16 @@ export class InitialConsultationsModel {
         }
     }
 
+    static async getByUserId(userId) {
+        try {
+            return await InitialConsultations.findAll({
+                where: { User_ID: userId }
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving initial consultations: ${error.message}`);
+        }
+    }
+
     static async createInitialConsultation(data,file) {
         const t = await sequelize.transaction();
         let userCreated = false;
@@ -95,7 +105,11 @@ export class InitialConsultationsModel {
                 User_ID: data.User_ID,
                 Init_ClientType: data.Init_ClientType,
                 Init_Date: data.Init_Date,
+<<<<<<< HEAD
                 Init_EndDate: DataTypes.DATE,
+=======
+                Init_FinishDate: data.Init_FinishDate,
+>>>>>>> 6a73490e30a4866821446181bb3f1303b39da86a
                 Init_Subject: data.Init_Subject,
                 Init_Lawyer: data.Init_Lawyer,
                 Init_Notes: data.Init_Notes,
