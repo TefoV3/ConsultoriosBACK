@@ -49,7 +49,7 @@ export const Activity = sequelize.define('Activity', {
     Status: DataTypes.STRING(50),
     Documents: {
         type: DataTypes.BLOB("long"),
-        allowNull: false
+        allowNull: true
     }
 }, { timestamps: false });
 
