@@ -23,8 +23,15 @@ export class FirstConsultationsController {
 
     static async createFirstConsultations(req, res) {
         try {
-            const response = await InitialConsultationsModel.createInitialConsultation(req.body);
-            res.status(201).json(response);
+            const { Internal_ID, Init_Code, Evidence_Name } = req.body;
+
+            if (!req.file) {
+                return res.status(400).json({ error: "Debe adjuntar un archivo PDF." });
+            }
+
+            const newConsultation = await InitialConsultationsModel.createInitialConsultation(req.body, req.file);
+
+            res.status(201).json({ message: "Consulta inicial creada con evidencia", data: newConsultation });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }

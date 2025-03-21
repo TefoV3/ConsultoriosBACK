@@ -25,7 +25,7 @@ export const InitialConsultations = sequelize.define('Initial_Consultations', {
         primaryKey: true
     },
     Internal_ID: {
-        type: DataTypes.CHAR(10),
+        type: DataTypes.CHAR(15),
         allowNull: false
     },
     Init_ClientType: DataTypes.STRING(100),
@@ -34,6 +34,7 @@ export const InitialConsultations = sequelize.define('Initial_Consultations', {
     Init_Date: DataTypes.DATE,
     Init_Office: DataTypes.STRING(100),
     Init_Topic: DataTypes.STRING(250),
+    Init_Service: DataTypes.STRING(100),
     Init_Referral: DataTypes.STRING(100),
     Init_Status: DataTypes.BOOLEAN,
     Init_Notes: DataTypes.STRING(255),

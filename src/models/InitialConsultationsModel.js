@@ -4,6 +4,7 @@ import { User } from "../schemas/User.js";
 import { InternalUser } from "../schemas/Internal_User.js";
 import {AuditModel} from "../models/AuditModel.js"
 import { UserModel } from "../models/UserModel.js";
+import { Evidence } from "../schemas/Evidences.js";
 
 export class InitialConsultationsModel {
 
@@ -25,7 +26,7 @@ export class InitialConsultationsModel {
         }
     }
 
-    static async createInitialConsultation(data) {
+    static async createInitialConsultation(data,file) {
         const t = await sequelize.transaction();
         let userCreated = false;
 
@@ -43,7 +44,6 @@ export class InitialConsultationsModel {
                     User_Phone: data.User_Phone,
                     User_Gender: data.User_Gender,
                     User_Ethnicity: data.User_Ethnicity,
-                    User_Education: data.User_Education,
                     User_Occupation: data.User_Occupation,
                     User_Address: data.User_Address,
                     User_Nationality: data.User_Nationality,
@@ -91,6 +91,7 @@ export class InitialConsultationsModel {
                 Init_Notes: data.Init_Notes,
                 Init_Office: data.Init_Office,
                 Init_Topic: data.Init_Topic,
+                Init_Service: data.Init_Service,
                 Init_Referral: data.Init_Referral,
                 Init_Status: data.Init_Status,
             }, { transaction: t });
@@ -103,8 +104,37 @@ export class InitialConsultationsModel {
                 `El usuario interno ${data.Internal_ID} creó la consulta inicial ${data.Init_Code} para el usuario ${data.User_ID}`
             );
 
-            await t.commit(); // Confirmar la transacción
-            return { message: "Consulta inicial creada exitosamente", data: newConsultation };
+            // 🔹 Verificar si se subió un archivo PDF
+            if (!file) {
+                throw new Error("Debe adjuntar un archivo PDF para la evidencia.");
+            }
+
+            // 🔹 Crear la evidencia asociada
+            const newEvidence = await Evidence.create({
+                Internal_ID: data.Internal_ID,
+                Init_Code: data.Init_Code,
+                Evidence_Name: data.Evidence_Name || file.originalname,
+                Evidence_Document_Type: file.mimetype,
+                Evidence_URL: null, // Se usa NULL ya que el PDF está en BLOB
+                Evidence_Date: new Date(),
+                Evidence_File: file.buffer // Guardar el archivo en formato BLOB
+            }, { transaction: t });
+
+            // 🔹 Registrar en Audit la creación de la evidencia
+            await AuditModel.registerAudit(
+                data.Internal_ID, 
+                "INSERT",
+                "Evidences",
+                `El usuario interno ${data.Internal_ID} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
+            );
+
+            await t.commit();
+            return { 
+                message: "Consulta inicial y evidencia creadas exitosamente", 
+                consultation: newConsultation,
+                evidence: newEvidence
+            };
+
         } catch (error) {
             await t.rollback(); // Revertir la transacción en caso de error
 
