@@ -104,6 +104,7 @@ export class InitialConsultationsModel {
                 Init_Topic: data.Init_Topic,
                 Init_Service: data.Init_Service,
                 Init_Referral: data.Init_Referral,
+                Init_Complexity: data.Init_Complexity,
                 Init_Status: data.Init_Status,
             }, { transaction: t });
 
