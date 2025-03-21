@@ -46,7 +46,10 @@ export const Activity = sequelize.define('Activity', {
     Judge_Name: DataTypes.STRING(50),
     Reference_File: DataTypes.STRING(25),
     Status: DataTypes.STRING(50),
-    Documents: DataTypes.STRING(250)
+    Documents: {
+        type: DataTypes.BLOB("long"),
+        allowNull: false
+    }
 }, { timestamps: false });
 
 // Define associations

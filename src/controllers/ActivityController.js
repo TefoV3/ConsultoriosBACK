@@ -1,3 +1,5 @@
+import { ActivityModel } from "../models/ActivityModel.js";
+
 export class ActivityController {
     static async getActivities(req, res) {
         try {
