@@ -54,7 +54,7 @@ export const Activity = sequelize.define('Activity', {
 }, { timestamps: false });
 
 // Define associations
-Activity.belongsTo(Case, { foreignKey: "Init_Code" });
+Activity.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
 InitialConsultations.hasMany(Activity, { foreignKey: "Init_Code" });
 
 Activity.belongsTo(InternalUser, { foreignKey: "Internal_ID" });
