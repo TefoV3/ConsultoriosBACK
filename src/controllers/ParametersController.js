@@ -1072,5 +1072,134 @@ static async deleteDisability(req, res) {
         }
     }
 /*************************************************************************************************************************************/
-
+    static async createAttentionType(req, res) {
+        try {
+            const { attentionType } = req.body;
+            const newRecord = await Parameters_model.createAttentionType({ attentionType });
+            res.status(201).json({ message: "AttentionType created successfully.", data: newRecord });
+        } catch (error) {
+            res.status(500).json({ error: `Error creating attentionType: ${error.message}` });
+        }
+    }
+    static async getAllAttentionTypes(req, res) {
+        try {
+            const records = await Parameters_model.getAllAttentionTypes();
+            res.status(200).json(records);
+        } catch (error) {
+            res.status(500).json({ error: `Error fetching attentionTypes: ${error.message}` });
+        }
+    }
+    static async updateAttentionType(req, res) {
+        try {
+            const { id } = req.params;
+            const { attentionType } = req.body;
+            const result = await Parameters_model.updateAttentionType(id, { attentionType });
+            if (!result) {
+                return res.status(404).json({ error: `AttentionType with ID ${id} not found.` });
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: `Error updating attentionType with ID ${id}: ${error.message}` });
+        }
+    }
+    static async deleteAttentionType(req, res) {
+        try {
+            const { id } = req.params;
+            const result = await Parameters_model.deleteAttentionType(id);
+            if (!result) {
+                return res.status(404).json({ error: `AttentionType with ID ${id} not found.` });
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: `Error deleting attentionType with ID ${id}: ${error.message}` });
+        }
+    }
+/*************************************************************************************************************************************/
+    static async createCaseStatus(req, res) {
+        try {
+            const { caseStatus } = req.body;
+            const newRecord = await Parameters_model.createCaseStatus({ caseStatus });
+            res.status(201).json({ message: "CaseStatus created successfully.", data: newRecord });
+        } catch (error) {
+            res.status(500).json({ error: `Error creating caseStatus: ${error.message}` });
+        }
+    }
+    static async getAllCaseStatuses(req, res) {
+        try {
+            const records = await Parameters_model.getAllCaseStatuses();
+            res.status(200).json(records);
+        } catch (error) {
+            res.status(500).json({ error: `Error fetching caseStatuses: ${error.message}` });
+        }
+    }
+    static async updateCaseStatus(req, res) {
+        try {
+            const { id } = req.params;
+            const { caseStatus } = req.body;
+            const result = await Parameters_model.updateCaseStatus(id, { caseStatus });
+            if (!result) {
+                return res.status(404).json({ error: `CaseStatus with ID ${id} not found.` });
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: `Error updating caseStatus with ID ${id}: ${error.message}` });
+        }
+    }
+    static async deleteCaseStatus(req, res) {
+        try {
+            const { id } = req.params;
+            const result = await Parameters_model.deleteCaseStatus(id);
+            if (!result) {
+                return res.status(404).json({ error: `CaseStatus with ID ${id} not found.` });
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: `Error deleting caseStatus with ID ${id}: ${error.message}` });
+        }
+    }
+/*************************************************************************************************************************************/
+    static async createAreaTopic(req, res) {
+        try {
+            const { area, topic } = req.body;
+            const { internalId } = req.user; // Obtener internalId de la sesión o del JWT
+            const newRecord = await Parameters_model.createAreaTopic({ area, topic }, internalId);
+            res.status(201).json({ message: "Area and Topic created successfully.", data: newRecord });
+        } catch (error) {
+            res.status(500).json({ error: `Error creating area and topic: ${error.message}` });
+        }
+    }
+    static async getAllAreaTopics(req, res) {
+        try {
+            const records = await Parameters_model.getAllAreaTopics();
+            res.status(200).json(records);
+        } catch (error) {
+            res.status(500).json({ error: `Error fetching area and topic records: ${error.message}` });
+        }
+    }
+    static async updateAreaTopic(req, res) {
+        try {
+            const { id } = req.params;
+            const { area, topic } = req.body;
+            const result = await Parameters_model.updateAreaTopic(id, { area, topic });
+            if (!result) {
+                return res.status(404).json({ error: `Area and Topic with ID ${id} not found.` });
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: `Error updating area and topic with ID ${id}: ${error.message}` });
+        }
+    }
+    static async deleteAreaTopic(req, res) {
+        try {
+            const { id } = req.params;
+            const result = await Parameters_model.deleteAreaTopic(id);
+            if (!result) {
+                return res.status(404).json({ error: `Area and Topic with ID ${id} not found.` });
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: `Error deleting area and topic with ID ${id}: ${error.message}` });
+        }
+    }
+/*************************************************************************************************************************************/
 }

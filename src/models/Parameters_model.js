@@ -2061,5 +2061,270 @@ static async deleteMaritalStatus(id) {
         }
     }
 /************************************************************************************************************************************* */
+    static async createAttentionType({ attentionType }) {
+        try {
+            if (!attentionType) {
+                throw new Error("The 'attentionType' field is required.");
+            }
 
+            const newRecord = await Parameters.create({
+                attentionType,
+                province: null,
+                zone: null,
+                sector: null,
+                city: null,
+                country: null,
+                ethnicity: null,
+                maritalStatus: null,
+                gender: null,
+                referredBy: null,
+                educationLevel: null,
+                occupation: null,
+                personalIncomeLevel: null,
+                familyGroup: null,
+                economicallyActivePersons: null,
+                familyIncome: null,
+                housingType: null,
+                ownAssets: null,
+                receivesBonus: null,
+                pensioner: null,
+                healthInsurance: null,
+                supportDocuments: null,
+                vulnerabilitySituation: null,
+                catastrophicIllness: null,
+                disability: null,
+                disabilityPercentage: null,
+                protocol: null,
+                attachments: null,
+                caseStatus: null,
+                area: null,
+                topic: null,
+            });
+
+            return newRecord;
+        } catch (error) {
+            throw new Error(`Error creating attentionType: ${error.message}`);
+        }
+    }
+    static async getAllAttentionTypes() {
+        try {
+            const attentionTypes = await Parameters.findAll({
+                attributes: ['id', 'attentionType'],
+                where: {
+                    attentionType: { [Op.ne]: null },
+                },
+            });
+            return attentionTypes;
+        } catch (error) {
+            throw new Error(`Error fetching attentionTypes: ${error.message}`);
+        }
+    }
+    static async updateAttentionType(id, { attentionType }) {
+        try {
+            if (!attentionType) {
+                throw new Error("The 'attentionType' field is required.");
+            }
+            const [rowsUpdated] = await Parameters.update({ attentionType }, {
+                where: { id },
+            });
+            if (rowsUpdated === 0) return null;
+            return { message: `AttentionType with ID ${id} updated successfully.` };
+        } catch (error) {
+            throw new Error(`Error updating attentionType with ID ${id}: ${error.message}`);
+        }
+    }
+    static async deleteAttentionType(id) {
+        try {
+            const rowsDeleted = await Parameters.destroy({
+                where: { id },
+            });
+            if (rowsDeleted === 0) return null;
+            return { message: `AttentionType with ID ${id} deleted successfully.` };
+        } catch (error) {
+            throw new Error(`Error deleting attentionType with ID ${id}: ${error.message}`);
+        }
+    }
+/************************************************************************************************************************************* */
+    static async createCaseStatus({ caseStatus }) {
+        try {
+            if (!caseStatus) {
+                throw new Error("The 'caseStatus' field is required.");
+            }
+
+            const newRecord = await Parameters.create({
+                caseStatus,
+                province: null,
+                zone: null,
+                sector: null,
+                city: null,
+                country: null,
+                ethnicity: null,
+                maritalStatus: null,
+                gender: null,
+                referredBy: null,
+                educationLevel: null,
+                occupation: null,
+                personalIncomeLevel: null,
+                familyGroup: null,
+                economicallyActivePersons: null,
+                familyIncome: null,
+                housingType: null,
+                ownAssets: null,
+                receivesBonus: null,
+                pensioner: null,
+                healthInsurance: null,
+                supportDocuments: null,
+                vulnerabilitySituation: null,
+                catastrophicIllness: null,
+                disability: null,
+                disabilityPercentage: null,
+                protocol: null,
+                attachments: null,
+                attentionType: null,
+                area: null,
+                topic: null,
+            });
+
+            return newRecord;
+        } catch (error) {
+            throw new Error(`Error creating caseStatus: ${error.message}`);
+        }
+    }
+    static async getAllCaseStatuses() {
+        try {
+            const caseStatuses = await Parameters.findAll({
+                attributes: ['id', 'caseStatus'],
+                where: {
+                    caseStatus: { [Op.ne]: null },
+                },
+            });
+            return caseStatuses;
+        } catch (error) {
+            throw new Error(`Error fetching caseStatuses: ${error.message}`);
+        }
+    }
+    static async updateCaseStatus(id, { caseStatus }) {
+        try {
+            if (!caseStatus) {
+                throw new Error("The 'caseStatus' field is required.");
+            }
+            const [rowsUpdated] = await Parameters.update({ caseStatus }, {
+                where: { id },
+            });
+            if (rowsUpdated === 0) return null;
+            return { message: `CaseStatus with ID ${id} updated successfully.` };
+        } catch (error) {
+            throw new Error(`Error updating caseStatus with ID ${id}: ${error.message}`);
+        }
+    }
+    static async deleteCaseStatus(id) {
+        try {
+            const rowsDeleted = await Parameters.destroy({
+                where: { id },
+            });
+            if (rowsDeleted === 0) return null;
+            return { message: `CaseStatus with ID ${id} deleted successfully.` };
+        } catch (error) {
+            throw new Error(`Error deleting caseStatus with ID ${id}: ${error.message}`);
+        }
+    }
+/************************************************************************************************************************************* */
+    static async createAreaTopic({ area, topic }, internalId) {
+        try {
+            // Validar que se envíen tanto area como topic
+            if (!area || !topic) {
+                throw new Error("Both 'area' and 'topic' are required.");
+            }
+
+            // Crear el objeto con area, topic y valores nulos para los demás campos
+            const data = {
+                area,
+                topic,
+                province: null,
+                zone: null,
+                sector: null,
+                city: null,
+                country: null,
+                ethnicity: null,
+                maritalStatus: null,
+                gender: null,
+                referredBy: null,
+                educationLevel: null,
+                occupation: null,
+                personalIncomeLevel: null,
+                familyGroup: null,
+                economicallyActivePersons: null,
+                familyIncome: null,
+                housingType: null,
+                ownAssets: null,
+                receivesBonus: null,
+                pensioner: null,
+                healthInsurance: null,
+                supportDocuments: null,
+                vulnerabilitySituation: null,
+                catastrophicIllness: null,
+                disability: null,
+                disabilityPercentage: null,
+                protocol: null,
+                attachments: null,
+                attentionType: null,
+                caseStatus: null,
+            };
+
+            // Insertar el registro
+            const newParameter = await Parameters.create(data);
+
+            // 🔹 Registrar en Audit que un usuario interno creó un parámetro
+            await AuditModel.registerAudit(
+                internalId, 
+                "INSERT",
+                "Parameters",
+                `El usuario interno ${internalId} creó un nuevo parámetro con ID ${newParameter.id}`
+            );
+
+            return newParameter;
+        } catch (error) {
+            throw new Error(`Error creating parameter: ${error.message}`);
+        }
+    }
+    static async getAllAreaTopics() {
+        try {
+            const areaTopics = await Parameters.findAll({
+                attributes: ['id', 'area', 'topic'],
+                where: {
+                    area: { [Op.ne]: null },
+                    topic: { [Op.ne]: null },
+                },
+            });
+            return areaTopics;
+        } catch (error) {
+            throw new Error(`Error fetching areaTopics: ${error.message}`);
+        }
+    }
+    static async updateAreaTopic(id, { area, topic }) {
+        try {
+            if (!area || !topic) {
+                throw new Error("Both 'area' and 'topic' are required.");
+            }
+            const [rowsUpdated] = await Parameters.update({ area, topic }, {
+                where: { id },
+            });
+            if (rowsUpdated === 0) return null;
+            return { message: `Area and Topic with ID ${id} updated successfully.` };
+        } catch (error) {
+            throw new Error(`Error updating area and topic with ID ${id}: ${error.message}`);
+        }
+    }
+    static async deleteAreaTopic(id) {
+        try {
+            const rowsDeleted = await Parameters.destroy({
+                where: { id },
+            });
+            if (rowsDeleted === 0) return null;
+            return { message: `Area and Topic with ID ${id} deleted successfully.` };
+        } catch (error) {
+            throw new Error(`Error deleting area and topic with ID ${id}: ${error.message}`);
+        }
+    }
+/************************************************************************************************************************************* */
 }
