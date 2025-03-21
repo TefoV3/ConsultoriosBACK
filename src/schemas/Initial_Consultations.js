@@ -32,12 +32,15 @@ export const InitialConsultations = sequelize.define('Initial_Consultations', {
     Init_Subject: DataTypes.STRING(250),
     Init_Lawyer: DataTypes.STRING(250),
     Init_Date: DataTypes.DATE,
+    Init_FinishDate: DataTypes.DATE,
     Init_Office: DataTypes.STRING(100),
     Init_Topic: DataTypes.STRING(250),
     Init_Service: DataTypes.STRING(100),
     Init_Referral: DataTypes.STRING(100),
     Init_Status: DataTypes.BOOLEAN,
     Init_Notes: DataTypes.STRING(255),
+    Init_EndDate: DataTypes.DATE,
+    Init_Complexity: DataTypes.CHAR(10),
     User_ID: {
         type: DataTypes.CHAR(10),
         allowNull: false

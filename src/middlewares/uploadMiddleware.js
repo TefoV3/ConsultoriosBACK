@@ -6,7 +6,7 @@ const storage = multer.memoryStorage();
 export const upload = multer({
     storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // Límite de 5MB
-    ffileFilter: (req, file, cb) => {
+    fileFilter: (req, file, cb) => {
         if (!file) { 
             return cb(new Error("Archivo no definido"), false);
         }

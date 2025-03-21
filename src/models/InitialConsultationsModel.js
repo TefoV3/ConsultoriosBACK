@@ -26,6 +26,16 @@ export class InitialConsultationsModel {
         }
     }
 
+    static async getByStatus(status) {
+        try {
+            return await InitialConsultations.findOne({
+                where: { Init_Status: status }
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving initial consultation: ${error.message}`);
+        }
+    }
+
     static async createInitialConsultation(data,file) {
         const t = await sequelize.transaction();
         let userCreated = false;
@@ -86,6 +96,7 @@ export class InitialConsultationsModel {
                 User_ID: data.User_ID,
                 Init_ClientType: data.Init_ClientType,
                 Init_Date: data.Init_Date,
+                Init_EndDate: data.Init_EndDate,
                 Init_Subject: data.Init_Subject,
                 Init_Lawyer: data.Init_Lawyer,
                 Init_Notes: data.Init_Notes,
@@ -93,6 +104,7 @@ export class InitialConsultationsModel {
                 Init_Topic: data.Init_Topic,
                 Init_Service: data.Init_Service,
                 Init_Referral: data.Init_Referral,
+                Init_Complexity: data.Init_Complexity,
                 Init_Status: data.Init_Status,
             }, { transaction: t });
 
