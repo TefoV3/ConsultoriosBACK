@@ -21,6 +21,17 @@ export class FirstConsultationsController {
         }
     }
 
+    static async getByUserId(req, res) {
+        const { userId } = req.params;
+        try {
+            const consultations = await InitialConsultationsModel.getByUserId(userId);
+            res.json(consultations);
+        }
+        catch (error) {
+            res.status(500).json(error);
+        }
+    }
+
     static async createFirstConsultations(req, res) {
         try {
             const { Internal_ID, Init_Code, Evidence_Name } = req.body;
