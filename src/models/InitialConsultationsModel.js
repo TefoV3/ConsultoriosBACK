@@ -96,6 +96,7 @@ export class InitialConsultationsModel {
                 User_ID: data.User_ID,
                 Init_ClientType: data.Init_ClientType,
                 Init_Date: data.Init_Date,
+                Init_EndDate: data.Init_EndDate,
                 Init_Subject: data.Init_Subject,
                 Init_Lawyer: data.Init_Lawyer,
                 Init_Notes: data.Init_Notes,

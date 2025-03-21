@@ -68,7 +68,9 @@ export const Case = sequelize.define('Cases', {
 }, { timestamps: false });
 
 // Define associations
+/*
 Case.belongsTo(User, { foreignKey: "User_ID" });
 Case.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
 User.hasMany(Case, { foreignKey: "User_ID" });
 InitialConsultations.hasOne(Case, { foreignKey: "Init_Code" });
+*/
