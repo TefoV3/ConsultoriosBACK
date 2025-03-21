@@ -2,6 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
 import { Case } from "./Case.js";
 import { InternalUser } from "./Internal_User.js";
+import { InitialConsultations } from "./Initial_Consultations.js";
 
 /*
 CREATE TABLE Activity (
@@ -28,12 +29,12 @@ export const Activity = sequelize.define('Activity', {
         primaryKey: true,
         autoIncrement: true
     },
-    Case_Code: {
+    Init_Code: {
         type: DataTypes.CHAR(50),
-        allowNull: false
+        primaryKey: true
     },
-    Internal_User_ID: {
-        type: DataTypes.CHAR(10),
+    Internal_ID: {
+        type: DataTypes.CHAR(15),
         allowNull: false
     },
     Last_Activity: DataTypes.STRING(250),
@@ -53,8 +54,8 @@ export const Activity = sequelize.define('Activity', {
 }, { timestamps: false });
 
 // Define associations
-Activity.belongsTo(Case, { foreignKey: "Case_Code" });
-Case.hasMany(Activity, { foreignKey: "Case_Code" });
+Activity.belongsTo(Case, { foreignKey: "Init_Code" });
+InitialConsultations.hasMany(Activity, { foreignKey: "Init_Code" });
 
-Activity.belongsTo(InternalUser, { foreignKey: "Internal_User_ID" });
-InternalUser.hasMany(Activity, { foreignKey: "Internal_User_ID" });
+Activity.belongsTo(InternalUser, { foreignKey: "Internal_ID" });
+InternalUser.hasMany(Activity, { foreignKey: "Internal_ID" });

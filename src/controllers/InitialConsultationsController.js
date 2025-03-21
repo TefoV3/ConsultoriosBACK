@@ -20,6 +20,16 @@ export class FirstConsultationsController {
             res.status(500).json(error);
         }
     }
+    static async getByStatus(req, res) {
+        const { status } = req.params;
+        try {
+            const consultation = await InitialConsultationsModel.getByStatus(status);
+            if (consultation) return res.json(consultation);
+            res.status(404).json({ message: "First consultation not found" });
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    }
 
     static async createFirstConsultations(req, res) {
         try {

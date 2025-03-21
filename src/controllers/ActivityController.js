@@ -23,16 +23,23 @@ export class ActivityController {
 
     static async createActivity(req, res) {
         try {
-            const internalId = req.headers["internal-id"]; // ✅ Se obtiene el usuario interno desde los headers
+            console.log("📥 Recibiendo solicitud para crear actividad...");
+            const { Internal_ID, Init_Code } = req.body;
 
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            if (!req.file) {
+                console.error("❌ No se recibió ningún archivo.");
+                return res.status(400).json({ error: "Debe adjuntar un archivo PDF." });
             }
 
-            const newActivity = await ActivityModel.create(req.body, internalId);
-            return res.status(201).json(newActivity);
+            console.log("✅ Archivo recibido:", req.file.originalname);
+
+            // Llamar al modelo y pasar `req.file`
+            const newActivity = await ActivityModel.create(req.body, Internal_ID, req.file);
+
+            res.status(201).json({ message: "Actividad creada con evidencia", data: newActivity });
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            console.error("❌ Error en la creación de actividad:", error.message);
+            res.status(500).json({ error: error.message });
         }
     }
 

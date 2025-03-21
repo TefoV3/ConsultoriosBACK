@@ -38,6 +38,7 @@ export const InitialConsultations = sequelize.define('Initial_Consultations', {
     Init_Referral: DataTypes.STRING(100),
     Init_Status: DataTypes.BOOLEAN,
     Init_Notes: DataTypes.STRING(255),
+    Init_EndDate: DataTypes.DATE,
     User_ID: {
         type: DataTypes.CHAR(10),
         allowNull: false
