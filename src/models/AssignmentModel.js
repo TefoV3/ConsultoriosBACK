@@ -1,5 +1,7 @@
 import { AuditModel } from "../models/AuditModel.js";
 import { Assignment } from "../schemas/Assignment.js";
+import { InitialConsultations } from "../schemas/Initial_Consultations.js";
+import { InternalUser } from "../schemas/Internal_User.js";
 
 export class AssignmentModel {
 
@@ -10,7 +12,6 @@ export class AssignmentModel {
             throw new Error(`Error retrieving assignments: ${error.message}`);
         }
     }
-
     static async getById(id) {
         try {
             return await Assignment.findOne({
@@ -20,7 +21,6 @@ export class AssignmentModel {
             throw new Error(`Error retrieving assignment: ${error.message}`);
         }
     }
-
     static async create(data, internalId) {
         try {
             const newAssignment = await Assignment.create(data);
@@ -38,7 +38,81 @@ export class AssignmentModel {
             throw new Error(`Error creating assignment: ${error.message}`);
         }
     }
+    static async assignCasesEquitably() {
+        try {
+            // Obtener estudiantes activos agrupados por área
+            const studentsByArea = await InternalUser.findAll({
+                where: { Internal_Type: "Estudiante" },
+                attributes: ["Internal_ID", "Internal_Area"],
+            });
 
+            const coordinatorsByArea = await InternalUser.findAll({
+                where: { Internal_Type: "Coordinador" },
+                attributes: ["Internal_ID", "Internal_Area"],
+            });
+
+            const studentsGroupedByArea = studentsByArea.reduce((acc, student) => {
+                if (!acc[student.Internal_Area]) acc[student.Internal_Area] = [];
+                acc[student.Internal_Area].push(student.Internal_ID);
+                return acc;
+            }, {});
+
+            const coordinatorsGroupedByArea = coordinatorsByArea.reduce((acc, coordinator) => {
+                if (!acc[coordinator.Internal_Area]) acc[coordinator.Internal_Area] = [];
+                acc[coordinator.Internal_Area].push(coordinator.Internal_ID);
+                return acc;
+            }, {});
+
+            // Obtener casos "Nuevo" agrupados por área
+            const newCases = await InitialConsultations.findAll({
+                where: { Init_Type: "Nuevo" },
+                attributes: ["Init_Code", "Init_Subject", "Init_Complexity"],
+            });
+
+            const casesGroupedByArea = newCases.reduce((acc, consultation) => {
+                const area = consultation.Init_Subject;
+                if (!acc[area]) acc[area] = [];
+                acc[area].push(consultation);
+                return acc;
+            }, {});
+
+            // Realizar la asignación
+            const assignments = [];
+            for (const [area, cases] of Object.entries(casesGroupedByArea)) {
+                const students = studentsGroupedByArea[area] || [];
+                const coordinators = coordinatorsGroupedByArea[area] || [];
+                const totalUsers = students.concat(coordinators);
+
+                if (totalUsers.length === 0) continue; // Si no hay usuarios en el área, saltar
+
+                for (let i = 0; i < cases.length; i++) {
+                    const currentUser = totalUsers[i % totalUsers.length];
+                    const assignmentData = {
+                        Init_Code: cases[i].Init_Code,
+                        Assignment_Date: new Date(),
+                        Internal_User_ID_Student: students.includes(currentUser) ? currentUser : null,
+                        Internal_User_ID: currentUser,
+                    };
+
+                    assignments.push(assignmentData);
+                }
+            }
+
+            // Insertar las asignaciones en la base de datos
+            await Assignment.bulkCreate(assignments);
+
+            // Actualizar Init_Type de los casos a "Asignado"
+            const assignedCaseIds = assignments.map(a => a.Init_Code);
+            await InitialConsultations.update(
+                { Init_Type: "Asignado" },
+                { where: { Init_Code: assignedCaseIds } }
+            );
+
+            return { message: "Asignación realizada con éxito", assignments };
+        } catch (error) {
+            throw new Error(`Error al asignar casos: ${error.message}`);
+        }
+    }
     static async update(id, data, internalId) {
         try {
             const assignment = await this.getById(id);
@@ -65,7 +139,6 @@ export class AssignmentModel {
             throw new Error(`Error updating assignment: ${error.message}`);
         }
     }
-
     static async delete(id, internalId) {
         try {
             const assignment = await this.getById(id);

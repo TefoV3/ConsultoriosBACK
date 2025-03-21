@@ -36,6 +36,16 @@ export class AssignmentController {
         }
     }
 
+    static async assignCasesEquitably(req, res) {
+        try {
+            // Llama al método para asignar casos balanceados
+            const result = await AssignmentModel.assignCasesEquitably();
+            return res.status(200).json(result);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+
     static async update(req, res) {
         try {
             const { id } = req.params;

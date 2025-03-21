@@ -8,3 +8,4 @@ AssignmentRouter.get('/asignacion/:id', AssignmentController.getById);
 AssignmentRouter.post('/asignacion', AssignmentController.createAssignment);
 AssignmentRouter.put('/asignacion/:id', AssignmentController.update);
 AssignmentRouter.delete('/asignacion/:id', AssignmentController.delete);
+AssignmentRouter.post('/asignacion/equitativa', AssignmentController.assignCasesEquitably);

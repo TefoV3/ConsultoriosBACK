@@ -1,12 +1,12 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
-import { Case } from "./Case.js";
+import { InitialConsultations } from "./Initial_Consultations.js";
 import { InternalUser } from "./Internal_User.js";
 
 /*
 CREATE TABLE Assignment (
     Assignment_ID INT PRIMARY KEY AUTO_INCREMENT,
-    Case_Code CHAR(50) NOT NULL,
+    Init_Code CHAR(50) NOT NULL, 
     Assignment_Date DATE,
     Internal_User_ID_Student CHAR(10),
     Internal_User_ID CHAR(10) NOT NULL
@@ -19,7 +19,7 @@ export const Assignment = sequelize.define('Assignments', {
         primaryKey: true,
         autoIncrement: true
     },
-    Case_Code: {
+    Init_Code: { // Cambiar Case_Code a Init_Code
         type: DataTypes.CHAR(50),
         allowNull: false
     },
@@ -32,7 +32,7 @@ export const Assignment = sequelize.define('Assignments', {
 }, { timestamps: false });
 
 // Define associations
-Assignment.belongsTo(Case, { foreignKey: "Case_Code" });
+Assignment.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
 Assignment.belongsTo(InternalUser, { foreignKey: "Internal_User_ID" });
-Case.hasMany(Assignment, { foreignKey: "Case_Code" });
+InitialConsultations.hasMany(Assignment, { foreignKey: "Init_Code" });
 InternalUser.hasMany(Assignment, { foreignKey: "Internal_User_ID" });
