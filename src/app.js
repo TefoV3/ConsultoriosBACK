@@ -43,13 +43,8 @@ import { AcademicInstructionRouter } from './routes/parameter_routes/AcademicIns
 import {ComplexityRouter} from './routes/parameter_routes/ComplexityRoutes.js'
 import {DocumentationBackupRouter} from './routes/parameter_routes/DocumentationBackupRoutes.js'
 import {PeriodTypeRouter} from './routes/parameter_routes/PeriodTypeRoutes.js'
-<<<<<<< HEAD
-import {NumberOfAttemptsRouter} from './routes/parameter_routes/NumberOfAttempsRoutes.js'
-import {PracticalHoursRouter} from './routes/parameter_routes/practical_hours_routes.js'
-=======
 import {NumberOfAttemptsRouter} from './routes/parameter_routes/NumberOfAttemptsRoutes.js'
 import {PracticalHoursRouter} from './routes/parameter_routes/PracticalHoursRoutes.js'
->>>>>>> 0a1eeb57fda1aa5417db4f77043db2d7236cc698
 const app = express()
 
 // middleware

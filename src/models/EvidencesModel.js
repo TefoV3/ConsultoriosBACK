@@ -38,7 +38,7 @@ export class EvidenceModel {
                 Evidence_Document_Type: file.mimetype,
                 Evidence_URL: null, // Se usa NULL ya que el PDF está en BLOB
                 Evidence_Date: new Date(),
-                Evidence_File: file.buffer // Guardar el archivo en formato BLOB
+                Evidence_File: file ? file.buffer : null  // Guardar el archivo en formato BLOB
             }, { transaction: t });
 
             // Registrar en Audit

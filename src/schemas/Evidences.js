@@ -42,10 +42,7 @@ export const Evidence = sequelize.define('Evidences', {
     Evidence_Document_Type: DataTypes.STRING(100),
     Evidence_URL: DataTypes.STRING(255),
     Evidence_Date: DataTypes.DATE,
-    Evidence_File: {
-        type: DataTypes.BLOB("long"),
-        allowNull: false
-    }
+    Evidence_File: DataTypes.BLOB("long"),
 }, { timestamps: false });
 
 // Define associations
