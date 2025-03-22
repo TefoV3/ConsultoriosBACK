@@ -28,7 +28,23 @@ import { TypeOfHousingRouter } from './routes/parameter_routes/type_of_housing_r
 import { OwnAssetsRouter } from './routes/parameter_routes/own_assets_routes.js'
 import { PensionerRouter } from './routes/parameter_routes/pensioner_routes.js'
 import { HealthInsuranceRouter } from './routes/parameter_routes/health_insurance_routes.js'
-
+import { ZoneRouter } from './routes/parameter_routes/ZoneRoutes.js'
+import {SectorRouter} from './routes/parameter_routes/SectorRoutes.js'
+import { ProvinceRouter} from './routes/parameter_routes/ProvinceRoutes.js'
+import { CityRouter } from './routes/parameter_routes/CityRoutes.js'
+import { CountryRouter } from './routes/parameter_routes/CountryRoutes.js'
+import {SubjectRouter} from './routes/parameter_routes/SubjectRoutes.js' 
+import {TopicRouter} from './routes/parameter_routes/TopicRoutes.js'
+import {EthnicityRouter} from './routes/parameter_routes/EthnicityRoutes.js'
+import {CivilStatusRouter} from './routes/parameter_routes/CivilStatusRoutes.js'
+import {SexRouter} from './routes/parameter_routes/SexRoutes.js'
+import {DerivedByRouter} from './routes/parameter_routes/DerivedByRoutes.js'
+import { AcademicInstructionRouter } from './routes/parameter_routes/AcademicInstructionRoutes.js'
+import {ComplexityRouter} from './routes/parameter_routes/ComplexityRoutes.js'
+import {DocumentationBackupRouter} from './routes/parameter_routes/DocumentationBackupRoutes.js'
+import {PeriodTypeRouter} from './routes/parameter_routes/PeriodTypeRoutes.js'
+import {NumberOfAttempsRouter} from './routes/parameter_routes/NumberOfAttempsRoutes.js'
+import {PracticalHoursRouter} from './routes/parameter_routes/practical_hours_routes.js'
 const app = express()
 
 // middleware
@@ -63,5 +79,21 @@ app.use(TypeOfHousingRouter)
 app.use(OwnAssetsRouter)
 app.use(PensionerRouter)
 app.use(HealthInsuranceRouter)
-
+app.use(ZoneRouter)
+app.use(SectorRouter)
+app.use(ProvinceRouter)
+app.use(CityRouter)
+app.use(CountryRouter)
+app.use(SubjectRouter)
+app.use(TopicRouter)
+app.use (EthnicityRouter)
+app.use(CivilStatusRouter)
+app.use(SexRouter)
+app.use(DerivedByRouter)
+app.use(AcademicInstructionRouter)
+app.use(ComplexityRouter)
+app.use(DocumentationBackupRouter)
+app.use(PeriodTypeRouter)
+app.use(NumberOfAttempsRouter)
+app.use(PracticalHoursRouter)
 export default app

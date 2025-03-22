@@ -1,15 +1,17 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
 
-export const Zone_Sector = sequelize.define('Zone_Sector', {
-    Zone_Sector_ID: {
+export const Sex = sequelize.define('Sex', {
+    Sex_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    Zone: DataTypes.STRING(30),
-    Sector: DataTypes.STRING(80),
-    Zone_Sector_Status: {
+    Sex_Name: {
+        type: DataTypes.STRING(50),
+        allowNull: false
+    },
+    Sex_Status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
