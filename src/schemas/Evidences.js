@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
-import { Case } from "./Case.js";
 import { Activity } from "./Activity.js";
 import { InitialConsultations } from "./Initial_Consultations.js";
 
@@ -38,7 +37,7 @@ export const Evidence = sequelize.define('Evidences', {
         allowNull: false
     },
     */
-
+    
     Evidence_Name: DataTypes.STRING(250),
     Evidence_Document_Type: DataTypes.STRING(100),
     Evidence_URL: DataTypes.STRING(255),

@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
-import { Case } from "./Case.js";
 import { InternalUser } from "./Internal_User.js";
 import { InitialConsultations } from "./Initial_Consultations.js";
 
