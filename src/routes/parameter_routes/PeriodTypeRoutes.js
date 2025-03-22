@@ -1,7 +1,7 @@
-import express from "express";
+import { Router } from "express";
 import { PeriodTypeController } from "../../controllers/parameter_controllers/PeriodTypeController.js";
 
-const PeriodTypeRouter = express.Router();
+export const PeriodTypeRouter = Router();
 
 PeriodTypeRouter.get("/period-types", PeriodTypeController.getAll);
 PeriodTypeRouter.get("/period-types/:id", PeriodTypeController.getById);

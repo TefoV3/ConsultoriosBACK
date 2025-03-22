@@ -1,7 +1,7 @@
-import express from "express";
+import { Router } from "express";
 import { CityController } from "../../controllers/parameter_controllers/CityController.js";
 
-const CityRouter = express.Router();
+ export const CityRouter = Router();
 
 CityRouter.get("/cities", CityController.getAll); // Obtener todas las ciudades
 CityRouter.get("/cities/:id", CityController.getById); // Obtener una ciudad por ID

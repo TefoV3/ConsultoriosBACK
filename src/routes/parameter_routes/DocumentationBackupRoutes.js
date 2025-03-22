@@ -1,7 +1,7 @@
-import express from "express";
+import { Router } from "express";
 import { DocumentationBackupController } from "../../controllers/parameter_controllers/DocumentationBackupController.js";
 
-const DocumentationBackupRouter = express.Router();
+export const DocumentationBackupRouter = Router();
 
 DocumentationBackupRouter.get("/documentation-backups", DocumentationBackupController.getAll);
 DocumentationBackupRouter.get("/documentation-backups/:id", DocumentationBackupController.getById);

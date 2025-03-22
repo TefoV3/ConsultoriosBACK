@@ -1,7 +1,7 @@
-import express from "express";
+import { Router } from "express";
 import { SubjectController } from "../../controllers/parameter_controllers/SubjectController.js";
 
-const SubjectRouter = express.Router();
+export const SubjectRouter = Router();
 
 SubjectRouter.get("/subjects", SubjectController.getAll); // Obtener todos los subjects
 SubjectRouter.get("/subjects/:id", SubjectController.getById); // Obtener un subject por ID
