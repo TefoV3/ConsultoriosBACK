@@ -44,19 +44,24 @@ export class FirstConsultationsController {
 
     static async createFirstConsultations(req, res) {
         try {
-            const { Internal_ID, Init_Code, Evidence_Name } = req.body;
-
-            if (!req.file) {
-                return res.status(400).json({ error: "Debe adjuntar un archivo PDF." });
-            }
-
-            const newConsultation = await InitialConsultationsModel.createInitialConsultation(req.body, req.file);
-
-            res.status(201).json({ message: "Consulta inicial creada con evidencia", data: newConsultation });
+            console.log("📂 Archivos recibidos:", req.files);
+    
+            // Crear un objeto con los archivos recibidos
+            const files = {
+                evidenceFile: req.files?.evidenceFile ? req.files.evidenceFile[0] : null,
+                healthDocuments: req.files?.healthDocuments ? req.files.healthDocuments[0] : null
+            };
+    
+            // 🔹 Llamar al método del modelo pasando los archivos correctamente
+            const newConsultation = await InitialConsultationsModel.createInitialConsultation(req.body, files);
+    
+            res.status(201).json({ message: "Consulta inicial creada", data: newConsultation });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
+    
+    
 
     static async update(req, res) {
         try {

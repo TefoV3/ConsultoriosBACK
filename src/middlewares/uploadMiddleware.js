@@ -5,17 +5,13 @@ const storage = multer.memoryStorage();
 
 export const upload = multer({
     storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // Límite de 5MB
+    limits: { fileSize: 5 * 1024 * 1024 }, // Límite de 5 MB por archivo
     fileFilter: (req, file, cb) => {
-        if (!file) { 
-            return cb(new Error("Archivo no definido"), false);
+        if (file && file.mimetype !== "application/pdf") {
+            return cb(new Error("Solo se permiten archivos PDF"), false); // Rechazar archivos que no sean PDF
         }
-        if (file.mimetype !== "application/pdf") {
-            return cb(new Error("Solo se permiten archivos PDF"), false);
-        }
-        cb(null, true);
+        cb(null, true); // ✅ Archivo aceptado
     }
-    
 });
 
 

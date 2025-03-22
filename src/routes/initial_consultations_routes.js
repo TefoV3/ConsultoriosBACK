@@ -10,6 +10,13 @@ InitialConsultationsRouter.get('/primerasconsultas', FirstConsultationsControlle
 InitialConsultationsRouter.get('/primerasconsultas/:id', FirstConsultationsController.getById);
 InitialConsultationsRouter.get('/primerasconsultas/:status', FirstConsultationsController.getByStatus);
 //InitialConsultationsRouter.post('/primerasconsultas', FirstConsultationsController.createFirstConsultations);
-InitialConsultationsRouter.post('/primerasconsultas', upload.single("file"),FirstConsultationsController.createFirstConsultations);
+InitialConsultationsRouter.post(
+    "/primerasconsultas",
+    upload.fields([
+        { name: "evidenceFile", maxCount: 1 },
+        { name: "healthDocuments", maxCount: 1 }
+    ]),
+    FirstConsultationsController.createFirstConsultations
+);
 InitialConsultationsRouter.put('/primerasconsultas/:id', FirstConsultationsController.update);
 InitialConsultationsRouter.delete('/primerasconsultas/:id', FirstConsultationsController.delete);

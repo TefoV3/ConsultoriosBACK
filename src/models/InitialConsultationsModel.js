@@ -36,11 +36,14 @@ export class InitialConsultationsModel {
         }
     }
 
-    static async createInitialConsultation(data,file) {
+    static async createInitialConsultation(data,files) {
         const t = await sequelize.transaction();
         let userCreated = false;
 
         try {
+            const evidenceFile = files?.evidenceFile || null;
+            const healthDocument = files?.healthDocuments || null;
+
             // Verificar si el usuario externo existe, si no, crearlo
             let user = await User.findOne({ where: { User_ID: data.User_ID }, transaction: t });
             if (!user) {
@@ -62,6 +65,7 @@ export class InitialConsultationsModel {
                     User_Zone: data.User_Zone,
                     User_MaritalStatus: data.User_MaritalStatus,
                     User_Disability: data.User_Disability,
+                    User_HealthDocuments: healthDocument ? healthDocument.buffer : null,
                     User_Benefits: data.User_Benefits,
                     User_BirthDate: data.User_BirthDate,
                     User_IncomeLevel: data.User_IncomeLevel,
@@ -71,6 +75,7 @@ export class InitialConsultationsModel {
                     User_ReferenceName: data.User_ReferenceName,
                     User_ReferencePhone: data.User_ReferencePhone,
                 }, { transaction: t });
+                console.log("Buffer de documento de salud:", healthDocument ? healthDocument.buffer : "No hay archivo de documento de salud");
 
                 userCreated = true; // Marcar que el usuario fue creado en esta transacción
 
@@ -107,7 +112,6 @@ export class InitialConsultationsModel {
                 Init_Complexity: data.Init_Complexity,
                 Init_Status: data.Init_Status,
                 Init_Type: data.Init_Type,
-                Init_Status: data.Init_Status
             }, { transaction: t });
 
             // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
@@ -119,20 +123,19 @@ export class InitialConsultationsModel {
             );
 
             // 🔹 Verificar si se subió un archivo PDF
-            if (!file) {
-                throw new Error("Debe adjuntar un archivo PDF para la evidencia.");
-            }
+
 
             // 🔹 Crear la evidencia asociada
             const newEvidence = await Evidence.create({
                 Internal_ID: data.Internal_ID,
                 Init_Code: data.Init_Code,
-                Evidence_Name: data.Evidence_Name || file.originalname,
-                Evidence_Document_Type: file.mimetype,
-                Evidence_URL: null, // Se usa NULL ya que el PDF está en BLOB
+                Evidence_Name: evidenceFile ? evidenceFile.originalname : "Sin Documento",
+                Evidence_Document_Type: evidenceFile ? evidenceFile.mimetype : null,
+                Evidence_URL: null,
                 Evidence_Date: new Date(),
-                Evidence_File: file.buffer // Guardar el archivo en formato BLOB
+                Evidence_File: evidenceFile ? evidenceFile.buffer : null, // Archivo de evidencia
             }, { transaction: t });
+            console.log("Buffer de evidencia:", evidenceFile ? evidenceFile.buffer : "No hay archivo de evidencia");
 
             // 🔹 Registrar en Audit la creación de la evidencia
             await AuditModel.registerAudit(
@@ -144,10 +147,11 @@ export class InitialConsultationsModel {
 
             await t.commit();
             return { 
-                message: "Consulta inicial y evidencia creadas exitosamente", 
+                message: "Consulta inicial ", 
                 consultation: newConsultation,
                 evidence: newEvidence
             };
+            
 
         } catch (error) {
             await t.rollback(); // Revertir la transacción en caso de error

@@ -26,9 +26,6 @@ export class EvidenceModel {
         const t = await sequelize.transaction();
 
         try {
-            if (!file) {
-                throw new Error("Se requiere un archivo PDF para la evidencia.");
-            }
 
             // Guardar la evidencia en la base de datos
             const newEvidence = await Evidence.create({
