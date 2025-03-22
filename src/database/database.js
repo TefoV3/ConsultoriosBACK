@@ -35,16 +35,16 @@ import dotenv from "dotenv";
 //USO LOCAL
 
 // HEAD
-  /* export const sequelize = new Sequelize(
+   export const sequelize = new Sequelize(
        'prueba', 
        'root', 
-       '12345', 
+       '12345678', 
        {
           host: 'localhost',
           dialect: 'mysql'
        }
    );
-    */
+    
 
 /*
 export const sequelize = new Sequelize(
@@ -70,7 +70,7 @@ dialect: 'mysql'
 );
 */
 
-
+/*
 //TefoVirtual
 export const sequelize = new Sequelize(
     'ConsultoriosJuricosevi', 
@@ -80,7 +80,7 @@ export const sequelize = new Sequelize(
         host: '192.168.100.104', 
         dialect: 'mysql'
     }
-);
+);*/
 //Francis
 
 /*export const sequelize = new Sequelize(
