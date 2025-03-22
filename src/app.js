@@ -34,15 +34,6 @@ import { SectorRouter } from './routes/parameter_routes/SectorRoutes.js'
 import { ProvinceRouter} from './routes/parameter_routes/ProvinceRoutes.js'
 import { CityRouter } from './routes/parameter_routes/CityRoutes.js'
 import { CountryRouter } from './routes/parameter_routes/CountryRoutes.js'
-<<<<<<< HEAD
-import {SubjectRouter} from './routes/parameter_routes/SubjectRoutes.js' 
-import {TopicRouter} from './routes/parameter_routes/TopicRoutes.js'
-import {EthnicityRouter} from './routes/parameter_routes/EthnicityRoutes.js'
-import {CivilStatusRouter} from './routes/parameter_routes/CivilStatusRoutes.js'
-import {SexRouter} from './routes/parameter_routes/SexRoutes.js'
-import {DerivedByRouter} from './routes/parameter_routes/DerivedByRoutes.js'
-import {AcademicInstructionRouter} from './routes/parameter_routes/AcademicInstructionRoutes.js'
-=======
 import { SubjectRouter } from './routes/parameter_routes/SubjectRoutes.js' 
 import { TopicRouter } from './routes/parameter_routes/TopicRoutes.js'
 import { EthnicityRouter } from './routes/parameter_routes/EthnicityRoutes.js'
@@ -50,7 +41,6 @@ import { CivilStatusRouter } from './routes/parameter_routes/CivilStatusRoutes.j
 import { SexRouter } from './routes/parameter_routes/SexRoutes.js'
 import { DerivedByRouter } from './routes/parameter_routes/DerivedByRoutes.js'
 import { AcademicInstructionRouter } from './routes/parameter_routes/AcademicInstructionRoutes.js'
->>>>>>> 295424217ab07d3042a832db598862959702c548
 import {ComplexityRouter} from './routes/parameter_routes/ComplexityRoutes.js'
 import {DocumentationBackupRouter} from './routes/parameter_routes/DocumentationBackupRoutes.js'
 import {PeriodTypeRouter} from './routes/parameter_routes/PeriodTypeRoutes.js'
