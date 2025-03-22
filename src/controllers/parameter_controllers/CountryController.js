@@ -1,10 +1,10 @@
-import { ZoneSectorModel } from "../../models/parameter_tables/ZoneSectorModel.js";
+import { CountryModel } from "../../models/parameter_tables/CountryModel.js";
 
-export class ZoneSectorController {
+export class CountryController {
 
     static async getAll(req, res) {
         try {
-            const data = await ZoneSectorModel.getAll();
+            const data = await CountryModel.getAll();
             res.status(200).json(data);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -14,8 +14,8 @@ export class ZoneSectorController {
     static async getById(req, res) {
         try {
             const { id } = req.params;
-            const data = await ZoneSectorModel.getById(id);
-            if (!data) return res.status(404).json({ message: "Zone sector not found" });
+            const data = await CountryModel.getById(id);
+            if (!data) return res.status(404).json({ message: "Country not found" });
             res.status(200).json(data);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -24,8 +24,8 @@ export class ZoneSectorController {
 
     static async create(req, res) {
         try {
-            const newZoneSector = await ZoneSectorModel.create(req.body);
-            res.status(201).json(newZoneSector);
+            const newCountry = await CountryModel.create(req.body);
+            res.status(201).json(newCountry);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -34,9 +34,9 @@ export class ZoneSectorController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const updatedZoneSector = await ZoneSectorModel.update(id, req.body);
-            if (!updatedZoneSector) return res.status(404).json({ message: "Zone sector not found or no changes made" });
-            res.status(200).json(updatedZoneSector);
+            const updatedCountry = await CountryModel.update(id, req.body);
+            if (!updatedCountry) return res.status(404).json({ message: "Country not found or no changes made" });
+            res.status(200).json(updatedCountry);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -45,9 +45,9 @@ export class ZoneSectorController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const deletedZoneSector = await ZoneSectorModel.delete(id);
-            if (!deletedZoneSector) return res.status(404).json({ message: "Zone sector not found" });
-            res.status(200).json(deletedZoneSector);
+            const deletedCountry = await CountryModel.delete(id);
+            if (!deletedCountry) return res.status(404).json({ message: "Country not found" });
+            res.status(200).json(deletedCountry);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }

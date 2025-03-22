@@ -106,6 +106,7 @@ export class InitialConsultationsModel {
                 Init_Referral: data.Init_Referral,
                 Init_Complexity: data.Init_Complexity,
                 Init_Status: data.Init_Status,
+                Init_Type: data.Init_Type,
             }, { transaction: t });
 
             // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
