@@ -10,6 +10,7 @@ import {InternalUserRouter} from './routes/internal_user_routes.js'
 import {UserRouter} from './routes/user_routes.js'
 import { AuditRouter } from './routes/audit_routes.js'
 import { corsMiddleware } from './middlewares/cors.js'
+import { authMiddleware } from './middlewares/auth.js';
 
 //Parameter Routes
 import { CaseStatusRouter } from './routes/parameter_routes/case_status_routes.js'
@@ -29,10 +30,11 @@ import { OwnAssetsRouter } from './routes/parameter_routes/own_assets_routes.js'
 import { PensionerRouter } from './routes/parameter_routes/pensioner_routes.js'
 import { HealthInsuranceRouter } from './routes/parameter_routes/health_insurance_routes.js'
 import { ZoneRouter } from './routes/parameter_routes/ZoneRoutes.js'
-import {SectorRouter} from './routes/parameter_routes/SectorRoutes.js'
+import { SectorRouter } from './routes/parameter_routes/SectorRoutes.js'
 import { ProvinceRouter} from './routes/parameter_routes/ProvinceRoutes.js'
 import { CityRouter } from './routes/parameter_routes/CityRoutes.js'
 import { CountryRouter } from './routes/parameter_routes/CountryRoutes.js'
+<<<<<<< HEAD
 import {SubjectRouter} from './routes/parameter_routes/SubjectRoutes.js' 
 import {TopicRouter} from './routes/parameter_routes/TopicRoutes.js'
 import {EthnicityRouter} from './routes/parameter_routes/EthnicityRoutes.js'
@@ -40,6 +42,15 @@ import {CivilStatusRouter} from './routes/parameter_routes/CivilStatusRoutes.js'
 import {SexRouter} from './routes/parameter_routes/SexRoutes.js'
 import {DerivedByRouter} from './routes/parameter_routes/DerivedByRoutes.js'
 import {AcademicInstructionRouter} from './routes/parameter_routes/AcademicInstructionRoutes.js'
+=======
+import { SubjectRouter } from './routes/parameter_routes/SubjectRoutes.js' 
+import { TopicRouter } from './routes/parameter_routes/TopicRoutes.js'
+import { EthnicityRouter } from './routes/parameter_routes/EthnicityRoutes.js'
+import { CivilStatusRouter } from './routes/parameter_routes/CivilStatusRoutes.js'
+import { SexRouter } from './routes/parameter_routes/SexRoutes.js'
+import { DerivedByRouter } from './routes/parameter_routes/DerivedByRoutes.js'
+import { AcademicInstructionRouter } from './routes/parameter_routes/AcademicInstructionRoutes.js'
+>>>>>>> 295424217ab07d3042a832db598862959702c548
 import {ComplexityRouter} from './routes/parameter_routes/ComplexityRoutes.js'
 import {DocumentationBackupRouter} from './routes/parameter_routes/DocumentationBackupRoutes.js'
 import {PeriodTypeRouter} from './routes/parameter_routes/PeriodTypeRoutes.js'
@@ -52,6 +63,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(corsMiddleware())
 app.use(authRoutes);
+app.use(authMiddleware);
 
 //app.use(corsMiddleware())
 app.use(ActivityRouter)
@@ -96,4 +108,5 @@ app.use(DocumentationBackupRouter)
 app.use(PeriodTypeRouter)
 app.use(NumberOfAttemptsRouter)
 app.use(PracticalHoursRouter)
-export default app
+
+export default app;

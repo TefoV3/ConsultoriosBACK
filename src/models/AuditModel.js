@@ -1,10 +1,15 @@
 import { Audit } from "../schemas/Audit.js";
+import { InternalUser } from "../schemas/Internal_User.js";
 
 export class AuditModel {
     
-    static async registerAudit(req, accion, tabla, descripcion) {
+    static async registerAudit(internalId, accion, tabla, descripcion) {
         try {
-            const internalId = req.session.user?.Internal_ID || "Sistema";
+            // Verificar que el Internal_ID existe en la tabla internal_users
+            const internalUser = await InternalUser.findOne({ where: { Internal_ID: internalId } });
+            if (!internalUser) {
+                throw new Error(`El Internal_ID ${internalId} no existe en la tabla internal_users`);
+            }
 
             return await Audit.create({
                 Internal_ID: internalId,

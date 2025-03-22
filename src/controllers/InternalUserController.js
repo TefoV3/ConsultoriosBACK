@@ -2,6 +2,8 @@ import { InternalUserModel } from "../models/InternalUserModel.js";
 import { z } from "zod";
 import { SALT_ROUNDS } from "../config.js";
 import { EMAIL_USER, EMAIL_PASS } from "../config.js";
+import jwt from "jsonwebtoken";
+import { SECRET_JWT_KEY } from "../config.js";
 
 import nodemailer from "nodemailer";
 import bcrypt from "bcrypt";

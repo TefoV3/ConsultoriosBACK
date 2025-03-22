@@ -5,9 +5,9 @@ const router = express.Router();
 
 // Endpoint para verificar la sesión del usuario
 router.get('/api/me', authMiddleware, (req, res) => {
-  // El middleware authMiddleware decodifica el token y guarda la info en req.session.user
-  if (req.session.user) {
-    return res.json(req.session.user);
+  // El middleware authMiddleware decodifica el token y guarda la info en req.user
+  if (req.user) {
+    return res.json(req.user);
   }
   return res.status(401).json({ message: 'No autorizado' });
 });
