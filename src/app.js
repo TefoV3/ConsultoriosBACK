@@ -22,6 +22,14 @@ import { ScheduleRouter } from './routes/parameter_routes/schedule_routes.js'
 import { ProtocolsRouter } from './routes/parameter_routes/protocols_routes.js'
 import { TypeOfAttentionRouter } from './routes/parameter_routes/type_of_attention_routes.js'
 import { VulnerableSituationRouter } from './routes/parameter_routes/vulnerable_situation_routes.js'
+import { OccupationsRouter } from './routes/parameter_routes/occupations_routes.js'
+import { IncomeLevelRouter } from './routes/parameter_routes/income_level_routes.js'
+import { FamilyGroupRouter } from './routes/parameter_routes/family_group_routes.js'
+import { FamilyIncomeRouter } from './routes/parameter_routes/family_income_routes.js'
+import { TypeOfHousingRouter } from './routes/parameter_routes/type_of_housing_routes.js'
+import { OwnAssetsRouter } from './routes/parameter_routes/own_assets_routes.js'
+import { PensionerRouter } from './routes/parameter_routes/pensioner_routes.js'
+import { HealthInsuranceRouter } from './routes/parameter_routes/health_insurance_routes.js'
 
 const app = express()
 
@@ -51,6 +59,13 @@ app.use(ScheduleRouter)
 app.use(ProtocolsRouter)
 app.use(TypeOfAttentionRouter)
 app.use(VulnerableSituationRouter)
-
+app.use(OccupationsRouter)
+app.use(IncomeLevelRouter)
+app.use(FamilyGroupRouter)
+app.use(FamilyIncomeRouter)
+app.use(TypeOfHousingRouter)
+app.use(OwnAssetsRouter)
+app.use(PensionerRouter)
+app.use(HealthInsuranceRouter)
 
 export default app
