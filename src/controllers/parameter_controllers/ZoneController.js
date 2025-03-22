@@ -1,4 +1,4 @@
-import { ZoneModel } from "../../models/parameter_tables/ZoneModel.js";
+import { ZoneModel } from "../../models/parameter_models/ZoneModel.js";
 
 export class ZoneController {
 

@@ -1,4 +1,4 @@
-import { EthnicityModel } from "../../models/parameter_tables/EthnicityModel.js";
+import { EthnicityModel } from "../../models/parameter_models/EthnicityModel.js";
 
 export class EthnicityController {
 

@@ -1,4 +1,4 @@
-import { SexModel } from "../../models/parameter_tables/SexModel.js";
+import { SexModel } from "../../models/parameter_models/SexModel.js";
 
 export class SexController {
 

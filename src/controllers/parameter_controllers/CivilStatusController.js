@@ -1,4 +1,4 @@
-import { CivilStatusModel } from "../../models/parameter_tables/CivilStatusModel.js";
+import { CivilStatusModel } from "../../models/parameter_models/CivilStatusModel.js";
 
 export class CivilStatusController {
 

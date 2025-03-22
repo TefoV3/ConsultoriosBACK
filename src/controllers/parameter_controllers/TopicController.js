@@ -1,4 +1,4 @@
-import { TopicModel } from "../../models/parameter_tables/TopicModel.js";
+import { TopicModel } from "../../models/parameter_models/TopicModel.js";
 
 export class TopicController {
 

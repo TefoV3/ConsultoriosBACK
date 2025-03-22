@@ -1,4 +1,4 @@
-import { DerivedByModel } from "../../models/parameter_tables/DerivedByModel.js";
+import { DerivedByModel } from "../../models/parameter_models/DerivedByModel.js";
 
 export class DerivedByController {
 
