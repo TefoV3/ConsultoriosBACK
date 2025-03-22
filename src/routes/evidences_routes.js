@@ -7,8 +7,8 @@ export const EvidenceRouter = Router();
 
 EvidenceRouter.get('/evidencia', EvidenceController.getEvidences);
 //EvidenceRouter.get('/evidencia/:id', EvidenceController.getById);
-EvidenceRouter.get("/evidencia/:id", authMiddleware, EvidenceController.downloadEvidence);
+EvidenceRouter.get("/evidencia/:id", EvidenceController.downloadEvidence);
 //EvidenceRouter.post('/evidencia', EvidenceController.createEvidence);
-EvidenceRouter.post("/evidencia", authMiddleware, upload.single("file"), EvidenceController.uploadEvidence);
+EvidenceRouter.post("/evidencia", upload.single("file"), EvidenceController.uploadEvidence);
 EvidenceRouter.put('/evidencia/:id', EvidenceController.update);
 EvidenceRouter.delete('/evidencia/:id', EvidenceController.delete);
