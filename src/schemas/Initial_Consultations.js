@@ -41,6 +41,7 @@ export const InitialConsultations = sequelize.define('Initial_Consultations', {
     Init_Notes: DataTypes.STRING(255),
     Init_EndDate: DataTypes.DATE,
     Init_Complexity: DataTypes.CHAR(10),
+    Init_Type: DataTypes.STRING(30),
     User_ID: {
         type: DataTypes.CHAR(10),
         allowNull: false

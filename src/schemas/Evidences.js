@@ -44,7 +44,7 @@ export const Evidence = sequelize.define('Evidences', {
     Evidence_Date: DataTypes.DATE,
     Evidence_File: {
         type: DataTypes.BLOB("long"),
-        allowNull: false
+        allowNull: true // ✅ Ahora acepta valores nulos
     }
 }, { timestamps: false });
 

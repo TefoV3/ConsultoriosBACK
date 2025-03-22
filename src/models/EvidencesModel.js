@@ -26,9 +26,6 @@ export class EvidenceModel {
         const t = await sequelize.transaction();
 
         try {
-            if (!file) {
-                throw new Error("Se requiere un archivo PDF para la evidencia.");
-            }
 
             // Guardar la evidencia en la base de datos
             const newEvidence = await Evidence.create({
@@ -38,7 +35,7 @@ export class EvidenceModel {
                 Evidence_Document_Type: file.mimetype,
                 Evidence_URL: null, // Se usa NULL ya que el PDF está en BLOB
                 Evidence_Date: new Date(),
-                Evidence_File: file.buffer // Guardar el archivo en formato BLOB
+                Evidence_File: file ? file.buffer : null  // Guardar el archivo en formato BLOB
             }, { transaction: t });
 
             // Registrar en Audit
