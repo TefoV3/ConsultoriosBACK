@@ -4,9 +4,9 @@ import { ParametersController } from "../controllers/ParametersController.js";
 export const ParametersRouter = Router();
 /*ZONE --> SECTOR*/ 
 ParametersRouter.get("/parameters/zone/:zone", ParametersController.getByZone);
-ParametersRouter.post("/parameters", ParametersController.create);
-ParametersRouter.put("/parameters/:zone/:sector", ParametersController.update);
-ParametersRouter.delete("/parameters/:id", ParametersController.delete);
+ParametersRouter.post("/parameters", ParametersController.createZoneSector);
+ParametersRouter.put("/parameters/:zone/:sector", ParametersController.updateZoneSector);
+ParametersRouter.delete("/parameters/:id", ParametersController.deleteZoneSector);
 /*Province*/ 
 ParametersRouter.post("/parameters/province", ParametersController.createProvince); 
 ParametersRouter.get("/parameters/provinces", ParametersController.getAllProvince); 
@@ -126,10 +126,10 @@ ParametersRouter.delete("/parameters/attachments/:id", ParametersController.dele
 //COMENTADO PORQUE NO EXISTE EN EL CONTROLADOR
 
 /* AttentionType */
-// ParametersRouter.post("/parameters/attentionType", ParametersController.createAttentionType);
-// ParametersRouter.get("/parameters/attentionTypes", ParametersController.getAllAttentionTypes);
-// ParametersRouter.put("/parameters/attentionType/:id", ParametersController.updateAttentionType);
-// ParametersRouter.delete("/parameters/attentionType/:id", ParametersController.deleteAttentionType);
+ ParametersRouter.post("/parameters/attentionType", ParametersController.createAttentionType);
+ ParametersRouter.get("/parameters/attentionTypes", ParametersController.getAllAttentionTypes);
+ ParametersRouter.put("/parameters/attentionType/:id", ParametersController.updateAttentionType);
+ ParametersRouter.delete("/parameters/attentionType/:id", ParametersController.deleteAttentionType);
 
 /* CaseStatus */
 // ParametersRouter.post("/parameters/caseStatus", ParametersController.createCaseStatus);
@@ -138,7 +138,7 @@ ParametersRouter.delete("/parameters/attachments/:id", ParametersController.dele
 // ParametersRouter.delete("/parameters/caseStatus/:id", ParametersController.deleteCaseStatus);
 
 /* Area and Topic */
-// ParametersRouter.post("/parameters/areaTopic", ParametersController.createAreaTopic);
-// ParametersRouter.get("/parameters/areaTopics", ParametersController.getAllAreaTopics);
-// ParametersRouter.put("/parameters/areaTopic/:id", ParametersController.updateAreaTopic);
-// ParametersRouter.delete("/parameters/areaTopic/:id", ParametersController.deleteAreaTopic);
+ ParametersRouter.post("/parameters/areaTopic", ParametersController.createAreaTopic);
+ ParametersRouter.get("/parameters/areaTopics", ParametersController.getAllAreaTopics);
+ ParametersRouter.put("/parameters/areaTopic/:id", ParametersController.updateAreaTopic);
+ ParametersRouter.delete("/parameters/areaTopic/:id", ParametersController.deleteAreaTopic);

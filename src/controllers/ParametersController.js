@@ -19,7 +19,7 @@ export class ParametersController {
             res.status(500).json({ error: `Error fetching sectors: ${error.message}` });
         }
     }
-    static async create(req, res) {
+    static async createZoneSector(req, res) {
         try {
             const { zone, sector } = req.body;
             const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
@@ -38,7 +38,7 @@ export class ParametersController {
             res.status(500).json({ error: `Error creating parameter: ${error.message}` });
         }
     }
-    static async update(req, res) {
+    static async updateZoneSector(req, res) {
         try {
             const { id } = req.params;
             const { zone, sector } = req.body;
@@ -62,7 +62,7 @@ export class ParametersController {
             res.status(500).json({ error: `Error updating parameter: ${error.message}` });
         }
     }
-    static async delete(req, res) {
+    static async deleteZoneSector(req, res) {
         try {
             const { id } = req.params;
             const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers

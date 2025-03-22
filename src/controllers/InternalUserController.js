@@ -46,7 +46,7 @@ export class InternalUserController {
 
     // CREATE, UPDATE AND DELETE METHODS
 
-    /*static async createInternalUser(req, res) {
+    static async createInternalUser(req, res) {
         try {
             // Definir el esquema de validación con Zod
             const internalUserSchema = z.object({
@@ -93,60 +93,8 @@ export class InternalUserController {
           } catch (error) {
             return res.status(500).json({ error: error.message });
           }
-    }*/
-          static async createInternalUser(req, res) {
-            try {
-                // Definir el esquema de validación con Zod para aceptar un arreglo de usuarios
-                const internalUserSchema = z.array(z.object({
-                    Internal_ID: z.string().min(1, { message: "El ID es obligatorio" }),
-                    Internal_Name: z.string().min(1, { message: "El nombre es obligatorio" }),
-                    Internal_LastName: z.string().min(1, { message: "El apellido es obligatorio" }),
-                    Internal_Email: z.string().email({ message: "Correo no válido" }),
-                    Internal_Password: z.string().min(1, { message: "La contraseña es obligatoria" }),
-                    Internal_Type: z.string().min(1, { message: "El tipo es obligatorio" }),
-                    Internal_Area: z.string().min(1, { message: "El area es obligatoria" }),
-                    Internal_Phone: z.string().length(10, { message: "El teléfono debe tener 10 caracteres" }),
-                    Internal_Status: z.string().min(1, { message: "El estado es obligatorio" }).default(""),
-                }));
-        
-                // Validar el request body
-                const parseResult = internalUserSchema.safeParse(req.body);
-                if (!parseResult.success) {
-                    const errorMessages = parseResult.error.errors.map((err) => err.message).join(', ');
-                    return res.status(400).json({ message: errorMessages });
-                }
-        
-                // Extraer los datos validados
-                const data = parseResult.data;
-        
-                // Procesar cada usuario del arreglo
-                for (const userData of data) {
-                    // Verificar si ya existe un usuario con esa cédula
-                    const existingID = await InternalUserModel.getById(userData.Internal_ID);
-                    if (existingID) {
-                        return res.status(401).json({ message: `Ya existe un usuario con la cédula ${userData.Internal_ID}` });
-                    }
-        
-                    // Verificar si ya existe un usuario con ese correo
-                    const existingEmail = await InternalUserModel.getByEmail(userData.Internal_Email);
-                    if (existingEmail) {
-                        return res.status(401).json({ message: `Ya existe un usuario con el correo ${userData.Internal_Email}` });
-                    }
-        
-                    // Hashear la contraseña
-                    const hashedPassword = await bcrypt.hash(userData.Internal_Password, SALT_ROUNDS);
-                    userData.Internal_Password = hashedPassword;
-        
-                    // Crear el usuario
-                    const internalUser = await InternalUserModel.create(userData);
-                }
-        
-                return res.status(201).json({ message: 'Usuarios creados exitosamente' });
-            } catch (error) {
-                return res.status(500).json({ error: error.message });
-            }
-        }
-        
+    }
+
     static async update(req, res) {
         try {
             const { id } = req.params;

@@ -12,7 +12,7 @@ export class ParametersModel {
             throw new Error(`Error retrieving sectors for zone ${zone}: ${error.message}`);
         }
     }
-    static async create({ zone, sector }, internalId) {
+    static async createZoneSector({ zone, sector }, internalId) {
         try {
             // Validar que se envíen únicamente zone y sector
             if (!zone || !sector) {
@@ -70,7 +70,7 @@ export class ParametersModel {
             throw new Error(`Error creating parameter: ${error.message}`);
         }
     }
-    static async update(id, { zone, sector }, internalId) {
+    static async updateZoneSector(id, { zone, sector }, internalId) {
         try {
             if (!zone || !sector) {
                 throw new Error("Both 'zone' and 'sector' are required for update.");
@@ -96,7 +96,7 @@ export class ParametersModel {
             throw new Error(`Error updating parameter with id ${id}: ${error.message}`);
         }
     }
-    static async delete(id, internalId) {
+    static async deleteZoneSector(id, internalId) {
         try {
             const parameter = await Parameters.findByPk(id);
             if (!parameter) return null;
