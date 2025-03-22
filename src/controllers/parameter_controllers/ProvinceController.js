@@ -1,4 +1,4 @@
-import { ProvinceModel } from "../../models/parameter_tables/ProvinceModel.js";
+import { ProvinceModel } from "../../models/parameter_models/ProvinceModel.js";
 
 export class ProvinceController {
 

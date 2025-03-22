@@ -1,4 +1,4 @@
-import { DocumentationBackupModel } from "../../models/parameter_tables/DocumentationBackupModel.js";
+import { DocumentationBackupModel } from "../../models/parameter_models/DocumentationBackupModel.js";
 
 export class DocumentationBackupController {
 

@@ -1,4 +1,4 @@
-import { PracticalHoursModel } from "../../models/parameter_tables/PracticalHoursModel.js";
+import { PracticalHoursModel } from "../../models/parameter_models/PracticalHoursModel.js";
 
 export class PracticalHoursController {
 

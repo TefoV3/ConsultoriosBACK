@@ -1,4 +1,4 @@
-import { SectorModel } from "../../models/parameter_tables/SectorModel.js";
+import { SectorModel } from "../../models/parameter_models/SectorModel.js";
 
 export class SectorController {
 

@@ -1,4 +1,4 @@
-import { SubjectModel } from "../../models/parameter_tables/SubjectModel.js";
+import { SubjectModel } from "../../models/parameter_models/SubjectModel.js";
 
 export class SubjectController {
 
