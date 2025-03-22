@@ -1,4 +1,4 @@
-import { CountryModel } from "../../models/parameter_tables/CountryModel.js";
+import { CountryModel } from "../../models/parameter_models/CountryModel.js";
 
 export class CountryController {
 

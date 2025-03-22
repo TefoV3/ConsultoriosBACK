@@ -1,7 +1,7 @@
-import express from "express";
-import { ProvinceController } from "../../controllers/parameter_tables/ProvinceController.js";
+import { Router } from "express";
+import { ProvinceController } from "../../controllers/parameter_controllers/ProvinceController.js";
 
-const ProvinceRouter = express.Router();
+export const ProvinceRouter = Router();
 
 ProvinceRouter.get("/provinces", ProvinceController.getAll); // Obtener todas las provincias
 ProvinceRouter.get("/provinces/:id", ProvinceController.getById); // Obtener una provincia por ID

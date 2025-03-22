@@ -10,6 +10,7 @@ import {InternalUserRouter} from './routes/internal_user_routes.js'
 import {UserRouter} from './routes/user_routes.js'
 import { AuditRouter } from './routes/audit_routes.js'
 import { corsMiddleware } from './middlewares/cors.js'
+import { authMiddleware } from './middlewares/auth.js';
 
 //Parameter Routes
 import { CaseStatusRouter } from './routes/parameter_routes/case_status_routes.js'
@@ -40,11 +41,11 @@ import { CivilStatusRouter } from './routes/parameter_routes/CivilStatusRoutes.j
 import { SexRouter } from './routes/parameter_routes/SexRoutes.js'
 import { DerivedByRouter } from './routes/parameter_routes/DerivedByRoutes.js'
 import { AcademicInstructionRouter } from './routes/parameter_routes/AcademicInstructionRoutes.js'
-import { ComplexityRouter } from './routes/parameter_routes/ComplexityRoutes.js'
-import { DocumentationBackupRouter } from './routes/parameter_routes/DocumentationBackupRoutes.js'
-import { PeriodTypeRouter } from './routes/parameter_routes/PeriodTypeRoutes.js'
-import { NumberOfAttemptsRouter } from './routes/parameter_routes/NumberOfAttemptsRoutes.js'
-import { PracticalHoursRouter } from './routes/parameter_routes/PracticalHoursRoutes.js'
+import {ComplexityRouter} from './routes/parameter_routes/ComplexityRoutes.js'
+import {DocumentationBackupRouter} from './routes/parameter_routes/DocumentationBackupRoutes.js'
+import {PeriodTypeRouter} from './routes/parameter_routes/PeriodTypeRoutes.js'
+import {NumberOfAttemptsRouter} from './routes/parameter_routes/NumberOfAttemptsRoutes.js'
+import {PracticalHoursRouter} from './routes/parameter_routes/PracticalHoursRoutes.js'
 const app = express()
 
 // middleware
@@ -52,6 +53,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(corsMiddleware())
 app.use(authRoutes);
+app.use(authMiddleware);
 
 //app.use(corsMiddleware())
 app.use(ActivityRouter)
@@ -94,6 +96,7 @@ app.use(AcademicInstructionRouter)
 app.use(ComplexityRouter)
 app.use(DocumentationBackupRouter)
 app.use(PeriodTypeRouter)
-app.use(NumberOfAttempsRouter)
+app.use(NumberOfAttemptsRouter)
 app.use(PracticalHoursRouter)
-export default app
+
+export default app;

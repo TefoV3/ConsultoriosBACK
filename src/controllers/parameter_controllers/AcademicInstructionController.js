@@ -1,4 +1,4 @@
-import { AcademicInstructionModel } from "../../models/parameter_tables/AcademicInstructionModel.js";
+import { AcademicInstructionModel } from "../../models/parameter_models/AcademicInstructionModel.js";
 
 export class AcademicInstructionController {
 

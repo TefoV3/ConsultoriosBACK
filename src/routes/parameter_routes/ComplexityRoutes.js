@@ -1,7 +1,7 @@
-import express from "express";
-import { ComplexityController } from "../../controllers/parameter_tables/ComplexityController.js";
+import { Router } from "express";
+import { ComplexityController } from "../../controllers/parameter_controllers/ComplexityController.js";
 
-const ComplexityRouter = express.Router();
+export const ComplexityRouter = Router();
 
 ComplexityRouter.get("/complexities", ComplexityController.getAll);
 ComplexityRouter.get("/complexities/:id", ComplexityController.getById);

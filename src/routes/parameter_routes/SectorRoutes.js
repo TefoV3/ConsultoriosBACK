@@ -1,7 +1,7 @@
-import express from "express";
-import { SectorController } from "../../controllers/parameter_tables/SectorController.js";
+import { Router } from "express";
+import { SectorController } from "../../controllers/parameter_controllers/SectorController.js";
 
-const SectorRouter = express.Router();
+export const SectorRouter = Router();
 
 SectorRouter.get("/sectors", SectorController.getAll); // Obtener todos los sectores
 SectorRouter.get("/sectors/:id", SectorController.getById); // Obtener un sector por ID

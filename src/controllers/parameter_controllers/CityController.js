@@ -1,4 +1,4 @@
-import { CityModel } from "../../models/parameter_tables/CityModel.js";
+import { CityModel } from "../../models/parameter_models/CityModel.js";
 
 export class CityController {
 

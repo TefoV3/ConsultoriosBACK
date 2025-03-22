@@ -1,4 +1,4 @@
-import { ComplexityModel } from "../../models/parameter_tables/ComplexityModel.js";
+import { ComplexityModel } from "../../models/parameter_models/ComplexityModel.js";
 
 export class ComplexityController {
 

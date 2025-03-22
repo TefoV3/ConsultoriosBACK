@@ -35,6 +35,8 @@ export class ActivityModel {
     static async create(data, file) {
         const t = await sequelize.transaction(); // Crear la transacción
         try {
+            console.log("📥 Creando actividad con Internal_ID:", data.Internal_ID); // Log para verificar Internal_ID
+
             // Crear la actividad usando la transacción
             const newActivity = await Activity.create({
                 Activity_ID: data.Activity_ID,
@@ -52,7 +54,9 @@ export class ActivityModel {
                 Status: data.Status,
                 Documents: file ? file.buffer : null // 📌 Guardar el archivo en formato BLOB
             }, { transaction: t });
-    
+
+            console.log("✅ Actividad creada con ID:", newActivity.Activity_ID); // Log para verificar creación
+
             // 🔹 Registrar en Audit que un usuario interno creó una actividad
             await AuditModel.registerAudit(
                 data.Internal_ID, 
@@ -61,14 +65,15 @@ export class ActivityModel {
                 `El usuario interno ${data.Internal_ID} creó la actividad con ID ${newActivity.Activity_Id}`,
                 { transaction: t } // Usar la misma transacción
             );
-    
+
             await t.commit(); // Confirmar la transacción
             return { message: "Actividad creada con éxito", data: newActivity };
         } catch (error) {
             await t.rollback(); // Revertir la transacción en caso de error
             console.error("❌ Error al crear actividad:", error.message);
-    
+
             // 🔹 Registrar el error en Audit
+            console.log("📥 Registrando error en auditoría con Internal_ID:", data.Internal_ID); // Log para verificar Internal_ID en error
             await AuditModel.registerAudit(
                 data.Internal_ID,
                 "ERROR",
@@ -76,13 +81,15 @@ export class ActivityModel {
                 `Error al crear la actividad: ${error.message}`,
                 { transaction: t } // Usar la misma transacción
             );
-    
+
             throw new Error(`Error creating activity: ${error.message}`);
         }
     }
 
     static async update(id, data, internalId) {
         try {
+            console.log("📥 Actualizando actividad con Internal_ID:", internalId); // Log para verificar Internal_ID
+
             const activity = await this.getById(id);
             if (!activity) return null;
 
@@ -110,6 +117,8 @@ export class ActivityModel {
 
     static async delete(id, internalId) {
         try {
+            console.log("📥 Eliminando actividad con Internal_ID:", internalId); // Log para verificar Internal_ID
+
             const activity = await this.getById(id);
             if (!activity) return null;
 
