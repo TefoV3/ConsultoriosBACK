@@ -1,7 +1,7 @@
 import express from "express";
 import { AcademicInstructionController } from "../../controllers/parameter_controllers/AcademicInstructionController.js";
 
-const AcademicInstructionRouter = express.Router();
+export const AcademicInstructionRouter = express.Router();
 
 AcademicInstructionRouter.get("/academic-instructions", AcademicInstructionController.getAll);
 AcademicInstructionRouter.get("/academic-instructions/:id", AcademicInstructionController.getById);
