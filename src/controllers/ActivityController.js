@@ -34,6 +34,26 @@ export class ActivityController {
         }
     }
 
+    static async getDocumentById(req, res) {
+        const { id } = req.params;
+        try {
+            const documentResult = await ActivityModel.getDocumentById(id);
+    
+            if (!documentResult || !documentResult.Documents) {
+                return res.status(404).json({ message: "Document not found" });
+            }
+    
+            // Establece los encabezados para indicar que es un PDF
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'inline; filename=documento.pdf');
+    
+            // Envía el documento como respuesta binaria
+            res.send(documentResult.Documents);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
     static async createActivity(req, res) {
         try {
             console.log("📥 Recibiendo solicitud para crear actividad...");

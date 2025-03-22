@@ -32,6 +32,17 @@ export class ActivityModel {
         }
     }
 
+    static async getDocumentById(id) {
+        try {
+            return await Activity.findOne({
+                attributes: ['Documents'],
+                where: { Activity_Id: id }
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving document: ${error.message}`);
+        }
+    }
+
     static async create(data, file) {
         const t = await sequelize.transaction(); // Crear la transacción
         try {
