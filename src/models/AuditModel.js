@@ -2,12 +2,12 @@ import { Audit } from "../schemas/Audit.js";
 
 export class AuditModel {
     
-    static async registerAudit(internalId, accion, tabla, descripcion) {
+    static async registerAudit(req, accion, tabla, descripcion) {
         try {
-            const internalIdStr = String(internalId);
+            const internalId = req.session.user?.Internal_ID || "Sistema";
 
             return await Audit.create({
-                Internal_ID: internalIdStr || "Sistema",  // ✅ Ahora guarda el usuario interno
+                Internal_ID: internalId,
                 Audit_Accion: accion,
                 Audit_Tabla: tabla,
                 Audit_Descripcion: descripcion

@@ -22,9 +22,20 @@ export class ActivityModel {
         }
     }
 
-    static async create(data,file) {
+    static async getAllByCodeCase(codeCase) {
         try {
-            
+            return await Activity.findAll({
+                where: { Init_Code: codeCase }
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving activity: ${error.message}`);
+        }
+    }
+
+    static async create(data, file) {
+        const t = await sequelize.transaction(); // Crear la transacción
+        try {
+            // Crear la actividad usando la transacción
             const newActivity = await Activity.create({
                 Activity_ID: data.Activity_ID,
                 Init_Code: data.Init_Code,
@@ -41,29 +52,31 @@ export class ActivityModel {
                 Status: data.Status,
                 Documents: file ? file.buffer : null // 📌 Guardar el archivo en formato BLOB
             }, { transaction: t });
-
+    
             // 🔹 Registrar en Audit que un usuario interno creó una actividad
             await AuditModel.registerAudit(
                 data.Internal_ID, 
                 "INSERT",
                 "Activity",
-                `El usuario interno ${data.Internal_ID} creó la actividad con ID ${newActivity.Activity_Id}`
+                `El usuario interno ${data.Internal_ID} creó la actividad con ID ${newActivity.Activity_Id}`,
+                { transaction: t } // Usar la misma transacción
             );
-
-            await t.commit(); // 📌 Confirmar la transacción
+    
+            await t.commit(); // Confirmar la transacción
             return { message: "Actividad creada con éxito", data: newActivity };
         } catch (error) {
-            await t.rollback(); // 📌 Revertir la transacción en caso de error
+            await t.rollback(); // Revertir la transacción en caso de error
             console.error("❌ Error al crear actividad:", error.message);
-
+    
             // 🔹 Registrar el error en Audit
             await AuditModel.registerAudit(
-                internalId,
+                data.Internal_ID,
                 "ERROR",
                 "Activity",
-                `Error al crear la actividad: ${error.message}`
+                `Error al crear la actividad: ${error.message}`,
+                { transaction: t } // Usar la misma transacción
             );
-
+    
             throw new Error(`Error creating activity: ${error.message}`);
         }
     }
