@@ -1,7 +1,7 @@
-import express from "express";
+import { Router } from "express";
 import { PracticalHoursController } from "../../controllers/parameter_controllers/PracticalHoursController.js";
 
-const PracticalHoursRouter = express.Router();
+export const PracticalHoursRouter = Router();
 
 PracticalHoursRouter.get("/practical-hours", PracticalHoursController.getAll);
 PracticalHoursRouter.get("/practical-hours/:id", PracticalHoursController.getById);

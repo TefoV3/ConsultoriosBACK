@@ -1,7 +1,7 @@
-import express from "express";
+import { Router } from "express";
 import { SexController } from "../../controllers/parameter_controllers/SexController.js";
 
-const SexRouter = express.Router();
+export const SexRouter = Router();
 
 SexRouter.get("/sexes", SexController.getAll);
 SexRouter.get("/sexes/:id", SexController.getById);

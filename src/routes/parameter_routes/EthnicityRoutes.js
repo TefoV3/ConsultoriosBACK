@@ -1,7 +1,7 @@
-import express from "express";
+import { Router } from "express";
 import { EthnicityController } from "../../controllers/parameter_controllers/EthnicityController.js";
 
-const EthnicityRouter = express.Router();
+export const EthnicityRouter = Router();
 
 EthnicityRouter.get("/ethnicities", EthnicityController.getAll);
 EthnicityRouter.get("/ethnicities/:id", EthnicityController.getById);

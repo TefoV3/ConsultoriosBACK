@@ -1,7 +1,7 @@
-import express from "express";
+import { Router } from "express";
 import { TopicController } from "../../controllers/parameter_controllers/TopicController.js";
 
-const TopicRouter = express.Router();
+export const TopicRouter = Router();
 
 TopicRouter.get("/topics", TopicController.getAll); // Obtener todos los topics
 TopicRouter.get("/topics/:id", TopicController.getById); // Obtener un topic por ID

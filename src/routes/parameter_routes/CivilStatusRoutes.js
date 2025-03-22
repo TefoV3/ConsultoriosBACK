@@ -1,7 +1,7 @@
-import express from "express";
+import { Router } from "express";
 import { CivilStatusController } from "../../controllers/parameter_controllers/CivilStatusController.js";
 
-const CivilStatusRouter = express.Router();
+export const CivilStatusRouter = Router();
 
 CivilStatusRouter.get("/civil-statuses", CivilStatusController.getAll);
 CivilStatusRouter.get("/civil-statuses/:id", CivilStatusController.getById);

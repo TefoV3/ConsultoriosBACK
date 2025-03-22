@@ -1,7 +1,7 @@
-import express from "express";
+import { Router } from "express";
 import { DerivedByController } from "../../controllers/parameter_controllers/DerivedByController.js";
 
-const DerivedByRouter = express.Router();
+export const DerivedByRouter = Router();
 
 DerivedByRouter.get("/derived-by", DerivedByController.getAll);
 DerivedByRouter.get("/derived-by/:id", DerivedByController.getById);
