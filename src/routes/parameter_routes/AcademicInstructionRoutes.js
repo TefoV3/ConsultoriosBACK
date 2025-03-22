@@ -1,5 +1,5 @@
 import express from "express";
-import { AcademicInstructionController } from "../../controllers/parameter_tables/AcademicInstructionController.js";
+import { AcademicInstructionController } from "../../controllers/parameter_controllers/AcademicInstructionController.js";
 
 const AcademicInstructionRouter = express.Router();
 

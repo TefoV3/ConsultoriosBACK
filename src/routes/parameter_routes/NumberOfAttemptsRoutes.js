@@ -1,5 +1,5 @@
 import express from "express";
-import { NumberOfAttemptsController } from "../../controllers/parameter_tables/NumberOfAttemptsController.js";
+import { NumberOfAttemptsController } from "../../controllers/parameter_controllers/NumberOfAttemptsController.js";
 
 const NumberOfAttemptsRouter = express.Router();
 

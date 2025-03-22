@@ -1,5 +1,5 @@
 import express from "express";
-import { DocumentationBackupController } from "../../controllers/parameter_tables/DocumentationBackupController.js";
+import { DocumentationBackupController } from "../../controllers/parameter_controllers/DocumentationBackupController.js";
 
 const DocumentationBackupRouter = express.Router();
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { PracticalHoursController } from "../../controllers/parameter_tables/PracticalHoursController.js";
+import { PracticalHoursController } from "../../controllers/parameter_controllers/PracticalHoursController.js";
 
 const PracticalHoursRouter = express.Router();
 

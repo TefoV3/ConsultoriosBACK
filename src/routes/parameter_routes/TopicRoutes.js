@@ -1,5 +1,5 @@
 import express from "express";
-import { TopicController } from "../../controllers/parameter_tables/TopicController.js";
+import { TopicController } from "../../controllers/parameter_controllers/TopicController.js";
 
 const TopicRouter = express.Router();
 

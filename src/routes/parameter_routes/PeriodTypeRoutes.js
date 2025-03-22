@@ -1,5 +1,5 @@
 import express from "express";
-import { PeriodTypeController } from "../../controllers/parameter_tables/PeriodTypeController.js";
+import { PeriodTypeController } from "../../controllers/parameter_controllers/PeriodTypeController.js";
 
 const PeriodTypeRouter = express.Router();
 

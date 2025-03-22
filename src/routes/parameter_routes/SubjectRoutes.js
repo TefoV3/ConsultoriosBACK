@@ -1,5 +1,5 @@
 import express from "express";
-import { SubjectController } from "../../controllers/parameter_tables/SubjectController.js";
+import { SubjectController } from "../../controllers/parameter_controllers/SubjectController.js";
 
 const SubjectRouter = express.Router();
 

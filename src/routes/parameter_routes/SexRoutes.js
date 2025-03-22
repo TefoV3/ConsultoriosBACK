@@ -1,5 +1,5 @@
 import express from "express";
-import { SexController } from "../../controllers/parameter_tables/SexController.js";
+import { SexController } from "../../controllers/parameter_controllers/SexController.js";
 
 const SexRouter = express.Router();
 

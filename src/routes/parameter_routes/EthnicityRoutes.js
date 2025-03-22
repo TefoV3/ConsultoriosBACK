@@ -1,5 +1,5 @@
 import express from "express";
-import { EthnicityController } from "../../controllers/parameter_tables/EthnicityController.js";
+import { EthnicityController } from "../../controllers/parameter_controllers/EthnicityController.js";
 
 const EthnicityRouter = express.Router();
 

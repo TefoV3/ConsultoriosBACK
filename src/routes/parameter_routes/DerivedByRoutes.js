@@ -1,5 +1,5 @@
 import express from "express";
-import { DerivedByController } from "../../controllers/parameter_tables/DerivedByController.js";
+import { DerivedByController } from "../../controllers/parameter_controllers/DerivedByController.js";
 
 const DerivedByRouter = express.Router();
 

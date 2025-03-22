@@ -1,5 +1,5 @@
 import express from "express";
-import { CivilStatusController } from "../../controllers/parameter_tables/CivilStatusController.js";
+import { CivilStatusController } from "../../controllers/parameter_controllers/CivilStatusController.js";
 
 const CivilStatusRouter = express.Router();
 
