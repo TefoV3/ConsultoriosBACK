@@ -21,6 +21,17 @@ export class ActivityController {
         }
     }
 
+    static async getAllByCodeCase(req, res) {
+        const { codeCase } = req.params;
+        try {
+            const activity = await ActivityModel.getAllByCodeCase(codeCase);
+            if (activity) return res.json(activity);
+            res.status(404).json({ message: "Activities not found" });
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    }
+
     static async createActivity(req, res) {
         try {
             console.log("📥 Recibiendo solicitud para crear actividad...");
