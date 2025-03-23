@@ -57,18 +57,18 @@ dialect: 'mysql'
 
 
 //TefoVirtual
-/*export const sequelize = new Sequelize(
+export const sequelize = new Sequelize(
     'ConsultoriosJuricosevi', 
-    'Cliente', 
+    'Cliente2', 
     '2444', 
     {
-        host: '192.168.100.104', 
+        host: '192.168.100.105', 
         dialect: 'mysql'
     }
-);*/
+);
 
 //Francis
-export const sequelize = new Sequelize(
+/*export const sequelize = new Sequelize(
     'consultoriosjuridicos', 
     'fvelasco', 
     'ltic', 
@@ -76,5 +76,5 @@ export const sequelize = new Sequelize(
        host: '192.168.56.102',
        dialect: 'mysql'
     }
-);
+);*/
 

@@ -10,6 +10,7 @@ import {InternalUserRouter} from './routes/internal_user_routes.js'
 import {UserRouter} from './routes/user_routes.js'
 import { AuditRouter } from './routes/audit_routes.js'
 import { corsMiddleware } from './middlewares/cors.js'
+import {SocialWorkRouter} from './routes/socialwork_routes.js'
 
 //Parameter Routes
 import { CaseStatusRouter } from './routes/parameter_routes/case_status_routes.js'
@@ -45,6 +46,7 @@ import {DocumentationBackupRouter} from './routes/parameter_routes/Documentation
 import {PeriodTypeRouter} from './routes/parameter_routes/PeriodTypeRoutes.js'
 import {NumberOfAttemptsRouter} from './routes/parameter_routes/NumberOfAttemptsRoutes.js'
 import {PracticalHoursRouter} from './routes/parameter_routes/PracticalHoursRoutes.js'
+
 const app = express()
 
 // middleware
@@ -60,6 +62,7 @@ app.use(InitialConsultationsRouter)
 app.use(InternalUserRouter)
 app.use(UserRouter)
 app.use(AuditRouter)
+app.use(SocialWorkRouter);
 
 //Parameter Routes
 app.use(CaseStatusRouter)

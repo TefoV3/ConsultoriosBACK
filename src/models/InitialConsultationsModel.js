@@ -126,6 +126,7 @@ export class InitialConsultationsModel {
                 Init_Referral: data.Init_Referral,
                 Init_Complexity: data.Init_Complexity,
                 Init_Status: data.Init_Status,
+                Init_SocialWork : data.Init_SocialWork,
                 Init_Type: data.Init_Type,
             }, { transaction: t });
 

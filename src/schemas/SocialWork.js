@@ -1,4 +1,5 @@
 import { DataTypes } from "sequelize";
+import { InitialConsultations } from "./Initial_Consultations.js";
 import { sequelize } from "../../database/database.js";
 
 export const SocialWork = sequelize.define('SocialWork', {
