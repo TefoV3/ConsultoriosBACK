@@ -10,7 +10,6 @@ import {InternalUserRouter} from './routes/internal_user_routes.js'
 import {UserRouter} from './routes/user_routes.js'
 import { AuditRouter } from './routes/audit_routes.js'
 import { corsMiddleware } from './middlewares/cors.js'
-import { authMiddleware } from './middlewares/auth.js';
 
 //Parameter Routes
 import { CaseStatusRouter } from './routes/parameter_routes/case_status_routes.js'
@@ -52,8 +51,7 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser())
 app.use(corsMiddleware())
-app.use(authRoutes);
-app.use(authMiddleware);
+app.use(authRoutes); //No se usa authMiddleware porque no se necesita autenticación para acceder al Login y Olvidé mi contraseña
 
 //app.use(corsMiddleware())
 app.use(ActivityRouter)
