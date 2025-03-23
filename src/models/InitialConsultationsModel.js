@@ -76,6 +76,7 @@ export class InitialConsultationsModel {
                 user = await UserModel.create({
                     User_ID: data.User_ID,
                     User_ID_Type: data.User_ID_Type,
+                    User_Age: data.User_Age,
                     User_FirstName: data.User_FirstName,
                     User_LastName: data.User_LastName,
                     User_Gender: data.User_Gender,
