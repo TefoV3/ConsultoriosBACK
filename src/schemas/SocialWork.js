@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 import { InitialConsultations } from "./Initial_Consultations.js";
-import { sequelize } from "../../database/database.js";
+import { sequelize } from "../database/database.js";
 
 export const SocialWork = sequelize.define('SocialWork', {
     ProcessNumber: {
@@ -41,7 +41,7 @@ export const SocialWork = sequelize.define('SocialWork', {
         defaultValue: true
     },
     Init_Code: { 
-        type: DataTypes.INTEGER,
+        type: DataTypes.CHAR(50),
         allowNull: false,
     }
 });
