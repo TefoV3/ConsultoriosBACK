@@ -63,10 +63,18 @@ export const User = sequelize.define('User', {
     User_Dependents: DataTypes.INTEGER,
     User_IncomeLevel: DataTypes.STRING(5),
     User_FamilyIncome: DataTypes.STRING(5),
-    User_FamilyGroup: DataTypes.STRING(10),
+    User_FamilyGroup: {
+        type: DataTypes.JSON,
+        allowNull: true,  // Opcional, si puede ser nulo
+        defaultValue: []  // Valor por defecto},
+    },
     User_EconomicActivePeople: DataTypes.INTEGER,
 
-    User_OwnAssets: DataTypes.STRING(250),	
+    User_OwnAssets: {
+        type: DataTypes.JSON,
+        allowNull: true,  // Opcional, si puede ser nulo
+        defaultValue: []  // Valor por defecto},
+    },	
     User_HousingType: DataTypes.STRING(50),
     User_Pensioner: DataTypes.STRING(50),
     User_HealthInsurance: DataTypes.STRING(50),
