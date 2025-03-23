@@ -11,7 +11,7 @@ import {UserRouter} from './routes/user_routes.js'
 import { AuditRouter } from './routes/audit_routes.js'
 import { corsMiddleware } from './middlewares/cors.js'
 import {SocialWorkRouter} from './routes/socialwork_routes.js'
-
+import { LivingGroupRouter } from './routes/LivingGroupRoutes.js'
 //Parameter Routes
 import { CaseStatusRouter } from './routes/parameter_routes/case_status_routes.js'
 import { CatastrophicIllnessRouter } from './routes/parameter_routes/catastrophic_illness_routes.js'
@@ -63,6 +63,7 @@ app.use(InternalUserRouter)
 app.use(UserRouter)
 app.use(AuditRouter)
 app.use(SocialWorkRouter);
+app.use(LivingGroupRouter)
 
 //Parameter Routes
 app.use(CaseStatusRouter)

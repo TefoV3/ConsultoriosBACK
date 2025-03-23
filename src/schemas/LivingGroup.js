@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../../database/database.js";
+import { sequelize } from "../database/database.js";
 import { SocialWork } from "./SocialWork.js";
 
 export const LivingGroup = sequelize.define('LivingGroup', {
@@ -42,9 +42,7 @@ export const LivingGroup = sequelize.define('LivingGroup', {
 // Establishing the relationship
 SocialWork.hasMany(LivingGroup, {
     foreignKey: 'ProcessNumber',
-    sourceKey: 'ProcessNumber'
 });
 LivingGroup.belongsTo(SocialWork, {
     foreignKey: 'ProcessNumber',
-    targetKey: 'ProcessNumber'
 });
