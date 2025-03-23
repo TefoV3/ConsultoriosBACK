@@ -41,13 +41,12 @@ import dotenv from "dotenv";
           dialect: 'mysql'
        }
    );
-    
 
 /*
 export const sequelize = new Sequelize(
 'prueba', 
 'root', 
-'12345', 
+'1234578', 
 {
 host: 'localhost',
 dialect: 'mysql'
