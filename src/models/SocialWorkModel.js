@@ -34,7 +34,7 @@ export class SocialWorkModel {
                         include: [
                             {
                                 model: User,
-                                attributes: ["User_ID", "User_FirstName", "User_LastName", "User_Email"]
+                                attributes: ["User_ID", "User_FirstName", "User_LastName", "User_Age", "User_Profession", "User_MaritalStatus", "User_Address", "User_Phone"]
                             }
                         ]
                     }
