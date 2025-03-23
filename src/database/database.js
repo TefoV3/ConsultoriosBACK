@@ -29,9 +29,6 @@ import dotenv from "dotenv";
 //     }
 // );
 
-
-
-
 //USO LOCAL
 
 // HEAD
@@ -71,7 +68,6 @@ dialect: 'mysql'
 );*/
 
 //Francis
-
 export const sequelize = new Sequelize(
     'consultoriosjuridicos', 
     'fvelasco', 
