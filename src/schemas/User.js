@@ -38,10 +38,10 @@ export const User = sequelize.define('User', {
         primaryKey: true
     },
     User_ID_Type: DataTypes.STRING(10),
+    User_Age: DataTypes.INTEGER,
     User_FirstName: DataTypes.STRING(50),
     User_LastName: DataTypes.STRING(50),
     User_Gender: DataTypes.STRING(50),
-    User_Age: DataTypes.INTEGER,
     User_BirthDate: DataTypes.DATE,
     User_Nationality: DataTypes.STRING(50),
     User_Ethnicity: DataTypes.STRING(50),
