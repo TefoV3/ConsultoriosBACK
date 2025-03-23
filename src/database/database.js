@@ -60,7 +60,7 @@ dialect: 'mysql'
 
 
 //TefoVirtual
-export const sequelize = new Sequelize(
+/*export const sequelize = new Sequelize(
     'ConsultoriosJuricosevi', 
     'Cliente', 
     '2444', 
@@ -68,16 +68,17 @@ export const sequelize = new Sequelize(
         host: '192.168.100.104', 
         dialect: 'mysql'
     }
-);
+);*/
+
 //Francis
 
-/*export const sequelize = new Sequelize(
-    'consultoriosjuridicos2', 
+export const sequelize = new Sequelize(
+    'consultoriosjuridicos', 
     'fvelasco', 
     'ltic', 
     {
        host: '192.168.56.102',
        dialect: 'mysql'
     }
-);*/
+);
 
