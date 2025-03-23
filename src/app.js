@@ -46,6 +46,7 @@ import {DocumentationBackupRouter} from './routes/parameter_routes/Documentation
 import {PeriodTypeRouter} from './routes/parameter_routes/PeriodTypeRoutes.js'
 import {NumberOfAttemptsRouter} from './routes/parameter_routes/NumberOfAttemptsRoutes.js'
 import {PracticalHoursRouter} from './routes/parameter_routes/PracticalHoursRoutes.js'
+import { authMiddleware } from './middlewares/auth.js';
 
 const app = express()
 
@@ -55,6 +56,7 @@ app.use(cookieParser())
 app.use(corsMiddleware())
 app.use(authRoutes); //No se usa authMiddleware porque no se necesita autenticación para acceder al Login y Olvidé mi contraseña
 
+app.use(authMiddleware);
 app.use(ActivityRouter)
 app.use(AssignmentRouter)
 app.use(EvidenceRouter)

@@ -38,7 +38,18 @@ export class InternalUserModel {
         }
     }
 
-
+    static async getAllActiveLawyers() {
+        try {
+            return await InternalUser.findAll({
+                where: {
+                    Internal_Type: 'Abogado',
+                    Internal_Status: 'Activo'
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error al obtener abogados activos: ${error.message}`);
+        }
+    }
 
     //CREATE, UPDATE AND DELETE METHODS
 

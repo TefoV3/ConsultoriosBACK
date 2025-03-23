@@ -20,14 +20,34 @@ export class FirstConsultationsController {
             res.status(500).json(error);
         }
     }
+
     static async getByStatus(req, res) {
         const { status } = req.params;
         try {
-            const consultation = await InitialConsultationsModel.getByStatus(status);
-            if (consultation) return res.json(consultation);
-            res.status(404).json({ message: "First consultation not found" });
+            const consultations = await InitialConsultationsModel.getByStatus(status);
+            res.json(consultations);
         } catch (error) {
-            res.status(500).json(error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    static async getAllActiveCasesByInternalID(req, res) {
+        const internalId = req.user.id;
+        try {
+            const activeCases = await InitialConsultationsModel.getAllActiveCasesByInternalID(internalId);
+            res.json(activeCases);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    static async getAllInactiveCasesByInternalID(req, res) {
+        const internalId = req.user.id;
+        try {
+            const inactiveCases = await InitialConsultationsModel.getAllInactiveCasesByInternalID(internalId);
+            res.json(inactiveCases);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
         }
     }
 

@@ -8,7 +8,10 @@ export const InitialConsultationsRouter = Router();
 
 InitialConsultationsRouter.get('/primerasconsultas', FirstConsultationsController.getFirstConsultations);
 InitialConsultationsRouter.get('/primerasconsultas/:id', FirstConsultationsController.getById);
-InitialConsultationsRouter.get('/primerasconsultas/:status', FirstConsultationsController.getByStatus);
+InitialConsultationsRouter.get('/primerasconsultas/status/:status', FirstConsultationsController.getByStatus);
+InitialConsultationsRouter.get('/primerasconsultas/1/:internalId', FirstConsultationsController.getAllActiveCasesByInternalID);
+InitialConsultationsRouter.get('/primerasconsultas/0/:internalId', FirstConsultationsController.getAllInactiveCasesByInternalID);
+
 //InitialConsultationsRouter.post('/primerasconsultas', FirstConsultationsController.createFirstConsultations);
 InitialConsultationsRouter.post(
     "/primerasconsultas",
@@ -20,3 +23,4 @@ InitialConsultationsRouter.post(
 );
 InitialConsultationsRouter.put('/primerasconsultas/:id', FirstConsultationsController.update);
 InitialConsultationsRouter.delete('/primerasconsultas/:id', FirstConsultationsController.delete);
+

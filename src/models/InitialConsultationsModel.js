@@ -28,11 +28,37 @@ export class InitialConsultationsModel {
 
     static async getByStatus(status) {
         try {
-            return await InitialConsultations.findOne({
+            return await InitialConsultations.findAll({
                 where: { Init_Status: status }
             });
         } catch (error) {
-            throw new Error(`Error retrieving initial consultation: ${error.message}`);
+            throw new Error(`Error retrieving initial consultations by status: ${error.message}`);
+        }
+    }
+
+    static async getAllActiveCasesByInternalID(internalId) {
+        try {
+            return await InitialConsultations.findAll({
+                where: {
+                    Init_Status: 1,
+                    Internal_ID: internalId
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving active initial consultations for internal user ${internalId}: ${error.message}`);
+        }
+    }
+
+    static async getAllInactiveCasesByInternalID(internalId) {
+        try {
+            return await InitialConsultations.findAll({
+                where: {
+                    Init_Status: 0,
+                    Internal_ID: internalId
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving inactive initial consultations for internal user ${internalId}: ${error.message}`);
         }
     }
 

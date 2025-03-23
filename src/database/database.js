@@ -35,7 +35,7 @@ import dotenv from "dotenv";
    export const sequelize = new Sequelize(
        'prueba', 
        'root', 
-       '12345678', 
+       '12345', 
        {
           host: 'localhost',
           dialect: 'mysql'

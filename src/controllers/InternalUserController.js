@@ -44,6 +44,15 @@ export class InternalUserController {
         }
       }
 
+      static async getAllActiveLawyers(req, res) {
+        try {
+            const activeLawyers = await InternalUserModel.getAllActiveLawyers();
+            res.json(activeLawyers);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
     // CREATE, UPDATE AND DELETE METHODS
 
     static async createInternalUser(req, res) {
