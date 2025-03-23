@@ -19,6 +19,31 @@ export class SocialWorkModel {
             throw new Error(`Error retrieving social work record: ${error.message}`);
         }
     }
+    
+    // Obtener User_ID desde SocialWork a través de Init_Code
+    static async getUserIdBySocialWork(initCode) {
+        try {
+            const socialWorkRecord = await SocialWork.findOne({
+                where: { Init_Code: initCode },
+                include: {
+                    model: InitialConsultations,
+                    attributes: ["User_ID"],
+                    include: {
+                        model: User,
+                        attributes: ["User_ID", "User_FirstName", "User_LastName", "User_Email"]
+                    }
+                }
+            });
+
+            if (!socialWorkRecord || !socialWorkRecord.Initial_Consultation) {
+                return null;
+            }
+
+            return socialWorkRecord.Initial_Consultation.User;
+        } catch (error) {
+            throw new Error(`Error retrieving User_ID from SocialWork using Init_Code ${initCode}: ${error.message}`);
+        }
+    }
 
     // Crear una evaluación de trabajo social
     static async create(data, internalId) {

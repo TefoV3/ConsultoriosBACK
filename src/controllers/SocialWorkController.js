@@ -23,6 +23,27 @@ export class SocialWorkController {
         }
     }
 
+    // Obtener User_ID desde SocialWork a través de Init_Code
+    static async getUserIdBySocialWork(req, res) {
+        try {
+            const { initCode } = req.params;
+
+            if (!initCode) {
+                return res.status(400).json({ error: "Init_Code is required." });
+            }
+
+            const user = await SocialWorkModel.getUserIdBySocialWork(initCode);
+
+            if (!user) {
+                return res.status(404).json({ message: `No user found for Init_Code ${initCode}.` });
+            }
+
+            res.status(200).json(user);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
     // Crear una evaluación de trabajo social
     static async create(req, res) {
         try {
