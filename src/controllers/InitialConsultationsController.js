@@ -32,7 +32,7 @@ export class FirstConsultationsController {
     }
 
     static async getAllActiveCasesByInternalID(req, res) {
-        const internalId = req.user.id;
+        const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
         try {
             const activeCases = await InitialConsultationsModel.getAllActiveCasesByInternalID(internalId);
             res.json(activeCases);
@@ -42,7 +42,7 @@ export class FirstConsultationsController {
     }
 
     static async getAllInactiveCasesByInternalID(req, res) {
-        const internalId = req.user.id;
+        const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
         try {
             const inactiveCases = await InitialConsultationsModel.getAllInactiveCasesByInternalID(internalId);
             res.json(inactiveCases);

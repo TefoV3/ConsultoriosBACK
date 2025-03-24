@@ -20,7 +20,7 @@ export class UserController {
             res.status(500).json(error);
         }
     }
-
+    
     static async createUser(req, res) {
         try {
             const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers

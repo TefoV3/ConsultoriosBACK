@@ -38,12 +38,13 @@ export class InternalUserModel {
         }
     }
 
-    static async getAllActiveLawyers() {
+    static async getAllActiveLawyers(area) {
         try {
             return await InternalUser.findAll({
                 where: {
                     Internal_Type: 'Abogado',
-                    Internal_Status: 'Activo'
+                    Internal_Status: 1,
+                    Internal_Area: area
                 }
             });
         } catch (error) {

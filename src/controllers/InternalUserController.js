@@ -45,9 +45,10 @@ export class InternalUserController {
       }
 
       static async getAllActiveLawyers(req, res) {
+        const { area } = req.params; // Obtener el área desde los parámetros de consulta
         try {
-            const activeLawyers = await InternalUserModel.getAllActiveLawyers();
-            res.json(activeLawyers);
+            const lawyers = await InternalUserModel.getAllActiveLawyers(area);
+            res.json(lawyers);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }

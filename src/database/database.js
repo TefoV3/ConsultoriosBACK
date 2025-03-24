@@ -32,7 +32,7 @@ import dotenv from "dotenv";
 //USO LOCAL
 
 // HEAD
-/*
+
    export const sequelize = new Sequelize(
        'prueba', 
        'root', 
@@ -42,7 +42,7 @@ import dotenv from "dotenv";
           dialect: 'mysql'
        }
    );
-*/
+
 
 /*
 export const sequelize = new Sequelize(
@@ -68,7 +68,7 @@ dialect: 'mysql'
     }
 );*/
 
-//Francis
+/*Francis
 export const sequelize = new Sequelize(
     'consultoriosjuridicos', 
     'fvelasco', 
@@ -79,3 +79,4 @@ export const sequelize = new Sequelize(
     }
 );
 
+*/
