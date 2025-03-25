@@ -1,4 +1,5 @@
 import { InitialConsultationsModel } from "../models/InitialConsultationsModel.js";
+import { AssignmentModel } from "../models/AssignmentModel.js";
 
 export class FirstConsultationsController {
     static async getFirstConsultations(req, res) {
@@ -26,26 +27,6 @@ export class FirstConsultationsController {
         try {
             const consultations = await InitialConsultationsModel.getByStatus(status);
             res.json(consultations);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    }
-
-    static async getAllActiveCasesByInternalID(req, res) {
-        const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
-        try {
-            const activeCases = await InitialConsultationsModel.getAllActiveCasesByInternalID(internalId);
-            res.json(activeCases);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    }
-
-    static async getAllInactiveCasesByInternalID(req, res) {
-        const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
-        try {
-            const inactiveCases = await InitialConsultationsModel.getAllInactiveCasesByInternalID(internalId);
-            res.json(inactiveCases);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
