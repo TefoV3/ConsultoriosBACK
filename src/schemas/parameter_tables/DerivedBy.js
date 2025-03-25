@@ -15,4 +15,4 @@ export const DerivedBy = sequelize.define('DerivedBy', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

@@ -3,8 +3,8 @@ import { DisabilityController } from "../../controllers/parameter_controllers/Di
 
 export const DisabilityRouter = Router();
 
-DisabilityRouter.get('/discapacidad', DisabilityController.getAll);
-DisabilityRouter.get('/discapacidad/:id', DisabilityController.getById);
-DisabilityRouter.post('/discapacidad', DisabilityController.create);
-DisabilityRouter.put('/discapacidad/:id', DisabilityController.update);
-DisabilityRouter.delete('/discapacidad/:id', DisabilityController.delete);
+DisabilityRouter.get('/disability', DisabilityController.getAll);
+DisabilityRouter.get('/disability/:id', DisabilityController.getById);
+DisabilityRouter.post('/disability', DisabilityController.create);
+DisabilityRouter.put('/disability/:id', DisabilityController.update);
+DisabilityRouter.delete('/disability/:id', DisabilityController.delete);

@@ -3,8 +3,8 @@ import { ProfilesController } from "../../controllers/parameter_controllers/Prof
 
 export const ProfilesRouter = Router();
 
-ProfilesRouter.get('/perfil', ProfilesController.getAll);
-ProfilesRouter.get('/perfil/:id', ProfilesController.getById);
-ProfilesRouter.post('/perfil', ProfilesController.create);
-ProfilesRouter.put('/perfil/:id', ProfilesController.update);
-ProfilesRouter.delete('/perfil/:id', ProfilesController.delete);
+ProfilesRouter.get('/profile', ProfilesController.getAll);
+ProfilesRouter.get('/profile/:id', ProfilesController.getById);
+ProfilesRouter.post('/profile', ProfilesController.create);
+ProfilesRouter.put('/profile/:id', ProfilesController.update);
+ProfilesRouter.delete('/profile/:id', ProfilesController.delete);

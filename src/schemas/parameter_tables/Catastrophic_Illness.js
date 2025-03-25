@@ -12,4 +12,4 @@ export const Catastrophic_Illness = sequelize.define('Catastrophic_Illness', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

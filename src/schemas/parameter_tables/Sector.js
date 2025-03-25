@@ -26,7 +26,7 @@ export const Sector = sequelize.define('Sector', {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     }
-});
+}, { timestamps: false });
 
 // Establecer la relación con la tabla Zone
 Sector.belongsTo(Zone, { foreignKey: "Zone_ID" });

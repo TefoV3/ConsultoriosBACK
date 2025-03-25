@@ -19,4 +19,4 @@ export const Subject = sequelize.define('Subject', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

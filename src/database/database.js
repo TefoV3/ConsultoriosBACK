@@ -70,7 +70,7 @@ dialect: 'mysql'
 
 //Francis
 export const sequelize = new Sequelize(
-    'consultoriosjuridicos2', 
+    'consultoriosjuridicos', 
     'fvelasco', 
     'ltic', 
     {

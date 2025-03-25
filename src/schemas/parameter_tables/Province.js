@@ -26,7 +26,7 @@ export const Province = sequelize.define('Province', {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     }
-});
+}, { timestamps: false });
 
 // Establecer la relación con la tabla City
 Province.belongsTo(City, { foreignKey: "City_ID" });

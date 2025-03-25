@@ -12,4 +12,4 @@ export const Protocols = sequelize.define('Protocols', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

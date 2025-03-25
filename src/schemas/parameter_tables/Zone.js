@@ -12,4 +12,4 @@ export const Zone = sequelize.define('Zone_Sector', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

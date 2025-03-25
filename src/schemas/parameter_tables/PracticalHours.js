@@ -15,4 +15,4 @@ export const PracticalHours = sequelize.define('PracticalHours', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });
