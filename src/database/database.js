@@ -33,15 +33,15 @@ import dotenv from "dotenv";
 
 // HEAD
 
-   export const sequelize = new Sequelize(
-       'prueba', 
-       'root', 
-       '12345', 
-       {
-          host: 'localhost',
-          dialect: 'mysql'
-       }
-   );
+//    export const sequelize = new Sequelize(
+//        'prueba', 
+//        'root', 
+//        '12345', 
+//        {
+//           host: 'localhost',
+//           dialect: 'mysql'
+//        }
+//    );
 
 
 /*
@@ -58,15 +58,15 @@ dialect: 'mysql'
 
 
 //TefoVirtual
-/*export const sequelize = new Sequelize(
-    'ConsultoriosJuricosevi', 
-    'Cliente2', 
+export const sequelize = new Sequelize(
+    'ConsultoriosJuridicosevi', 
+    'Cliente', 
     '2444', 
     {
-        host: '192.168.100.105', 
+        host: '192.168.56.101', 
         dialect: 'mysql'
     }
-);*/
+);
 
 /*Francis
 export const sequelize = new Sequelize(

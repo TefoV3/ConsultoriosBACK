@@ -5,6 +5,7 @@ export const UserRouter = Router();
 
 UserRouter.get('/usuario', UserController.getUsers);
 UserRouter.get('/usuario/:id', UserController.getById);
+UserRouter.get("/users/socialwork", UserController.getUsersWithSocialWork);
 UserRouter.post('/usuario', UserController.createUser);
 UserRouter.put('/usuario/:id', UserController.update);
 UserRouter.delete('/usuario/:id', UserController.delete);
