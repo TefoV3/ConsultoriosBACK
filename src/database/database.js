@@ -68,14 +68,14 @@ export const sequelize = new Sequelize(
     }
 );
 
-//Francis
-export const sequelize = new Sequelize(
-    'consultoriosjuridicos2', 
-    'fvelasco', 
-    'ltic', 
-    {
-       host: '192.168.56.102',
-       dialect: 'mysql'
-    }
-);
+// Francis
+// export const sequelize = new Sequelize(
+//     'consultoriosjuridicos2', 
+//     'fvelasco', 
+//     'ltic', 
+//     {
+//        host: '192.168.56.102',
+//        dialect: 'mysql'
+//     }
+// );
 

@@ -40,7 +40,6 @@ export const SocialWork = sequelize.define('SocialWork', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
-
     Init_Code: { 
         type: DataTypes.CHAR(50),
         allowNull: false,

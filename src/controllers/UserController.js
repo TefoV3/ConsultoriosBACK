@@ -20,23 +20,16 @@ export class UserController {
             res.status(500).json(error);
         }
     }
-    
     // Obtener User_ID desde SocialWork a través de Init_Code
-    static async getUserIdBySocialWork(req, res) {
+    static async getUsersWithSocialWork(req, res) {
         try {
-            const { initCode } = req.params;
+            const users = await UserModel.getUsersWithSocialWork();
 
-            if (!initCode) {
-                return res.status(400).json({ error: "Init_Code is required." });
+            if (!users || users.length === 0) {
+                return res.status(404).json({ message: "No users found with social work assistance." });
             }
 
-            const user = await SocialWorkModel.getUserIdBySocialWork(initCode);
-
-            if (!user) {
-                return res.status(404).json({ message: `No user found for Init_Code ${initCode}.` });
-            }
-
-            res.status(200).json(user);
+            res.status(200).json(users);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
