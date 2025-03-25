@@ -22,9 +22,9 @@ export class AssignmentController {
     }
 
     static async getAssignmentsByStudentId(req, res) {
-        const { studentId } = req.params;
+        const { id } = req.params; // Cambiado de studentId a id
         try {
-            const assignments = await AssignmentModel.getByStudentId(studentId);
+            const assignments = await AssignmentModel.getByStudentId(id);
             return res.status(200).json(assignments);
         } catch (error) {
             return res.status(500).json({ error: error.message });
