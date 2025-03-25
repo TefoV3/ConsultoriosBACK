@@ -24,7 +24,7 @@ export const LivingGroup = sequelize.define('LivingGroup', {
         type: DataTypes.STRING(100), // The individual's occupation
         allowNull: true
     },
-    LG_Notes: DataTypes.STRING(255),
+    LG_Notes: DataTypes.TEXT,
 
     SW_ProcessNumber: {
         type: DataTypes.INTEGER,
@@ -35,7 +35,7 @@ export const LivingGroup = sequelize.define('LivingGroup', {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     },
-    Status: {
+    LG_Status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
