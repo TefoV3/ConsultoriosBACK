@@ -3,8 +3,8 @@ import { ProtocolsController } from "../../controllers/parameter_controllers/Pro
 
 export const ProtocolsRouter = Router();
 
-ProtocolsRouter.get('/protocolos', ProtocolsController.getAll);
-ProtocolsRouter.get('/protocolos/:id', ProtocolsController.getById);
-ProtocolsRouter.post('/protocolos', ProtocolsController.create);
-ProtocolsRouter.put('/protocolos/:id', ProtocolsController.update);
-ProtocolsRouter.delete('/protocolos/:id', ProtocolsController.delete);
+ProtocolsRouter.get('/protocols', ProtocolsController.getAll);
+ProtocolsRouter.get('/protocols/:id', ProtocolsController.getById);
+ProtocolsRouter.post('/protocols', ProtocolsController.create);
+ProtocolsRouter.put('/protocols/:id', ProtocolsController.update);
+ProtocolsRouter.delete('/protocols/:id', ProtocolsController.delete);

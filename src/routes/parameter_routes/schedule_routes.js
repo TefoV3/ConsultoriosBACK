@@ -3,8 +3,8 @@ import { ScheduleController } from "../../controllers/parameter_controllers/Sche
 
 export const ScheduleRouter = Router();
 
-ScheduleRouter.get('/horario', ScheduleController.getAll);
-ScheduleRouter.get('/horario/:id', ScheduleController.getById);
-ScheduleRouter.post('/horario', ScheduleController.create);
-ScheduleRouter.put('/horario/:id', ScheduleController.update);
-ScheduleRouter.delete('/horario/:id', ScheduleController.delete);
+ScheduleRouter.get('/schedule', ScheduleController.getAll);
+ScheduleRouter.get('/schedule/:id', ScheduleController.getById);
+ScheduleRouter.post('/schedule', ScheduleController.create);
+ScheduleRouter.put('/schedule/:id', ScheduleController.update);
+ScheduleRouter.delete('/schedule/:id', ScheduleController.delete);

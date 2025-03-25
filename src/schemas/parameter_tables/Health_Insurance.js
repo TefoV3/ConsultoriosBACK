@@ -12,4 +12,4 @@ export const Health_Insurance = sequelize.define('Health_Insurance', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

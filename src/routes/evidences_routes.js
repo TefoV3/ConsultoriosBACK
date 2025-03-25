@@ -5,10 +5,10 @@ import { authMiddleware} from "../middlewares/auth.js";
 
 export const EvidenceRouter = Router();
 
-EvidenceRouter.get('/evidencia', EvidenceController.getEvidences);
-//EvidenceRouter.get('/evidencia/:id', EvidenceController.getById);
-EvidenceRouter.get("/evidencia/:id", EvidenceController.downloadEvidence);
-//EvidenceRouter.post('/evidencia', EvidenceController.createEvidence);
-EvidenceRouter.post("/evidencia", upload.single("file"), EvidenceController.uploadEvidence);
-EvidenceRouter.put('/evidencia/:id', EvidenceController.update);
-EvidenceRouter.delete('/evidencia/:id', EvidenceController.delete);
+EvidenceRouter.get('/evidence', EvidenceController.getEvidences);
+//EvidenceRouter.get('/evidence/:id', EvidenceController.getById);
+EvidenceRouter.get("/evidence/:id", EvidenceController.downloadEvidence);
+//EvidenceRouter.post('/evidence', EvidenceController.createEvidence);
+EvidenceRouter.post("/evidence", upload.single("file"), EvidenceController.uploadEvidence);
+EvidenceRouter.put('/evidence/:id', EvidenceController.update);
+EvidenceRouter.delete('/evidence/:id', EvidenceController.delete);

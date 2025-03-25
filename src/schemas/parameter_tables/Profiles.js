@@ -12,4 +12,4 @@ export const Profiles = sequelize.define('Profiles', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

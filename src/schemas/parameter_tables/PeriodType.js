@@ -15,4 +15,4 @@ export const PeriodType = sequelize.define('PeriodType', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

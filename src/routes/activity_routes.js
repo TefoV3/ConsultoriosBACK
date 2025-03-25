@@ -4,10 +4,10 @@ import { upload } from "../middlewares/uploadMiddleware.js";
 
 export const ActivityRouter = Router();
 
-ActivityRouter.get('/actividad', ActivityController.getActivities);
-ActivityRouter.get('/actividad/caso/:codeCase', ActivityController.getAllByCodeCase);
-ActivityRouter.get('/actividad/:id', ActivityController.getById);
-ActivityRouter.get('/actividad/documento/:id', ActivityController.getDocumentById); 
-ActivityRouter.post('/actividad', upload.single("file"), ActivityController.createActivity);
-ActivityRouter.put('/actividad/:id', ActivityController.update);
-ActivityRouter.delete('/actividad/:id', ActivityController.delete);
+ActivityRouter.get('/activity', ActivityController.getActivities);
+ActivityRouter.get('/activity/case/:codeCase', ActivityController.getAllByCodeCase);
+ActivityRouter.get('/activity/:id', ActivityController.getById);
+ActivityRouter.get('/activity/document/:id', ActivityController.getDocumentById); 
+ActivityRouter.post('/activity', upload.single("file"), ActivityController.createActivity);
+ActivityRouter.put('/activity/:id', ActivityController.update);
+ActivityRouter.delete('/activity/:id', ActivityController.delete);

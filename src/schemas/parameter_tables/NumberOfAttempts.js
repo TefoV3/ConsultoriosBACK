@@ -15,4 +15,4 @@ export const NumberOfAttempts = sequelize.define('NumberOfAttempts', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

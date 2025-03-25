@@ -12,4 +12,4 @@ export const Type_Of_Attention = sequelize.define('Type_Of_Attention', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

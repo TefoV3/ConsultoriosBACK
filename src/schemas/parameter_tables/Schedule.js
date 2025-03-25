@@ -12,4 +12,4 @@ export const Schedule = sequelize.define('Schedule', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

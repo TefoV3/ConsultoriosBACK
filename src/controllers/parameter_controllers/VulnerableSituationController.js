@@ -21,15 +21,15 @@ export class VulnerableSituationController {
     }
 
     static async create(req, res) {
-        const data = req.body;
         try {
-            const newVulnerableSituation = new VulnerableSituationModel(data);
-            await newVulnerableSituation.save();
-            res.status(201).json(newVulnerableSituation);
+            const data = await VulnerableSituationModel.create(req.body);
+            res.status(201).json(data);
         } catch (error) {
             res.status(400).json({ message: error.message });
         }
     }
+
+
 
     static async update(req, res) {
         try {

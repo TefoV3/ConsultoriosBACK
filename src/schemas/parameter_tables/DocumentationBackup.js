@@ -15,4 +15,4 @@ export const DocumentationBackup = sequelize.define('DocumentationBackup', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

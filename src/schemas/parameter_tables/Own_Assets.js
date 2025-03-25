@@ -12,4 +12,4 @@ export const Own_Assets = sequelize.define('Own_Assets', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

@@ -12,4 +12,4 @@ export const Case_Status = sequelize.define('Case_Status', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

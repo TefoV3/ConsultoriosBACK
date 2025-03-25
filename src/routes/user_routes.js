@@ -3,9 +3,9 @@ import { Router } from "express";
 
 export const UserRouter = Router();
 
-UserRouter.get('/usuario', UserController.getUsers);
+UserRouter.get('/user', UserController.getUsers);
 UserRouter.get('/usuario/:id', UserController.getById);
 UserRouter.get("/users/socialwork", UserController.getUsersWithSocialWork);
-UserRouter.post('/usuario', UserController.createUser);
-UserRouter.put('/usuario/:id', UserController.update);
-UserRouter.delete('/usuario/:id', UserController.delete);
+UserRouter.post('/user', UserController.createUser);
+UserRouter.put('/user/:id', UserController.update);
+UserRouter.delete('/user/:id', UserController.delete);
