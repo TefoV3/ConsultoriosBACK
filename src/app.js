@@ -48,6 +48,18 @@ import {NumberOfAttemptsRouter} from './routes/parameter_routes/NumberOfAttempts
 import {PracticalHoursRouter} from './routes/parameter_routes/PracticalHoursRoutes.js'
 import { authMiddleware } from './middlewares/auth.js';
 
+//Schedules routes
+import { AlertaRouter } from './routes/schedule_routes/Alerta_Routes.js'
+import { HorarioRouter } from './routes/schedule_routes/Horario_routes.js'
+import { HorasExtraordinariasRouter } from './routes/schedule_routes/Horas_Extraordinarias_Routes.js'
+import { Parametro_HorarioRouter } from './routes/schedule_routes/Parametro_Horario_Routes.js'
+import { PeriodoRouter } from './routes/schedule_routes/Periodo_routes.js'
+import { Registro_Asistencias_Routes } from './routes/schedule_routes/Registro_Asistencia_Routes.js'
+import { ResumenHorasRouter } from './routes/schedule_routes/Resumen_Horas_routes.js'
+import { Seguimiento_SemanalRouter } from './routes/schedule_routes/Seguimiento_Semanal_Routes.js'
+import { UsuarioXPeriodoRouter } from './routes/schedule_routes/UsuarioXPeriodo_Routes.js'
+
+
 const app = express()
 
 // middleware
@@ -100,5 +112,18 @@ app.use(DocumentationBackupRouter)
 app.use(PeriodTypeRouter)
 app.use(NumberOfAttemptsRouter)
 app.use(PracticalHoursRouter)
+
+//Schedules routes
+app.use(AlertaRouter)
+app.use(HorarioRouter)
+app.use(HorasExtraordinariasRouter)
+app.use(Parametro_HorarioRouter)
+app.use(PeriodoRouter)
+app.use(Registro_Asistencias_Routes)
+app.use(ResumenHorasRouter)
+app.use(Seguimiento_SemanalRouter)
+app.use(UsuarioXPeriodoRouter)
+
+
 
 export default app;

@@ -317,5 +317,49 @@ export class InternalUserController {
         }
     }
 
+        /** 🔹 Actualizar la huella del usuario */
+        static async actualizarHuella(req, res) {
+            try {
+                const { usuarioCedula, template } = req.body;
+                if (!usuarioCedula || !template) {
+                    return res.status(400).json({ message: "Cédula y huella son requeridas." });
+                }
+    
+                // 🔹 Llamamos al modelo para actualizar la huella
+                const usuarioActualizado = await UsuarioModel.updateHuella(usuarioCedula, template);
+    
+                if (!usuarioActualizado) {
+                    return res.status(404).json({ message: "Usuario no encontrado o no se pudo actualizar." });
+                }
+    
+                res.json({ message: "Huella actualizada correctamente.", usuario: usuarioActualizado });
+            } catch (error) {
+                console.error("Error al actualizar huella:", error);
+                res.status(500).json({ message: "Error interno del servidor." });
+            }
+        }
+    
+        /** 🔹 Obtener la huella de un usuario */
+        static async obtenerHuella(req, res) {
+            try {
+                const { usuarioCedula } = req.params;
+                if (!usuarioCedula) {
+                    return res.status(400).json({ message: "Cédula requerida." });
+                }
+    
+                // 🔹 Llamamos al modelo para obtener la huella
+                const huellaBase64 = await UsuarioModel.getHuella(usuarioCedula);
+    
+                if (!huellaBase64) {
+                    return res.status(404).json({ message: "No se encontró huella para este usuario." });
+                }
+    
+                res.json({ message: "Huella encontrada.", huella: huellaBase64 });
+            } catch (error) {
+                console.error("Error al obtener huella:", error);
+                res.status(500).json({ message: "Error interno del servidor." });
+            }
+        }
+
 
 }

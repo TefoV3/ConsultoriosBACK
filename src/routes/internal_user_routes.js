@@ -10,6 +10,8 @@ InternalUserRouter.get('/usuariointerno/abogados/activos/:area', InternalUserCon
 InternalUserRouter.post('/usuariointerno', InternalUserController.createInternalUser);
 InternalUserRouter.put('/usuariointerno/:id', InternalUserController.update);
 InternalUserRouter.delete('/usuariointerno/:id', InternalUserController.delete);
+InternalUserRouter.put('/usuarios/actualizar-huella', InternalUserController.actualizarHuella);
+InternalUserRouter.get('/usuarios/obtener-huella/:usuarioCedula', InternalUserController.obtenerHuella);
 
 //AUTH ROUTES
 InternalUserRouter.post('/register', InternalUserController.createInternalUser);
