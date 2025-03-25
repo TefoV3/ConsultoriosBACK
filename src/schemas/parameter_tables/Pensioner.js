@@ -12,4 +12,4 @@ export const Pensioner = sequelize.define('Pensioner', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

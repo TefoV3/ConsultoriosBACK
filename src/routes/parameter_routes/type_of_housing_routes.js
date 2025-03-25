@@ -3,8 +3,8 @@ import { TypeOfHousingController } from "../../controllers/parameter_controllers
 
 export const TypeOfHousingRouter = Router();
 
-TypeOfHousingRouter.get('/tipodevivienda', TypeOfHousingController.getAll);
-TypeOfHousingRouter.get('/tipodevivienda/:id', TypeOfHousingController.getById);
-TypeOfHousingRouter.post('/tipodevivienda', TypeOfHousingController.create);
-TypeOfHousingRouter.put('/tipodevivienda/:id', TypeOfHousingController.update);
-TypeOfHousingRouter.delete('/tipodevivienda/:id', TypeOfHousingController.delete);
+TypeOfHousingRouter.get('/type-of-housing', TypeOfHousingController.getAll);
+TypeOfHousingRouter.get('/type-of-housing/:id', TypeOfHousingController.getById);
+TypeOfHousingRouter.post('/type-of-housing', TypeOfHousingController.create);
+TypeOfHousingRouter.put('/type-of-housing/:id', TypeOfHousingController.update);
+TypeOfHousingRouter.delete('/type-of-housing/:id', TypeOfHousingController.delete);

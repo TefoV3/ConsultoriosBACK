@@ -3,8 +3,8 @@ import { VulnerableSituationController } from "../../controllers/parameter_contr
 
 export const VulnerableSituationRouter = Router();
 
-VulnerableSituationRouter.get('/situacion_vulnerable', VulnerableSituationController.getAll);
-VulnerableSituationRouter.get('/situacion_vulnerable/:id', VulnerableSituationController.getById);
-VulnerableSituationRouter.post('/situacion_vulnerable', VulnerableSituationController.create);
-VulnerableSituationRouter.put('/situacion_vulnerable/:id', VulnerableSituationController.update);
-VulnerableSituationRouter.delete('/situacion_vulnerable/:id', VulnerableSituationController.delete);
+VulnerableSituationRouter.get('/vulnerable-situation', VulnerableSituationController.getAll);
+VulnerableSituationRouter.get('/vulnerable-situation/:id', VulnerableSituationController.getById);
+VulnerableSituationRouter.post('/vulnerable-situation', VulnerableSituationController.create);
+VulnerableSituationRouter.put('/vulnerable-situation/:id', VulnerableSituationController.update);
+VulnerableSituationRouter.delete('/vulnerable-situation/:id', VulnerableSituationController.delete);

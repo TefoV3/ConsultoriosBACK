@@ -12,4 +12,4 @@ export const Disability = sequelize.define('Disability', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

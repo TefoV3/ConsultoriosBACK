@@ -58,25 +58,35 @@ dialect: 'mysql'
 
 
 //TefoVirtual
-/*export const sequelize = new Sequelize(
-    'ConsultoriosJuricosevi', 
-    'Cliente2', 
+export const sequelize = new Sequelize(
+    'ConsultoriosJuridicosevi', 
+    'Cliente', 
     '2444', 
     {
-        host: '192.168.100.105', 
+        host: '192.168.56.101', 
         dialect: 'mysql'
-    }
-);*/
-
-/*Francis
-export const sequelize = new Sequelize(
-    'consultoriosjuridicos', 
-    'fvelasco', 
-    'ltic', 
-    {
-       host: '192.168.56.102',
-       dialect: 'mysql'
     }
 );
 
-*/
+//Francis
+// export const sequelize = new Sequelize(
+//     'consultoriosjuridicos', 
+//     'fvelasco', 
+//     'ltic', 
+//     {
+//        host: '192.168.56.102',
+//        dialect: 'mysql'
+//     }
+// );
+
+// Francis
+// export const sequelize = new Sequelize(
+//     'consultoriosjuridicos2', 
+//     'fvelasco', 
+//     'ltic', 
+//     {
+//        host: '192.168.56.102',
+//        dialect: 'mysql'
+//     }
+// );
+

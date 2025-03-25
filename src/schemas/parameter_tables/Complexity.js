@@ -15,4 +15,4 @@ export const Complexity = sequelize.define('Complexity', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

@@ -12,4 +12,4 @@ export const Family_Group = sequelize.define('Family_Group', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

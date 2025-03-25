@@ -15,4 +15,4 @@ export const Sex = sequelize.define('Sex', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

@@ -24,7 +24,7 @@ export const Topic = sequelize.define('Topic', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });
 
 // Definir la relación entre Topic y Subject (Un Topic pertenece a un Subject)
 Topic.belongsTo(Subject, {

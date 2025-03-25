@@ -3,8 +3,8 @@ import { PensionerController } from "../../controllers/parameter_controllers/Pen
 
 export const PensionerRouter = Router();
 
-PensionerRouter.get('/pensionista', PensionerController.getAll);
-PensionerRouter.get('/pensionista/:id', PensionerController.getById);
-PensionerRouter.post('/pensionista', PensionerController.create);
-PensionerRouter.put('/pensionista/:id', PensionerController.update);
-PensionerRouter.delete('/pensionista/:id', PensionerController.delete);
+PensionerRouter.get('/pensioner', PensionerController.getAll);
+PensionerRouter.get('/pensioner/:id', PensionerController.getById);
+PensionerRouter.post('/pensioner', PensionerController.create);
+PensionerRouter.put('/pensioner/:id', PensionerController.update);
+PensionerRouter.delete('/pensioner/:id', PensionerController.delete);

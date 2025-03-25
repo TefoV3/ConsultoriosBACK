@@ -3,40 +3,40 @@ import { InitialConsultations } from "./Initial_Consultations.js";
 import { sequelize } from "../database/database.js";
 
 export const SocialWork = sequelize.define('SocialWork', {
-    ProcessNumber: {
+    SW_ProcessNumber: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    UserRequests: {
+    SW_UserRequests: {
         type: DataTypes.TEXT,
         allowNull: true
     },
-    ReferralAreaRequests: {
+    SW_ReferralAreaRequests: {
         type: DataTypes.TEXT,
         allowNull: true
     },
-    ViolenceEpisodes: {
+    SW_ViolenceEpisodes: {
         type: DataTypes.TEXT,
         allowNull: true
     },
-    Complaints: {
+    SW_Complaints: {
         type: DataTypes.TEXT,
         allowNull: true
     },
-    DisabilityType: {
+    SW_DisabilityType: {
         type: DataTypes.STRING(100),
         allowNull: true
     },
-    DisabilityPercentage: {
+    SW_DisabilityPercentage: {
         type: DataTypes.DECIMAL(5, 2),
         allowNull: true
     },
-    HasDisabilityCard: {
+    SW_HasDisabilityCard: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
-    Status: {
+    SW_Status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },

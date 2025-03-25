@@ -1,4 +1,5 @@
 import { User } from "../schemas/User.js"; // Nombre traducido del esquema
+import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { AuditModel } from "../models/AuditModel.js";
 
 export class UserModel {
@@ -10,6 +11,24 @@ export class UserModel {
             throw new Error(`Error retrieving users: ${error.message}`);
         }
     }
+
+        static async getUsersWithSocialWork() {
+            try {
+                const users = await User.findAll({
+                    include: [
+                        {
+                            model: InitialConsultations,
+                            attributes: ["Init_Code", "Init_SocialWork"],
+                            where: { Init_SocialWork: true }
+                        }
+                    ]
+                });
+    
+                return users;
+            } catch (error) {
+                throw new Error(`Error retrieving users with social work: ${error.message}`);
+            }
+        }
 
     static async getById(id) {
         try {

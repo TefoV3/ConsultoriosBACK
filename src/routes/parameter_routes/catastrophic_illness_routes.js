@@ -3,9 +3,9 @@ import { CatastrophicIllnessController } from "../../controllers/parameter_contr
 
 export const CatastrophicIllnessRouter = Router();
 
-CatastrophicIllnessRouter.get('/enfermedad', CatastrophicIllnessController.getAll);
-CatastrophicIllnessRouter.get('/enfermedad/:id', CatastrophicIllnessController.getById);
-CatastrophicIllnessRouter.post('/enfermedad', CatastrophicIllnessController.create);
-CatastrophicIllnessRouter.put('/enfermedad/:id', CatastrophicIllnessController.update);
-CatastrophicIllnessRouter.delete('/enfermedad/:id', CatastrophicIllnessController.delete);
+CatastrophicIllnessRouter.get('/illness', CatastrophicIllnessController.getAll);
+CatastrophicIllnessRouter.get('/illness/:id', CatastrophicIllnessController.getById);
+CatastrophicIllnessRouter.post('/illness', CatastrophicIllnessController.create);
+CatastrophicIllnessRouter.put('/illness/:id', CatastrophicIllnessController.update);
+CatastrophicIllnessRouter.delete('/illness/:id', CatastrophicIllnessController.delete);
     

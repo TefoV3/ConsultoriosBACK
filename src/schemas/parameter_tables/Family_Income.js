@@ -12,4 +12,4 @@ export const Family_Income = sequelize.define('Family_Income', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

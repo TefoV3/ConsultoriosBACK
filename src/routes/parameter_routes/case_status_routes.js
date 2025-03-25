@@ -3,8 +3,8 @@ import { CaseStatusController } from "../../controllers/parameter_controllers/Ca
 
 export const CaseStatusRouter = Router();
 
-CaseStatusRouter.get('/estado_caso', CaseStatusController.getAll);
-CaseStatusRouter.get('/cestado_caso/:id', CaseStatusController.getById);
-CaseStatusRouter.post('/estado_caso', CaseStatusController.create);
-CaseStatusRouter.put('/estado_caso/:id', CaseStatusController.update);
-CaseStatusRouter.delete('/estado_caso/:id', CaseStatusController.delete);
+CaseStatusRouter.get('/case_status', CaseStatusController.getAll);
+CaseStatusRouter.get('/case_status/:id', CaseStatusController.getById);
+CaseStatusRouter.post('/case_status', CaseStatusController.create);
+CaseStatusRouter.put('/case_status/:id', CaseStatusController.update);
+CaseStatusRouter.delete('/case_status/:id', CaseStatusController.delete);

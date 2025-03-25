@@ -15,4 +15,4 @@ export const Country = sequelize.define('Country', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });
