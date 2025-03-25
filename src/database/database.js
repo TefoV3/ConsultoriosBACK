@@ -68,9 +68,9 @@ export const sequelize = new Sequelize(
     }
 );
 
-/*Francis
+//Francis
 export const sequelize = new Sequelize(
-    'consultoriosjuridicos', 
+    'consultoriosjuridicos2', 
     'fvelasco', 
     'ltic', 
     {
@@ -79,4 +79,3 @@ export const sequelize = new Sequelize(
     }
 );
 
-*/

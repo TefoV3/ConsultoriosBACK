@@ -11,6 +11,10 @@ export const Subject = sequelize.define('Subject', {
         type: DataTypes.STRING(100),
         allowNull: false
     },
+    Subject_NRC: {
+        type: DataTypes.STRING(10),
+        allowNull: false
+    },
     Subject_Status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
