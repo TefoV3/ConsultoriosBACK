@@ -64,6 +64,7 @@ export class ActivityModel {
                 Activity_Reference_File: data.Reference_File,
                 Activity_Status: data.Status,
                 Activity_Type: data.Activity_Type,
+                Activity_OnTime: data.Activity_OnTime,
                 Activity_Documents: file ? file.buffer : null
             }, { transaction: t });
 

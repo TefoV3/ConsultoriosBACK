@@ -49,6 +49,7 @@ export const Activity = sequelize.define('Activity', {
     Activity_ReferenceFile: DataTypes.STRING(25),
     Activity_Status: DataTypes.STRING(50),
     Activity_Type: DataTypes.STRING(15),
+    Activity_OnTime:DataTypes.BOOLEAN,
     Documents: {
         type: DataTypes.BLOB("long"),
         allowNull: true
