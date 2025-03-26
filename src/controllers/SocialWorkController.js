@@ -49,10 +49,6 @@ export class SocialWorkController {
         try {
             const { Internal_ID, ...data } = req.body;
 
-            if (!Internal_ID) {
-                return res.status(400).json({ error: "Internal_ID is required for auditing" });
-            }
-
             const newRecord = await SocialWorkModel.create(data, Internal_ID);
             res.status(201).json({ message: "Social work record created successfully", data: newRecord });
         } catch (error) {

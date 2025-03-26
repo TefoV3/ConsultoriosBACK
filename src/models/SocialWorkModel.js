@@ -1,5 +1,7 @@
 import { SocialWork } from "../schemas/SocialWork.js";
 import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
+import { InitialConsultations } from "../schemas/Initial_Consultations.js";
+import { User } from "../schemas/User.js";
 
 export class SocialWorkModel {
     // Obtener todas las evaluaciones de trabajo social
@@ -19,20 +21,24 @@ export class SocialWorkModel {
             throw new Error(`Error retrieving social work record: ${error.message}`);
         }
     }
-    
+
     // Obtener User_ID desde SocialWork a través de Init_Code
     static async getUserIdBySocialWork(initCode) {
         try {
             const socialWorkRecord = await SocialWork.findOne({
                 where: { Init_Code: initCode },
-                include: {
-                    model: InitialConsultations,
-                    attributes: ["User_ID"],
-                    include: {
-                        model: User,
-                        attributes: ["User_ID", "User_FirstName", "User_LastName", "User_Email"]
+                include: [
+                    {
+                        model: InitialConsultations,
+                        attributes: ["User_ID"],
+                        include: [
+                            {
+                                model: User,
+                                attributes: ["User_ID", "User_FirstName", "User_LastName", "User_Age", "User_Profession", "User_MaritalStatus", "User_Address", "User_Phone"]
+                            }
+                        ]
                     }
-                }
+                ]
             });
 
             if (!socialWorkRecord || !socialWorkRecord.Initial_Consultation) {
