@@ -10,6 +10,7 @@ import dotenv from "dotenv";
 // console.log("Usuario:", process.env.SUPABASE_DB_USER);
 // console.log("Base de datos:", process.env.SUPABASE_DB_NAME);
 
+<<<<<<< HEAD
 // // Configurar Sequelize con Supabase
 // export const sequelize = new Sequelize(
 //     process.env.SUPABASE_DB_NAME,
@@ -32,11 +33,35 @@ import dotenv from "dotenv";
 //USO LOCAL
 
 // HEAD
+=======
+/* Configurar Sequelize con Supabase
+export const sequelize = new Sequelize(
+    process.env.SUPABASE_DB_NAME,
+    process.env.SUPABASE_DB_USER,
+    process.env.SUPABASE_DB_PASSWORD,
+    {
+        host: process.env.SUPABASE_HOST,
+        port: process.env.SUPABASE_PORT,
+        dialect: "postgres",
+        logging: false,
+        dialectOptions: {
+            ssl: {
+                require: true,
+                rejectUnauthorized: false,
+            },
+        },
+    }
+);
+
+//USO LOCAL
+
+HEAD*/
+>>>>>>> ad1e7c277869290a64b2dd1257c507c19b091673
 
 export const sequelize = new Sequelize(
       'prueba', 
-       'root', 
-      '12345678', 
+       'Sergio', 
+      '12345', 
       {
          host: 'localhost',
           dialect: 'mysql'
