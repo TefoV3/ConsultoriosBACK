@@ -36,20 +36,26 @@ export const Activity = sequelize.define('Activity', {
         type: DataTypes.CHAR(15),
         allowNull: false
     },
-    Last_Activity: DataTypes.STRING(250),
+
+    Activity_Last: DataTypes.STRING(250),
     Activity_Date: DataTypes.DATE,
-    Activity_Type: DataTypes.STRING(100),
-    Location: DataTypes.STRING(250),
-    Time: DataTypes.TIME,
-    Duration: DataTypes.TIME,
-    Counterparty: DataTypes.STRING(50),
-    Judged: DataTypes.STRING(50),
-    Judge_Name: DataTypes.STRING(50),
-    Reference_File: DataTypes.STRING(25),
-    Status: DataTypes.STRING(50),
+    Activity_Name :DataTypes.STRING(250),
+    Activity_Location: DataTypes.STRING(250),
+    Activity_Time: DataTypes.TIME,
+    Activity_Duration: DataTypes.TIME,
+    Activity_Counterparty: DataTypes.STRING(50),
+    Activity_Judged: DataTypes.STRING(50),
+    Activity_Judge_Name: DataTypes.STRING(50),
+    Activity_ReferenceFile: DataTypes.STRING(25),
+    Activity_Status: DataTypes.STRING(50),
+    Activity_Type: DataTypes.STRING(15),
     Documents: {
         type: DataTypes.BLOB("long"),
         allowNull: true
+    },
+    Activity_IsDeleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 }, { timestamps: false });
 
