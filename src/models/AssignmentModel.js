@@ -21,6 +21,17 @@ export class AssignmentModel {
             throw new Error(`Error retrieving assignment: ${error.message}`);
         }
     }
+
+    static async getByStudentId(studentId) {
+        try {
+            return await Assignment.findAll({
+                where: { Internal_User_ID_Student: studentId }
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving assignments for student ID ${studentId}: ${error.message}`);
+        }
+    }
+
     static async create(data, internalId) {
         try {
             const newAssignment = await Assignment.create(data);

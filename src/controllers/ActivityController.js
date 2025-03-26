@@ -59,14 +59,7 @@ export class ActivityController {
             console.log("📥 Recibiendo solicitud para crear actividad...");
             const { Init_Code } = req.body;
 
-            console.log("🔍 req.user:", req.user);
-
-            if (!req.user) {
-                console.error("❌ Usuario no autenticado.");
-                return res.status(401).json({ error: "Usuario no autenticado" });
-            }
-
-            const internalId = req.user.id;
+            const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
 
             console.log("🔍 Internal_ID obtenido:", internalId);
 
@@ -110,12 +103,7 @@ export class ActivityController {
         try {
             const { id } = req.params;
 
-            if (!req.user) {
-                console.error("❌ Usuario no autenticado.");
-                return res.status(401).json({ error: "Usuario no autenticado" });
-            }
-
-            const internalId = req.user.id; // ✅ Se obtiene el usuario interno desde req.user
+            const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
 
             if (!internalId) {
                 return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
@@ -134,12 +122,7 @@ export class ActivityController {
         try {
             const { id } = req.params;
 
-            if (!req.user) {
-                console.error("❌ Usuario no autenticado.");
-                return res.status(401).json({ error: "Usuario no autenticado" });
-            }
-
-            const internalId = req.user.id; // ✅ Se obtiene el usuario interno desde req.user
+            const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
 
             if (!internalId) {
                 return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });

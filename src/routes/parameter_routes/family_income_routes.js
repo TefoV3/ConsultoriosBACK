@@ -3,8 +3,8 @@ import { FamilyIncomeController } from "../../controllers/parameter_controllers/
 
 export const FamilyIncomeRouter = Router();
 
-FamilyIncomeRouter.get('/ingresofamiliar', FamilyIncomeController.getAll);
-FamilyIncomeRouter.get('/ingresofamiliar/:id', FamilyIncomeController.getById);
-FamilyIncomeRouter.post('/ingresofamiliar', FamilyIncomeController.create);
-FamilyIncomeRouter.put('/ingresofamiliar/:id', FamilyIncomeController.update);
-FamilyIncomeRouter.delete('/ingresofamiliar/:id', FamilyIncomeController.delete);
+FamilyIncomeRouter.get('/family-income', FamilyIncomeController.getAll);
+FamilyIncomeRouter.get('/family-income/:id', FamilyIncomeController.getById);
+FamilyIncomeRouter.post('/family-income', FamilyIncomeController.create);
+FamilyIncomeRouter.put('/family-income/:id', FamilyIncomeController.update);
+FamilyIncomeRouter.delete('/family-income/:id', FamilyIncomeController.delete);

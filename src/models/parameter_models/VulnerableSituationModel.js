@@ -30,6 +30,7 @@ export class VulnerableSituationModel {
         }
     }
 
+
     static async update(id, data) {
         try {
             const vulnerableSituationRecord = await this.getById(id);

@@ -12,4 +12,4 @@ export const Vulnerable_Situation = sequelize.define('Vulnerable_Situation', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

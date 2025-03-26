@@ -3,9 +3,10 @@ import { Router } from "express";
 
 export const AssignmentRouter = Router();
 
-AssignmentRouter.get('/asignacion', AssignmentController.getAssignments);
-AssignmentRouter.get('/asignacion/:id', AssignmentController.getById);
-AssignmentRouter.post('/asignacion', AssignmentController.createAssignment);
-AssignmentRouter.put('/asignacion/:id', AssignmentController.update);
-AssignmentRouter.delete('/asignacion/:id', AssignmentController.delete);
-AssignmentRouter.post('/asignacion/equitativa', AssignmentController.assignCasesEquitably);
+AssignmentRouter.get('/assignment', AssignmentController.getAssignments);
+AssignmentRouter.get('/assignment/:id', AssignmentController.getById);
+AssignmentRouter.get('/assignment/studentid/:id', AssignmentController.getAssignmentsByStudentId);
+AssignmentRouter.post('/assignment', AssignmentController.createAssignment);
+AssignmentRouter.put('/assignment/:id', AssignmentController.update);
+AssignmentRouter.delete('/assignment/:id', AssignmentController.delete);
+AssignmentRouter.post('/assignment/equitativa', AssignmentController.assignCasesEquitably);

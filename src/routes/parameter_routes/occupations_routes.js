@@ -3,8 +3,8 @@ import { OccupationsController } from "../../controllers/parameter_controllers/O
 
 export const OccupationsRouter = Router();
 
-OccupationsRouter.get('/ocupaciones', OccupationsController.getAll);
-OccupationsRouter.get('/ocupaciones/:id', OccupationsController.getById);
-OccupationsRouter.post('/ocupaciones', OccupationsController.create);
-OccupationsRouter.put('/ocupaciones/:id', OccupationsController.update);
-OccupationsRouter.delete('/ocupaciones/:id', OccupationsController.delete);
+OccupationsRouter.get('/occupations', OccupationsController.getAll);
+OccupationsRouter.get('/occupations/:id', OccupationsController.getById);
+OccupationsRouter.post('/occupations', OccupationsController.create);
+OccupationsRouter.put('/occupations/:id', OccupationsController.update);
+OccupationsRouter.delete('/occupations/:id', OccupationsController.delete);

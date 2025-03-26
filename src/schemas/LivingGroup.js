@@ -3,46 +3,48 @@ import { sequelize } from "../database/database.js";
 import { SocialWork } from "./SocialWork.js";
 
 export const LivingGroup = sequelize.define('LivingGroup', {
-    LivingGroup_ID: {
+    LG_LivingGroup_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    Name: {
+    LG_Name: {
         type: DataTypes.STRING(100),
         allowNull: false
     },
-    Age: {
+    LG_Age: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    Relationship: {
+    LG_Relationship: {
         type: DataTypes.STRING(50), // Describes the relationship (e.g., sibling, parent)
         allowNull: false
     },
-    Occupation: {
+    LG_Occupation: {
         type: DataTypes.STRING(100), // The individual's occupation
         allowNull: true
     },
-    ProcessNumber: {
+    LG_Notes: DataTypes.TEXT,
+
+    SW_ProcessNumber: {
         type: DataTypes.INTEGER,
         references: {
             model: SocialWork,
-            key: 'ProcessNumber'
+            key: 'SW_ProcessNumber'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     },
-    Status: {
+    LG_Status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });
 
 // Establishing the relationship
 SocialWork.hasMany(LivingGroup, {
-    foreignKey: 'ProcessNumber',
+    foreignKey: 'SW_ProcessNumber',
 });
 LivingGroup.belongsTo(SocialWork, {
-    foreignKey: 'ProcessNumber',
+    foreignKey: 'SW_ProcessNumber',
 });

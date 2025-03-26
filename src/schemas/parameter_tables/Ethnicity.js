@@ -15,4 +15,4 @@ export const Ethnicity = sequelize.define('Ethnicity', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

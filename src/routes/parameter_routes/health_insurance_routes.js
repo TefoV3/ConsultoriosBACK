@@ -3,8 +3,8 @@ import { HealthInsuranceController } from "../../controllers/parameter_controlle
 
 export const HealthInsuranceRouter = Router();
 
-HealthInsuranceRouter.get('/segurodesalud', HealthInsuranceController.getAll);
-HealthInsuranceRouter.get('/segurodesalud/:id', HealthInsuranceController.getById);
-HealthInsuranceRouter.post('/segurodesalud', HealthInsuranceController.create);
-HealthInsuranceRouter.put('/segurodesalud/:id', HealthInsuranceController.update);
-HealthInsuranceRouter.delete('/segurodesalud/:id', HealthInsuranceController.delete);
+HealthInsuranceRouter.get('/health-insurance', HealthInsuranceController.getAll);
+HealthInsuranceRouter.get('/health-insurance/:id', HealthInsuranceController.getById);
+HealthInsuranceRouter.post('/health-insurance', HealthInsuranceController.create);
+HealthInsuranceRouter.put('/health-insurance/:id', HealthInsuranceController.update);
+HealthInsuranceRouter.delete('/health-insurance/:id', HealthInsuranceController.delete);

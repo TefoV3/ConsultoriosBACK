@@ -43,6 +43,7 @@ export const Activity = sequelize.define('Activity', {
     Time: DataTypes.TIME,
     Duration: DataTypes.TIME,
     Counterparty: DataTypes.STRING(50),
+    Judged: DataTypes.STRING(50),
     Judge_Name: DataTypes.STRING(50),
     Reference_File: DataTypes.STRING(25),
     Status: DataTypes.STRING(50),

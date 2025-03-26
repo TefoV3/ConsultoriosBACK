@@ -12,4 +12,4 @@ export const Occupations = sequelize.define('Occupations', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

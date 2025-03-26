@@ -21,6 +21,16 @@ export class AssignmentController {
         }
     }
 
+    static async getAssignmentsByStudentId(req, res) {
+        const { id } = req.params; // Cambiado de studentId a id
+        try {
+            const assignments = await AssignmentModel.getByStudentId(id);
+            return res.status(200).json(assignments);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+    
     static async createAssignment(req, res) {
         try {
             const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers

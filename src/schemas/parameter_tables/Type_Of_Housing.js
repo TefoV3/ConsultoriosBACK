@@ -12,4 +12,4 @@ export const Type_Of_Housing = sequelize.define('Type_Of_Housing', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

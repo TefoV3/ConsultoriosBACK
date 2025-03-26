@@ -12,4 +12,4 @@ export const Income_Level = sequelize.define('Income_Level', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

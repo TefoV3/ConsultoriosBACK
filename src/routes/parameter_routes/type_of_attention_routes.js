@@ -3,8 +3,8 @@ import { TypeOfAttentionController } from "../../controllers/parameter_controlle
 
 export const TypeOfAttentionRouter = Router();
 
-TypeOfAttentionRouter.get('/tipo_de_atencion', TypeOfAttentionController.getAll);
-TypeOfAttentionRouter.get('/tipo_de_atencion/:id', TypeOfAttentionController.getById);
-TypeOfAttentionRouter.post('/tipo_de_atencion', TypeOfAttentionController.create);
-TypeOfAttentionRouter.put('/tipo_de_atencion/:id', TypeOfAttentionController.update);
-TypeOfAttentionRouter.delete('/tipo_de_atencion/:id', TypeOfAttentionController.delete);
+TypeOfAttentionRouter.get('/type-of-attention', TypeOfAttentionController.getAll);
+TypeOfAttentionRouter.get('/type-of-attention/:id', TypeOfAttentionController.getById);
+TypeOfAttentionRouter.post('/type-of-attention', TypeOfAttentionController.create);
+TypeOfAttentionRouter.put('/type-of-attention/:id', TypeOfAttentionController.update);
+TypeOfAttentionRouter.delete('/type-of-attention/:id', TypeOfAttentionController.delete);

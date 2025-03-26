@@ -3,8 +3,8 @@ import { IncomeLevelController } from "../../controllers/parameter_controllers/I
 
 export const IncomeLevelRouter = Router();
 
-IncomeLevelRouter.get('/niveldeingresos', IncomeLevelController.getAll);
-IncomeLevelRouter.get('/niveldeingresos/:id', IncomeLevelController.getById);
-IncomeLevelRouter.post('/niveldeingresos', IncomeLevelController.create);
-IncomeLevelRouter.put('/niveldeingresos/:id', IncomeLevelController.update);
-IncomeLevelRouter.delete('/niveldeingresos/:id', IncomeLevelController.delete);
+IncomeLevelRouter.get('/income-level', IncomeLevelController.getAll);
+IncomeLevelRouter.get('/income-level/:id', IncomeLevelController.getById);
+IncomeLevelRouter.post('/income-level', IncomeLevelController.create);
+IncomeLevelRouter.put('/income-level/:id', IncomeLevelController.update);
+IncomeLevelRouter.delete('/income-level/:id', IncomeLevelController.delete);

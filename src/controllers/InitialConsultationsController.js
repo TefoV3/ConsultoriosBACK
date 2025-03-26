@@ -1,4 +1,5 @@
 import { InitialConsultationsModel } from "../models/InitialConsultationsModel.js";
+import { AssignmentModel } from "../models/AssignmentModel.js";
 
 export class FirstConsultationsController {
     static async getFirstConsultations(req, res) {
@@ -20,14 +21,14 @@ export class FirstConsultationsController {
             res.status(500).json(error);
         }
     }
+
     static async getByStatus(req, res) {
         const { status } = req.params;
         try {
-            const consultation = await InitialConsultationsModel.getByStatus(status);
-            if (consultation) return res.json(consultation);
-            res.status(404).json({ message: "First consultation not found" });
+            const consultations = await InitialConsultationsModel.getByStatus(status);
+            res.json(consultations);
         } catch (error) {
-            res.status(500).json(error);
+            res.status(500).json({ error: error.message });
         }
     }
 
@@ -39,6 +40,17 @@ export class FirstConsultationsController {
         }
         catch (error) {
             res.status(500).json(error);
+        }
+    }
+
+    static async getByInitTypeAndSubject(req, res) {
+        try {
+            const { initSubject } = req.params;
+            const initType = "Por Asignar";
+            const consultations = await InitialConsultationsModel.getByInitTypeAndSubject(initType, initSubject);
+            res.status(200).json(consultations);
+        } catch (error) {
+            res.status(500).json({ message: "Error fetching consultations", error });
         }
     }
 

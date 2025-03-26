@@ -3,12 +3,14 @@ import { Router } from "express";
 
 export const InternalUserRouter = Router();
 
-InternalUserRouter.get('/usuariointerno', InternalUserController.getInternalUsers);
-InternalUserRouter.get('/usuariointerno/:id', InternalUserController.getById);
-InternalUserRouter.get('/usuariointerno/email/:email', InternalUserController.getByEmail);
-InternalUserRouter.post('/usuariointerno', InternalUserController.createInternalUser);
-InternalUserRouter.put('/usuariointerno/:id', InternalUserController.update);
-InternalUserRouter.delete('/usuariointerno/:id', InternalUserController.delete);
+InternalUserRouter.get('/internal-user', InternalUserController.getInternalUsers);
+InternalUserRouter.get('/internal-user/:id', InternalUserController.getById);
+InternalUserRouter.get('/internal-user/email/:email', InternalUserController.getByEmail);
+InternalUserRouter.get('/internal-user/lawyers/actives/:area', InternalUserController.getAllActiveLawyers);
+InternalUserRouter.post('/internal-user', InternalUserController.createInternalUser);
+InternalUserRouter.put('/internal-user/:id', InternalUserController.update);
+InternalUserRouter.delete('/internal-user/:id', InternalUserController.delete);
+InternalUserRouter.get('/internal-users/students/:area', InternalUserController.getStudentsByArea);
 
 //AUTH ROUTES
 InternalUserRouter.post('/register', InternalUserController.createInternalUser);

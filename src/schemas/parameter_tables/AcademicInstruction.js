@@ -15,4 +15,4 @@ export const AcademicInstruction = sequelize.define('AcademicInstruction', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }
-});
+}, { timestamps: false });

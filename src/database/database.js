@@ -32,21 +32,16 @@ import dotenv from "dotenv";
 //USO LOCAL
 
 // HEAD
-/*
-   export const sequelize = new Sequelize(
-       'prueba', 
-       'root', 
-       '12345678', 
-       {
-          host: 'localhost',
-          dialect: 'mysql'
-       }
-   );
-<<<<<<< HEAD
-=======
-*/
->>>>>>> ecad876d2fc767bef7ff11b1f2ed29b9ea08dbfd
 
+export const sequelize = new Sequelize(
+      'prueba', 
+       'root', 
+      '12345', 
+      {
+         host: 'localhost',
+          dialect: 'mysql'
+     }
+    )
 /*
 export const sequelize = new Sequelize(
 'prueba', 
@@ -62,23 +57,34 @@ dialect: 'mysql'
 
 //TefoVirtual
 /*export const sequelize = new Sequelize(
-    'ConsultoriosJuricosevi', 
-    'Cliente2', 
+    'ConsultoriosJuridicosevi', 
+    'Cliente', 
     '2444', 
     {
-        host: '192.168.100.105', 
+        host: '192.168.56.101', 
         dialect: 'mysql'
     }
 );*/
 
 //Francis
-export const sequelize = new Sequelize(
-    'consultoriosjuridicos', 
-    'fvelasco', 
-    'ltic', 
-    {
-       host: '192.168.56.102',
-       dialect: 'mysql'
-    }
-);
+// export const sequelize = new Sequelize(
+//     'consultoriosjuridicos', 
+//     'fvelasco', 
+//     'ltic', 
+//     {
+//        host: '192.168.56.102',
+//        dialect: 'mysql'
+//     }
+// );
+
+// Francis
+// export const sequelize = new Sequelize(
+//     'consultoriosjuridicos2', 
+//     'fvelasco', 
+//     'ltic', 
+//     {
+//        host: '192.168.56.102',
+//        dialect: 'mysql'
+//     }
+// );
 
