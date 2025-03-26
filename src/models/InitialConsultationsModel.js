@@ -38,6 +38,18 @@ export class InitialConsultationsModel {
             throw new Error(`Error fetching consultations: ${error.message}`);
         }
     }
+    static async getByInitTypeAndSubject(initType, initSubject) {
+        try {
+            return await InitialConsultations.findAll({
+                where: {
+                    Init_Type: initType,
+                    Init_Subject: initSubject
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error fetching consultations: ${error.message}`);
+        }
+    }
 
     static async createInitialConsultation(data,files) {
         const t = await sequelize.transaction();
@@ -132,6 +144,7 @@ export class InitialConsultationsModel {
                 Init_Status: data.Init_Status,
                 Init_SocialWork : data.Init_SocialWork,
                 Init_Type: data.Init_Type,
+
             }, { transaction: t });
 
             // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
