@@ -64,8 +64,7 @@ export class ActivityModel {
                 Activity_Reference_File: data.Reference_File,
                 Activity_Status: data.Status,
                 Activity_Type: data.Activity_Type,
-                Activity_Documents: file ? file.buffer : null,
-                Activity_IsDeleted: false,
+                Activity_Documents: file ? file.buffer : null
             }, { transaction: t });
 
             console.log("✅ Actividad creada con ID:", newActivity.Activity_ID); // Log para verificar creación
@@ -125,28 +124,6 @@ export class ActivityModel {
             return updatedActivity;
         } catch (error) {
             throw new Error(`Error updating activity: ${error.message}`);
-        }
-    }
-
-    static async delete(id, internalId) {
-        try {
-            console.log("📥 Eliminando actividad con Internal_ID:", internalId); // Log para verificar Internal_ID
-
-            const activity = await this.getById(id);
-            if (!activity) return null;
-
-            await Activity.destroy({ where: { Activity_Id: id } });
-            // 🔹 Registrar en Audit que un usuario interno eliminó una actividad
-            await AuditModel.registerAudit(
-                internalId, 
-                "DELETE",
-                "Activity",
-                `El usuario interno ${internalId} eliminó la actividad con ID ${id}`
-            );
-
-            return activity;
-        } catch (error) {
-            throw new Error(`Error deleting activity: ${error.message}`);
         }
     }
 }
