@@ -4,7 +4,7 @@ import { Router } from "express";
 export const UserRouter = Router();
 
 UserRouter.get('/user', UserController.getUsers);
-UserRouter.get('/usuario/:id', UserController.getById);
+UserRouter.get('/user/:id', UserController.getById);
 UserRouter.get("/users/socialwork", UserController.getUsersWithSocialWork);
 UserRouter.post('/user', UserController.createUser);
 UserRouter.put('/user/:id', UserController.update);
