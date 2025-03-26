@@ -38,7 +38,7 @@ export const InitialConsultations = sequelize.define('Initial_Consultations', {
     Init_Service: DataTypes.STRING(100),
     Init_Referral: DataTypes.STRING(100),
     Init_Status: DataTypes.STRING(100),
-    Init_Notes: DataTypes.STRING(255),
+    Init_Notes: DataTypes.TEXT,
     Init_Complexity: DataTypes.CHAR(10),
     Init_Type: DataTypes.STRING(30),
     Init_SocialWork: DataTypes.BOOLEAN,

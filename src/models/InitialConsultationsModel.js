@@ -26,6 +26,19 @@ export class InitialConsultationsModel {
         }
     }
 
+    static async getByInitTypeAndSubject(initType, initSubject) {
+        try {
+            return await InitialConsultations.findAll({
+                where: {
+                    Init_Type: initType,
+                    Init_Subject: initSubject
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error fetching consultations: ${error.message}`);
+        }
+    }
+
     static async createInitialConsultation(data,files) {
         const t = await sequelize.transaction();
         let userCreated = false;

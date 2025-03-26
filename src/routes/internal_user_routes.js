@@ -10,6 +10,7 @@ InternalUserRouter.get('/internal-user/lawyers/actives/:area', InternalUserContr
 InternalUserRouter.post('/internal-user', InternalUserController.createInternalUser);
 InternalUserRouter.put('/internal-user/:id', InternalUserController.update);
 InternalUserRouter.delete('/internal-user/:id', InternalUserController.delete);
+InternalUserRouter.get('/internal-users/students/:area', InternalUserController.getStudentsByArea);
 
 //AUTH ROUTES
 InternalUserRouter.post('/register', InternalUserController.createInternalUser);

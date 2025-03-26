@@ -53,17 +53,19 @@ export class ActivityModel {
                 Activity_ID: data.Activity_ID,
                 Init_Code: data.Init_Code,
                 Internal_ID: data.Internal_ID, // 📌 Usamos el Internal_ID del usuario autenticado
-                Last_Activity: data.Last_Activity,
+                Activity_Last: data.Last_Activity,
                 Activity_Date: data.Activity_Date,
+                Activity_Name: data.Activity_Name,
+                Activity_Location: data.Location,
+                Activity_Time: data.Time,
+                Activity_Duration: data.Duration,
+                Activity_Counterparty: data.Counterparty,
+                Activity__JudgeName: data.Judge_Name,
+                Activity_Reference_File: data.Reference_File,
+                Activity_Status: data.Status,
                 Activity_Type: data.Activity_Type,
-                Location: data.Location,
-                Time: data.Time,
-                Duration: data.Duration,
-                Counterparty: data.Counterparty,
-                Judge_Name: data.Judge_Name,
-                Reference_File: data.Reference_File,
-                Status: data.Status,
-                Documents: file ? file.buffer : null // 📌 Guardar el archivo en formato BLOB
+                Activity_Documents: file ? file.buffer : null,
+                Activity_IsDeleted: false,
             }, { transaction: t });
 
             console.log("✅ Actividad creada con ID:", newActivity.Activity_ID); // Log para verificar creación
@@ -134,7 +136,6 @@ export class ActivityModel {
             if (!activity) return null;
 
             await Activity.destroy({ where: { Activity_Id: id } });
-
             // 🔹 Registrar en Audit que un usuario interno eliminó una actividad
             await AuditModel.registerAudit(
                 internalId, 

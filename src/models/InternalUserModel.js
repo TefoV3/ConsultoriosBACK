@@ -52,6 +52,19 @@ export class InternalUserModel {
         }
     }
 
+    static async getStudentsByArea(area) {
+        try {
+            return await InternalUser.findAll({
+                where: {
+                    Internal_Type: "Estudiante",
+                    Internal_Area: area
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error fetching students: ${error.message}`);
+        }
+    }
+
     //CREATE, UPDATE AND DELETE METHODS
 
     static async create(data) {
