@@ -31,32 +31,33 @@ import dotenv from "dotenv";
 
 //USO LOCAL
 
-HEAD*/
+// HEAD*/
 
+// export const sequelize = new Sequelize(
+//     'prueba', 
+//      'Sergio', 
+//     '12345', 
+//     {
+//         host: 'localhost',
+//        dialect: 'mysql'
+//    }
+//     )
+// /*
+
+// export const sequelize = new Sequelize(
+//       'prueba', 
+//        'root', 
+//       '12345678', 
+//       {
+//          host: 'localhost',
+//           dialect: 'mysql'
+//      }
+//     )
+// */
 export const sequelize = new Sequelize(
     'prueba', 
-     'Sergio', 
+    'Sergio', 
     '12345', 
-    {
-        host: 'localhost',
-       dialect: 'mysql'
-   }
-    )
-/*
-export const sequelize = new Sequelize(
-      'prueba', 
-       'root', 
-      '12345678', 
-      {
-         host: 'localhost',
-          dialect: 'mysql'
-     }
-    )
-*/
-export const sequelize = new Sequelize(
-    'prueba', 
-    'root', 
-    '12345678', 
     {
         host: 'localhost',
         dialect: 'mysql'
@@ -74,7 +75,6 @@ export const sequelize = new Sequelize(
         host: '192.168.56.101', 
         dialect: 'mysql'
     }
-);*/
 );*/
 
 //Francis
