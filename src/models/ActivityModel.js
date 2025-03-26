@@ -64,6 +64,7 @@ export class ActivityModel {
                 Activity_Reference_File: data.Reference_File,
                 Activity_Status: data.Status,
                 Activity_Type: data.Activity_Type,
+                Activity_OnTime: data.Activity_OnTime,
                 Activity_Documents: file ? file.buffer : null
             }, { transaction: t });
 
@@ -86,13 +87,7 @@ export class ActivityModel {
 
             // 🔹 Registrar el error en Audit
             console.log("📥 Registrando error en auditoría con Internal_ID:", data.Internal_ID); // Log para verificar Internal_ID en error
-            await AuditModel.registerAudit(
-                data.Internal_ID,
-                "ERROR",
-                "Activity",
-                `Error al crear la actividad: ${error.message}`,
-                { transaction: t } // Usar la misma transacción
-            );
+            
 
             throw new Error(`Error creating activity: ${error.message}`);
         }

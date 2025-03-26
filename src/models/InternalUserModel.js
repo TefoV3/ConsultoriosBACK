@@ -2,6 +2,7 @@ import { InternalUser } from "../schemas/Internal_User.js";
 import { ResetPassword } from '../schemas/Reset_Password.js';
 import { SECRET_JWT_KEY } from "../config.js";
 import { SALT_ROUNDS } from '../config.js';
+import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -67,9 +68,16 @@ export class InternalUserModel {
 
     //CREATE, UPDATE AND DELETE METHODS
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await InternalUser.create(data);
+            const newRecord = await InternalUser.create(data);
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "LivingGroup",
+                            `El usuario interno ${internalId} creó el registro de grupo de convivencia con ID ${newRecord.Internal_ID}`
+                        );
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating internal user: ${error.message}`);
         }
@@ -85,13 +93,20 @@ export class InternalUserModel {
             });
 
             if (rowsUpdated === 0) return null;
+            // 🔹 Registrar en auditoría la actualización
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "LivingGroup",
+                `El usuario interno ${internalId} actualizó el registro de Usuario Interno con ID ${id}`
+            );
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating internal user: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const internalUser = await this.getById(id);
             if (!internalUser) return null;
@@ -99,6 +114,12 @@ export class InternalUserModel {
             await InternalUser.update(
                 { Internal_Status: "Inactivo" },
                 { where: { Internal_ID: id } }
+            );
+            await AuditModel.registerAudit(
+                internalId, 
+                "DELETE",
+                "User",
+                `El usuario interno ${internalId} eliminó lógicamente al usuario ${id}`
             );
             return internalUser;
         } catch (error) {

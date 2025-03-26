@@ -47,12 +47,18 @@ export class SocialWorkController {
     // Crear una evaluación de trabajo social
     static async create(req, res) {
         try {
-            const { Internal_ID, ...data } = req.body;
+            const { Init_Code } = req.body;
 
-            const newRecord = await SocialWorkModel.create(data, Internal_ID);
-            res.status(201).json({ message: "Social work record created successfully", data: newRecord });
+            if (!Init_Code) {
+                return res.status(400).json({ error: "El campo 'Init_Code' es obligatorio." });
+            }
+
+            // 🔹 Pasamos `req` para obtener el `Internal_ID` desde el token
+            const newSocialWork = await SocialWorkModel.create(req.body, req);
+
+            res.status(201).json({ message: "Registro de trabajo social creado con éxito", data: newSocialWork });
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            res.status(500).json({ error: `Error creating social work record: ${error.message}` });
         }
     }
 

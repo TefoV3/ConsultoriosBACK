@@ -26,27 +26,25 @@ export class InitialConsultationsModel {
         }
     }
 
-    static async getByInitTypeAndSubjectActiveCases(initType, initSubject) {
+    static async getByInitTypeAndSubjectCases(initType, initSubject, initStatus) {
         try {
             return await InitialConsultations.findAll({
                 where: {
                     Init_Type: initType,
                     Init_Subject: initSubject,
-                    Init_Status: "Activo"
+                    Init_Status: initStatus
                 }
             });
         } catch (error) {
             throw new Error(`Error fetching consultations: ${error.message}`);
         }
     }
-    
-    static async getByInitTypeAndSubjectInactiveCases(initType, initSubject) {
+    static async getByInitTypeAndSubject(initType, initSubject) {
         try {
             return await InitialConsultations.findAll({
                 where: {
                     Init_Type: initType,
-                    Init_Subject: initSubject,
-                    Init_Status: "Inactivo"
+                    Init_Subject: initSubject
                 }
             });
         } catch (error) {
@@ -147,6 +145,7 @@ export class InitialConsultationsModel {
                 Init_Status: data.Init_Status,
                 Init_SocialWork : data.Init_SocialWork,
                 Init_Type: data.Init_Type,
+
             }, { transaction: t });
 
             // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
@@ -203,14 +202,6 @@ export class InitialConsultationsModel {
                     `El usuario interno ${data.Internal_ID} eliminó al usuario externo ${data.User_ID} debido a un error en la creación de la consulta inicial`
                 );
             }
-
-            // 🔹 Registrar el error en Audit
-            await AuditModel.registerAudit(
-                data.Internal_ID, 
-                "ERROR",
-                "Initial_Consultations",
-                `Error al crear la consulta inicial ${data.Init_Code} para el usuario ${data.User_ID}: ${error.message}`
-            );
 
             throw new Error(`Error al crear la consulta inicial: ${error.message}`);
         }

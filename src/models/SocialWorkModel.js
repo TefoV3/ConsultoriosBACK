@@ -16,7 +16,7 @@ export class SocialWorkModel {
     // Obtener una evaluación de trabajo social por ID
     static async getById(id) {
         try {
-            return await SocialWork.findOne({ where: { ProcessNumber: id } });
+            return await SocialWork.findOne({ where: { SW_ProcessNumber: id } });
         } catch (error) {
             throw new Error(`Error retrieving social work record: ${error.message}`);
         }
@@ -52,16 +52,42 @@ export class SocialWorkModel {
     }
 
     // Crear una evaluación de trabajo social
-    static async create(data, internalId) {
+    static async create(data, req) {
         try {
-            const newRecord = await SocialWork.create(data);
+            // 🔹 Obtener `Internal_ID` desde el middleware
+            const internalId = req.user?.id;
+            if (!internalId) {
+                throw new Error("No se pudo recuperar el Internal_ID del token.");
+            }
 
-            // 🔹 Registrar en auditoría la creación
+            // 🔹 Verificar si el `Init_Code` existe en la tabla `InitialConsultations`
+            const initialConsultation = await InitialConsultations.findOne({ 
+                where: { Init_Code: data.Init_Code } 
+            });
+
+            if (!initialConsultation) {
+                throw new Error(`No existe una consulta inicial con Init_Code ${data.Init_Code}`);
+            }
+
+            // 🔹 Crear el registro en `SocialWork`
+            const newRecord = await SocialWork.create({
+                Init_Code: data.Init_Code,
+                SW_UserRequests: data.SW_UserRequests || null,
+                SW_ReferralAreaRequests: data.SW_ReferralAreaRequests || null,
+                SW_ViolenceEpisodes: data.SW_ViolenceEpisodes || null,
+                SW_Complaints: data.SW_Complaints || null,
+                SW_DisabilityType: data.SW_DisabilityType || null,
+                SW_DisabilityPercentage: data.SW_DisabilityPercentage || null,
+                SW_HasDisabilityCard: data.SW_HasDisabilityCard || false,
+                SW_Status: data.SW_Status || "Activo"
+            });
+
+            // 🔹 Registrar en auditoría
             await AuditModel.registerAudit(
                 internalId,
                 "INSERT",
                 "SocialWork",
-                `El usuario interno ${internalId} creó el registro de trabajo social con ID ${newRecord.ProcessNumber}`
+                `El usuario interno ${internalId} creó el registro de trabajo social con ID ${newRecord.SW_ProcessNumber}`
             );
 
             return newRecord;
@@ -76,7 +102,7 @@ export class SocialWorkModel {
             const record = await this.getById(id);
             if (!record) return null;
 
-            const [rowsUpdated] = await SocialWork.update(data, { where: { ProcessNumber: id } });
+            const [rowsUpdated] = await SocialWork.update(data, { where: { SW_ProcessNumber: id } });
 
             if (rowsUpdated === 0) return null;
             
@@ -100,7 +126,7 @@ export class SocialWorkModel {
             const record = await this.getById(id);
             if (!record) return null;
 
-            await SocialWork.update({ Status: false }, { where: { ProcessNumber: id } });
+            await SocialWork.update({ SW_Status: false }, { where: { SW_ProcessNumber: id } });
 
             // 🔹 Registrar en auditoría la eliminación (borrado lógico)
             await AuditModel.registerAudit(
