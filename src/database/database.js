@@ -10,7 +10,7 @@ console.log("Puerto:", process.env.SUPABASE_PORT);
 console.log("Usuario:", process.env.SUPABASE_DB_USER);
 console.log("Base de datos:", process.env.SUPABASE_DB_NAME);
 
-// Configurar Sequelize con Supabase
+/* Configurar Sequelize con Supabase
 export const sequelize = new Sequelize(
     process.env.SUPABASE_DB_NAME,
     process.env.SUPABASE_DB_USER,
@@ -31,12 +31,12 @@ export const sequelize = new Sequelize(
 
 //USO LOCAL
 
-// HEAD
-/*
+HEAD*/
+
 export const sequelize = new Sequelize(
       'prueba', 
-       'root', 
-      '12345678', 
+       'Sergio', 
+      '12345', 
       {
          host: 'localhost',
           dialect: 'mysql'

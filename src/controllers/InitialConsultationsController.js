@@ -43,11 +43,22 @@ export class FirstConsultationsController {
         }
     }
 
-    static async getByInitTypeAndSubject(req, res) {
+    static async getByInitTypeAndSubjectActive(req, res) {
         try {
             const { initSubject } = req.params;
             const initType = "Por Asignar";
-            const consultations = await InitialConsultationsModel.getByInitTypeAndSubject(initType, initSubject);
+            const consultations = await InitialConsultationsModel.getByInitTypeAndSubjectActiveCases(initType, initSubject);
+            res.status(200).json(consultations);
+        } catch (error) {
+            res.status(500).json({ message: "Error fetching consultations", error });
+        }
+    }
+    
+    static async getByInitTypeAndSubjectInactive(req, res) {
+        try {
+            const { initSubject } = req.params;
+            const initType = "Por Asignar";
+            const consultations = await InitialConsultationsModel.getByInitTypeAndSubjectInactiveCases(initType, initSubject);
             res.status(200).json(consultations);
         } catch (error) {
             res.status(500).json({ message: "Error fetching consultations", error });
