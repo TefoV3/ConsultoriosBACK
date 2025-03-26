@@ -16,7 +16,7 @@ export const Sector = sequelize.define('Sector', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
-    Zone_ID: { // Clave foránea de Zone
+    Zone_FK: { // Clave foránea de Zone
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {

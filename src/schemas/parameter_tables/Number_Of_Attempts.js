@@ -1,17 +1,17 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
 
-export const NumberOfAttempts = sequelize.define('NumberOfAttempts', {
-    NumberOfAttempts_ID: {
+export const Number_Of_Attempts = sequelize.define('Number_Of_Attempts', {
+    Number_Of_Attempts_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    Attempts: {
+    Number_Of_Attempts: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    Status: {
+    Number_Of_Attempts_Status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }

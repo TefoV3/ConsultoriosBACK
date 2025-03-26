@@ -1,10 +1,10 @@
-import { CivilStatus } from "../../schemas/parameter_tables/CivilStatus.js";
+import { Civil_Status } from "../../schemas/parameter_tables/Civil_Status.js";
 
 export class CivilStatusModel {
 
     static async getAll() {
         try {
-            return await CivilStatus.findAll({
+            return await Civil_Status.findAll({
                 where: { CivilStatus_Status: true }
             });
         } catch (error) {
@@ -14,7 +14,7 @@ export class CivilStatusModel {
 
     static async getById(id) {
         try {
-            return await CivilStatus.findOne({
+            return await Civil_Status.findOne({
                 where: { CivilStatus_ID: id, CivilStatus_Status: true }
             });
         } catch (error) {
@@ -24,7 +24,7 @@ export class CivilStatusModel {
 
     static async create(data) {
         try {
-            return await CivilStatus.create(data);
+            return await Civil_Status.create(data);
         } catch (error) {
             throw new Error(`Error creating civil status: ${error.message}`);
         }
@@ -35,7 +35,7 @@ export class CivilStatusModel {
             const civilStatusRecord = await this.getById(id);
             if (!civilStatusRecord) return null;
 
-            const [rowsUpdated] = await CivilStatus.update(data, {
+            const [rowsUpdated] = await Civil_Status.update(data, {
                 where: { CivilStatus_ID: id, CivilStatus_Status: true }
             });
 
@@ -51,7 +51,7 @@ export class CivilStatusModel {
             const civilStatusRecord = await this.getById(id);
             if (!civilStatusRecord) return null;
 
-            await CivilStatus.update(
+            await Civil_Status.update(
                 { CivilStatus_Status: false },
                 { where: { CivilStatus_ID: id, CivilStatus_Status: true } }
             );

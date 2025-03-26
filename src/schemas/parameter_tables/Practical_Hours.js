@@ -1,17 +1,17 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
 
-export const CivilStatus = sequelize.define('CivilStatus', {
-    CivilStatus_ID: {
+export const Practical_Hours = sequelize.define('Practical_Hours', {
+    Practical_Hours_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    CivilStatus_Name: {
-        type: DataTypes.STRING(100),
+    Practical_Hours: {
+        type: DataTypes.DECIMAL(16, 2), 
         allowNull: false
     },
-    CivilStatus_Status: {
+    Practical_Hours_Status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }

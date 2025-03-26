@@ -1,10 +1,10 @@
-import { AcademicInstruction } from "../../schemas/parameter_tables/AcademicInstruction.js";
+import { Academic_Instruction } from "../../schemas/parameter_tables/Academic_Instruction.js";
 
 export class AcademicInstructionModel {
 
     static async getAll() {
         try {
-            return await AcademicInstruction.findAll({
+            return await Academic_Instruction.findAll({
                 where: { AcademicInstruction_Status: true }
             });
         } catch (error) {
@@ -14,7 +14,7 @@ export class AcademicInstructionModel {
 
     static async getById(id) {
         try {
-            return await AcademicInstruction.findOne({
+            return await Academic_Instruction.findOne({
                 where: { AcademicInstruction_ID: id, AcademicInstruction_Status: true }
             });
         } catch (error) {
@@ -24,7 +24,7 @@ export class AcademicInstructionModel {
 
     static async create(data) {
         try {
-            return await AcademicInstruction.create(data);
+            return await Academic_Instruction.create(data);
         } catch (error) {
             throw new Error(`Error creating academic instruction: ${error.message}`);
         }
@@ -35,7 +35,7 @@ export class AcademicInstructionModel {
             const academicInstructionRecord = await this.getById(id);
             if (!academicInstructionRecord) return null;
 
-            const [rowsUpdated] = await AcademicInstruction.update(data, {
+            const [rowsUpdated] = await Academic_Instruction.update(data, {
                 where: { AcademicInstruction_ID: id, AcademicInstruction_Status: true }
             });
 
@@ -51,7 +51,7 @@ export class AcademicInstructionModel {
             const academicInstructionRecord = await this.getById(id);
             if (!academicInstructionRecord) return null;
 
-            await AcademicInstruction.update(
+            await Academic_Instruction.update(
                 { AcademicInstruction_Status: false },
                 { where: { AcademicInstruction_ID: id, AcademicInstruction_Status: true } }
             );

@@ -1,10 +1,10 @@
-import { DerivedBy } from "../../schemas/parameter_tables/DerivedBy.js";
+import { Derived_By } from "../../schemas/parameter_tables/Derived_By.js";
 
 export class DerivedByModel {
 
     static async getAll() {
         try {
-            return await DerivedBy.findAll({
+            return await Derived_By.findAll({
                 where: { DerivedBy_Status: true }
             });
         } catch (error) {
@@ -14,7 +14,7 @@ export class DerivedByModel {
 
     static async getById(id) {
         try {
-            return await DerivedBy.findOne({
+            return await Derived_By.findOne({
                 where: { DerivedBy_ID: id, DerivedBy_Status: true }
             });
         } catch (error) {
@@ -24,7 +24,7 @@ export class DerivedByModel {
 
     static async create(data) {
         try {
-            return await DerivedBy.create(data);
+            return await Derived_By.create(data);
         } catch (error) {
             throw new Error(`Error creating derived by record: ${error.message}`);
         }
@@ -35,7 +35,7 @@ export class DerivedByModel {
             const derivedByRecord = await this.getById(id);
             if (!derivedByRecord) return null;
 
-            const [rowsUpdated] = await DerivedBy.update(data, {
+            const [rowsUpdated] = await Derived_By.update(data, {
                 where: { DerivedBy_ID: id, DerivedBy_Status: true }
             });
 
@@ -51,7 +51,7 @@ export class DerivedByModel {
             const derivedByRecord = await this.getById(id);
             if (!derivedByRecord) return null;
 
-            await DerivedBy.update(
+            await Derived_By.update(
                 { DerivedBy_Status: false },
                 { where: { DerivedBy_ID: id, DerivedBy_Status: true } }
             );

@@ -1,10 +1,10 @@
-import { NumberOfAttempts } from "../../schemas/parameter_tables/NumberOfAttempts.js";
+import { Number_Of_Attempts } from "../../schemas/parameter_tables/Number_Of_Attempts.js";
 
 export class NumberOfAttemptsModel {
 
     static async getAll() {
         try {
-            return await NumberOfAttempts.findAll({
+            return await Number_Of_Attempts.findAll({
                 where: { Status: true }
             });
         } catch (error) {
@@ -14,7 +14,7 @@ export class NumberOfAttemptsModel {
 
     static async getById(id) {
         try {
-            return await NumberOfAttempts.findOne({
+            return await Number_Of_Attempts.findOne({
                 where: { NumberOfAttempts_ID: id, Status: true }
             });
         } catch (error) {
@@ -24,7 +24,7 @@ export class NumberOfAttemptsModel {
 
     static async create(data) {
         try {
-            return await NumberOfAttempts.create(data);
+            return await Number_Of_Attempts.create(data);
         } catch (error) {
             throw new Error(`Error creating number of attempts: ${error.message}`);
         }
@@ -35,7 +35,7 @@ export class NumberOfAttemptsModel {
             const attemptsRecord = await this.getById(id);
             if (!attemptsRecord) return null;
 
-            const [rowsUpdated] = await NumberOfAttempts.update(data, {
+            const [rowsUpdated] = await Number_Of_Attempts.update(data, {
                 where: { NumberOfAttempts_ID: id, Status: true }
             });
 
@@ -51,7 +51,7 @@ export class NumberOfAttemptsModel {
             const attemptsRecord = await this.getById(id);
             if (!attemptsRecord) return null;
 
-            await NumberOfAttempts.update(
+            await Number_Of_Attempts.update(
                 { Status: false },
                 { where: { NumberOfAttempts_ID: id, Status: true } }
             );

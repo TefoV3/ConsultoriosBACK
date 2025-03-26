@@ -1,10 +1,10 @@
-import { DocumentationBackup } from "../../schemas/parameter_tables/DocumentationBackup.js";
+import { Documentation_Backup } from "../../schemas/parameter_tables/Documentation_Backup.js";
 
 export class DocumentationBackupModel {
 
     static async getAll() {
         try {
-            return await DocumentationBackup.findAll({
+            return await Documentation_Backup.findAll({
                 where: { DocumentationBackup_Status: true }
             });
         } catch (error) {
@@ -14,7 +14,7 @@ export class DocumentationBackupModel {
 
     static async getById(id) {
         try {
-            return await DocumentationBackup.findOne({
+            return await Documentation_Backup.findOne({
                 where: { DocumentationBackup_ID: id, DocumentationBackup_Status: true }
             });
         } catch (error) {
@@ -24,7 +24,7 @@ export class DocumentationBackupModel {
 
     static async create(data) {
         try {
-            return await DocumentationBackup.create(data);
+            return await Documentation_Backup.create(data);
         } catch (error) {
             throw new Error(`Error creating documentation backup: ${error.message}`);
         }
@@ -35,7 +35,7 @@ export class DocumentationBackupModel {
             const documentationBackupRecord = await this.getById(id);
             if (!documentationBackupRecord) return null;
 
-            const [rowsUpdated] = await DocumentationBackup.update(data, {
+            const [rowsUpdated] = await Documentation_Backup.update(data, {
                 where: { DocumentationBackup_ID: id, DocumentationBackup_Status: true }
             });
 
@@ -51,7 +51,7 @@ export class DocumentationBackupModel {
             const documentationBackupRecord = await this.getById(id);
             if (!documentationBackupRecord) return null;
 
-            await DocumentationBackup.update(
+            await Documentation_Backup.update(
                 { DocumentationBackup_Status: false },
                 { where: { DocumentationBackup_ID: id, DocumentationBackup_Status: true } }
             );

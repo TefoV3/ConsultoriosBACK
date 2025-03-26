@@ -16,7 +16,7 @@ export const Province = sequelize.define('Province', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
-    City_ID: { // Clave foránea
+    City_FK: { // Clave foránea
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {

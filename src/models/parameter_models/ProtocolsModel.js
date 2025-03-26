@@ -29,6 +29,7 @@ export class ProtocolsModel {
         }
     }
 
+
     static async update(id, data) {
         try {
             const protocolRecord = await this.getById(id);

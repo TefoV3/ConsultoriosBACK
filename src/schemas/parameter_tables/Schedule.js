@@ -7,7 +7,7 @@ export const Schedule = sequelize.define('Schedule', {
         primaryKey: true,
         autoIncrement: true
     },
-    Schedule_Limit: DataTypes.TIME,
+    Schedule_Limit: DataTypes.INTEGER,
     Schedule_Status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true

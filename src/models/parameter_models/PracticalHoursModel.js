@@ -1,10 +1,10 @@
-import { PracticalHours } from "../../schemas/parameter_tables/PracticalHours.js";
+import { Practical_Hours } from "../../schemas/parameter_tables/Practical_Hours.js";
 
 export class PracticalHoursModel {
 
     static async getAll() {
         try {
-            return await PracticalHours.findAll({
+            return await Practical_Hours.findAll({
                 where: { Status: true }
             });
         } catch (error) {
@@ -14,7 +14,7 @@ export class PracticalHoursModel {
 
     static async getById(id) {
         try {
-            return await PracticalHours.findOne({
+            return await Practical_Hours.findOne({
                 where: { PracticalHours_ID: id, Status: true }
             });
         } catch (error) {
@@ -24,7 +24,7 @@ export class PracticalHoursModel {
 
     static async create(data) {
         try {
-            return await PracticalHours.create(data);
+            return await Practical_Hours.create(data);
         } catch (error) {
             throw new Error(`Error creating practical hours: ${error.message}`);
         }
@@ -35,7 +35,7 @@ export class PracticalHoursModel {
             const hoursRecord = await this.getById(id);
             if (!hoursRecord) return null;
 
-            const [rowsUpdated] = await PracticalHours.update(data, {
+            const [rowsUpdated] = await Practical_Hours.update(data, {
                 where: { PracticalHours_ID: id, Status: true }
             });
 
@@ -51,7 +51,7 @@ export class PracticalHoursModel {
             const hoursRecord = await this.getById(id);
             if (!hoursRecord) return null;
 
-            await PracticalHours.update(
+            await Practical_Hours.update(
                 { Status: false },
                 { where: { PracticalHours_ID: id, Status: true } }
             );

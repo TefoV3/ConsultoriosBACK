@@ -1,10 +1,10 @@
-import { PeriodType } from "../../schemas/parameter_tables/PeriodType.js";
+import { Period_Type } from "../../schemas/parameter_tables/Period_Type.js";
 
 export class PeriodTypeModel {
 
     static async getAll() {
         try {
-            return await PeriodType.findAll({
+            return await Period_Type.findAll({
                 where: { PeriodType_Status: true }
             });
         } catch (error) {
@@ -14,7 +14,7 @@ export class PeriodTypeModel {
 
     static async getById(id) {
         try {
-            return await PeriodType.findOne({
+            return await Period_Type.findOne({
                 where: { PeriodType_ID: id, PeriodType_Status: true }
             });
         } catch (error) {
@@ -24,7 +24,7 @@ export class PeriodTypeModel {
 
     static async create(data) {
         try {
-            return await PeriodType.create(data);
+            return await Period_Type.create(data);
         } catch (error) {
             throw new Error(`Error creating period type: ${error.message}`);
         }
@@ -35,7 +35,7 @@ export class PeriodTypeModel {
             const periodTypeRecord = await this.getById(id);
             if (!periodTypeRecord) return null;
 
-            const [rowsUpdated] = await PeriodType.update(data, {
+            const [rowsUpdated] = await Period_Type.update(data, {
                 where: { PeriodType_ID: id, PeriodType_Status: true }
             });
 
@@ -51,7 +51,7 @@ export class PeriodTypeModel {
             const periodTypeRecord = await this.getById(id);
             if (!periodTypeRecord) return null;
 
-            await PeriodType.update(
+            await Period_Type.update(
                 { PeriodType_Status: false },
                 { where: { PeriodType_ID: id, PeriodType_Status: true } }
             );

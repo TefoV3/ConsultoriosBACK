@@ -16,7 +16,7 @@ export const City = sequelize.define('City', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
-    Country_ID: { // Clave foránea
+    Country_FK: { // Clave foránea
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
