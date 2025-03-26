@@ -26,27 +26,13 @@ export class InitialConsultationsModel {
         }
     }
 
-    static async getByInitTypeAndSubjectActiveCases(initType, initSubject) {
+    static async getByInitTypeAndSubjectCases(initType, initSubject, initStatus) {
         try {
             return await InitialConsultations.findAll({
                 where: {
                     Init_Type: initType,
                     Init_Subject: initSubject,
-                    Init_Status: "Activo"
-                }
-            });
-        } catch (error) {
-            throw new Error(`Error fetching consultations: ${error.message}`);
-        }
-    }
-    
-    static async getByInitTypeAndSubjectInactiveCases(initType, initSubject) {
-        try {
-            return await InitialConsultations.findAll({
-                where: {
-                    Init_Type: initType,
-                    Init_Subject: initSubject,
-                    Init_Status: "Inactivo"
+                    Init_Status: initStatus
                 }
             });
         } catch (error) {
