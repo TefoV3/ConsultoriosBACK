@@ -52,10 +52,6 @@ export const Activity = sequelize.define('Activity', {
     Documents: {
         type: DataTypes.BLOB("long"),
         allowNull: true
-    },
-    Activity_IsDeleted: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
     }
 }, { timestamps: false });
 
