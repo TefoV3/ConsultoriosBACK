@@ -16,7 +16,7 @@ export class SocialWorkModel {
     // Obtener una evaluación de trabajo social por ID
     static async getById(id) {
         try {
-            return await SocialWork.findOne({ where: { ProcessNumber: id } });
+            return await SocialWork.findOne({ where: { SW_ProcessNumber: id } });
         } catch (error) {
             throw new Error(`Error retrieving social work record: ${error.message}`);
         }
@@ -61,7 +61,7 @@ export class SocialWorkModel {
                 internalId,
                 "INSERT",
                 "SocialWork",
-                `El usuario interno ${internalId} creó el registro de trabajo social con ID ${newRecord.ProcessNumber}`
+                `El usuario interno ${internalId} creó el registro de trabajo social con ID ${newRecord.SW_ProcessNumber}`
             );
 
             return newRecord;
@@ -76,7 +76,7 @@ export class SocialWorkModel {
             const record = await this.getById(id);
             if (!record) return null;
 
-            const [rowsUpdated] = await SocialWork.update(data, { where: { ProcessNumber: id } });
+            const [rowsUpdated] = await SocialWork.update(data, { where: { SW_ProcessNumber: id } });
 
             if (rowsUpdated === 0) return null;
             
@@ -100,7 +100,7 @@ export class SocialWorkModel {
             const record = await this.getById(id);
             if (!record) return null;
 
-            await SocialWork.update({ Status: false }, { where: { ProcessNumber: id } });
+            await SocialWork.update({ SW_Status: false }, { where: { SW_ProcessNumber: id } });
 
             // 🔹 Registrar en auditoría la eliminación (borrado lógico)
             await AuditModel.registerAudit(
