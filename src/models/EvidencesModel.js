@@ -62,29 +62,45 @@ export class EvidenceModel {
         }
     }
 
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
-            const evidence = await this.getById(id);
-            if (!evidence) return null;
-
-            const [rowsUpdated] = await Evidence.update(data, {
-                where: { Evidence_ID: id }
-            });
-
-            if (rowsUpdated === 0) return null;
-            return await this.getById(id);
+            const record = await this.getById(id);
+                        if (!record) return null;
+            
+                        const [rowsUpdated] = await SocialWork.update(data, { where: { SW_ProcessNumber: id } });
+            
+                        if (rowsUpdated === 0) return null;
+                        
+                        // 🔹 Registrar en auditoría la actualización
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "UPDATE",
+                            "SocialWork",
+                            `El usuario interno ${internalId} actualizó el registro de evidencia con ID ${id}`
+                        );
+            
+                        return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating evidence: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
-            const evidence = await this.getById(id);
-            if (!evidence) return null;
-
-            await Evidence.destroy({ where: { Evidence_ID: id } });
-            return evidence;
+            const evidences = await this.getById(id);
+                        if (!evidences) return null;
+            
+                        await Evidence.destroy({ where: { Evidence_ID: id } });
+            
+                        // 🔹 Registrar en Audit que un usuario interno eliminó una consulta inicial
+                        await AuditModel.registerAudit(
+                            internalId, 
+                            "DELETE",
+                            "Initial_Consultations",
+                            `El usuario interno ${internalId} eliminó la evidencia ${id}`
+                        );
+            
+                        return evidences;
         } catch (error) {
             throw new Error(`Error deleting evidence: ${error.message}`);
         }

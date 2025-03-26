@@ -86,13 +86,7 @@ export class ActivityModel {
 
             // 🔹 Registrar el error en Audit
             console.log("📥 Registrando error en auditoría con Internal_ID:", data.Internal_ID); // Log para verificar Internal_ID en error
-            await AuditModel.registerAudit(
-                data.Internal_ID,
-                "ERROR",
-                "Activity",
-                `Error al crear la actividad: ${error.message}`,
-                { transaction: t } // Usar la misma transacción
-            );
+            
 
             throw new Error(`Error creating activity: ${error.message}`);
         }

@@ -26,12 +26,27 @@ export class InitialConsultationsModel {
         }
     }
 
-    static async getByInitTypeAndSubject(initType, initSubject) {
+    static async getByInitTypeAndSubjectActiveCases(initType, initSubject) {
         try {
             return await InitialConsultations.findAll({
                 where: {
                     Init_Type: initType,
-                    Init_Subject: initSubject
+                    Init_Subject: initSubject,
+                    Init_Status: "Activo"
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error fetching consultations: ${error.message}`);
+        }
+    }
+    
+    static async getByInitTypeAndSubjectInactiveCases(initType, initSubject) {
+        try {
+            return await InitialConsultations.findAll({
+                where: {
+                    Init_Type: initType,
+                    Init_Subject: initSubject,
+                    Init_Status: "Inactivo"
                 }
             });
         } catch (error) {
@@ -201,14 +216,6 @@ export class InitialConsultationsModel {
                     `El usuario interno ${data.Internal_ID} eliminó al usuario externo ${data.User_ID} debido a un error en la creación de la consulta inicial`
                 );
             }
-
-            // 🔹 Registrar el error en Audit
-            await AuditModel.registerAudit(
-                data.Internal_ID, 
-                "ERROR",
-                "Initial_Consultations",
-                `Error al crear la consulta inicial ${data.Init_Code} para el usuario ${data.User_ID}: ${error.message}`
-            );
 
             throw new Error(`Error al crear la consulta inicial: ${error.message}`);
         }
