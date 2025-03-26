@@ -1,8 +1,6 @@
 import { FirstConsultationsController } from "../controllers/InitialConsultationsController.js";
 import { Router } from "express";
 import { upload } from "../middlewares/uploadMiddleware.js";
-import { authMiddleware } from "../middlewares/auth.js";
-
 
 export const InitialConsultationsRouter = Router();
 

@@ -33,15 +33,15 @@ export const sequelize = new Sequelize(
 
 HEAD*/
 
-// export const sequelize = new Sequelize(
-//       'prueba', 
-//        'Sergio', 
-//       '12345', 
-//       {
-//          host: 'localhost',
-//           dialect: 'mysql'
-//      }
-//     )
+export const sequelize = new Sequelize(
+    'prueba', 
+     'Sergio', 
+    '12345', 
+    {
+        host: 'localhost',
+       dialect: 'mysql'
+   }
+    )
 /*
 export const sequelize = new Sequelize(
 'prueba', 
@@ -55,7 +55,7 @@ dialect: 'mysql'
 */
 
 
-//TefoVirtual
+/*TefoVirtual
 export const sequelize = new Sequelize(
     'ConsultoriosJuridicosevi', 
     'Cliente', 
@@ -64,7 +64,7 @@ export const sequelize = new Sequelize(
         host: '192.168.56.101', 
         dialect: 'mysql'
     }
-);
+);*/
 
 //Francis
 // export const sequelize = new Sequelize(
