@@ -43,6 +43,17 @@ export class FirstConsultationsController {
         }
     }
 
+    static async getByInitTypeAndSubject(req, res) {
+        try {
+            const { initSubject } = req.params;
+            const initType = "Por Asignar";
+            const consultations = await InitialConsultationsModel.getByInitTypeAndSubject(initType, initSubject);
+            res.status(200).json(consultations);
+        } catch (error) {
+            res.status(500).json({ message: "Error fetching consultations", error });
+        }
+    }
+
     static async createFirstConsultations(req, res) {
         try {
             console.log("📂 Archivos recibidos:", req.files);
