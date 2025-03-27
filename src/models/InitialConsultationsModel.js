@@ -26,6 +26,16 @@ export class InitialConsultationsModel {
         }
     }
 
+    static async getByUserId(userId) {
+        try {
+            return await InitialConsultations.findAll({
+                where: { User_ID: userId }
+            });
+        } catch (error) {
+            throw new Error(`Error fetching consultations: ${error.message}`);
+        }
+    }
+
     static async getByInitTypeAndSubjectCases(initType, initSubject, initStatus) {
         try {
             return await InitialConsultations.findAll({
