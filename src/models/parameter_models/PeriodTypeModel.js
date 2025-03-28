@@ -5,7 +5,7 @@ export class PeriodTypeModel {
     static async getAll() {
         try {
             return await Period_Type.findAll({
-                where: { PeriodType_Status: true }
+                where: { Period_Type_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving period types: ${error.message}`);
@@ -15,7 +15,7 @@ export class PeriodTypeModel {
     static async getById(id) {
         try {
             return await Period_Type.findOne({
-                where: { PeriodType_ID: id, PeriodType_Status: true }
+                where: { Period_Type_ID: id, Period_Type_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving period type: ${error.message}`);
@@ -36,7 +36,7 @@ export class PeriodTypeModel {
             if (!periodTypeRecord) return null;
 
             const [rowsUpdated] = await Period_Type.update(data, {
-                where: { PeriodType_ID: id, PeriodType_Status: true }
+                where: { Period_Type_ID: id, Period_Type_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -52,8 +52,8 @@ export class PeriodTypeModel {
             if (!periodTypeRecord) return null;
 
             await Period_Type.update(
-                { PeriodType_Status: false },
-                { where: { PeriodType_ID: id, PeriodType_Status: true } }
+                { Period_Type_Status: false },
+                { where: { Period_Type_ID: id, Period_Type_Status: true } }
             );
             return periodTypeRecord;
         } catch (error) {
