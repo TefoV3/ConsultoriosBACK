@@ -20,6 +20,28 @@ export class UserController {
             res.status(500).json(error);
         }
     }
+
+    static async getDocumentById(req, res) {
+        const { id } = req.params;
+        try {
+            const documentResult = await UserModel.getDocumentById(id);
+    
+            if (!documentResult || !documentResult.User_HealthDocuments) {
+                return res.status(404).json({ message: "Document not found" });
+            }
+    
+            // Establece los encabezados para indicar que es un PDF
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'inline; filename=documento.pdf');
+    
+            // Envía el documento como respuesta binaria
+            res.send(documentResult.User_HealthDocuments);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+
     // Obtener User_ID desde SocialWork a través de Init_Code
     static async getUsersWithSocialWork(req, res) {
         try {
