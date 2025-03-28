@@ -42,16 +42,18 @@ export const sequelize = new Sequelize(
      }
     )
 */
-// export const sequelize = new Sequelize(
-//     'prueba', 
-//     'root', 
-//     '12345678', 
-//     {
-//         host: 'localhost',
-//         dialect: 'mysql'
-//     }
-// );
 
+/*
+export const sequelize = new Sequelize(
+    'prueba', 
+    'root', 
+    '12345678', 
+    {
+        host: 'localhost',
+        dialect: 'mysql'
+    }
+);
+*/
 
 
 //TefoVirtual
@@ -77,13 +79,24 @@ export const sequelize = new Sequelize(
 // );
 
 // Francis
+// export const sequelize = new Sequelize(
+//     'consultoriosjuridicos2', 
+//     'fvelasco', 
+//     'ltic', 
+//     {
+//        host: '192.168.56.102',
+//        dialect: 'mysql'
+//     }
+// );
+
 export const sequelize = new Sequelize(
-    'consultoriosjuridicos', 
-    'fvelasco', 
+    'seguimiento_final2', 
+    'user_control', 
     'ltic', 
     {
-       host: '192.168.56.102',
-       dialect: 'mysql'
+        host: 'localhost',
+        dialect: 'mysql',
+        timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
     }
 );
 
