@@ -8,8 +8,8 @@ InitialConsultationsRouter.get('/initial-consultations', FirstConsultationsContr
 InitialConsultationsRouter.get('/initial-consultations/:id', FirstConsultationsController.getById);
 InitialConsultationsRouter.get('/initial-consultations/user/:userId', FirstConsultationsController.getByUserId);
 InitialConsultationsRouter.get('/initial-consultations/status/:status', FirstConsultationsController.getByStatus);
-InitialConsultationsRouter.get('/initial-consultations/type/:initSubject/active', FirstConsultationsController.getByInitTypeAndSubjectActive);
-InitialConsultationsRouter.get('/initial-consultations/type/:initSubject/inactive', FirstConsultationsController.getByInitTypeAndSubjectInactive);
+InitialConsultationsRouter.get('/initial-consultations/type/:initSubject/:initType/:initStatus', FirstConsultationsController.getByInitTypeAndSubjectAndStatus);
+
 
 
 //InitialConsultationsRouter.post('/initial-consultations', FirstConsultationsController.createFirstConsultations);
