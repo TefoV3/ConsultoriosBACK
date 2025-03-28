@@ -25,11 +25,37 @@ export class Seguimiento_SemanalController {
         }
     }
 
+    static async getLastSeguimientoByPeriodo(req, res) {
+        try {
+            const periodoId = parseInt(req.params.periodoId);
+            const seguimiento = await Seguimiento_SemanalModel.getLastSeguimientoByPeriodo(periodoId);
+
+            if (seguimiento) {
+                res.status(200).json(seguimiento);
+            } else {
+                res.status(404).json({ error: "Seguimiento no encontrado" });
+            }
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
     static async create(req, res) {
         try {
             const seguimiento = req.body;
             const newSeguimiento = await Seguimiento_SemanalModel.create(seguimiento);
             res.status(201).json(newSeguimiento);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    //bulk create
+    static async createBulk(req, res) {
+        try {
+            const seguimientos = req.body;
+            const newSeguimientos = await Seguimiento_SemanalModel.createBulk(seguimientos);
+            res.status(201).json(newSeguimientos);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }

@@ -1,5 +1,5 @@
 import { Periodo } from "../../schemas/schedules_tables/Periodo_schema.js";
-
+import { Seguimiento_Semanal } from "../../schemas/schedules_tables/Seguimiento_Semanal_schema.js";
 export class PeriodoModel {
 
     /** 🔹 Obtener todos los períodos activos */
@@ -22,6 +22,24 @@ export class PeriodoModel {
         }
     }
 
+        static async getPeriodoConSeguimientos(periodoId) {
+            try {
+              return await Periodo.findOne({
+                where: { Periodo_ID: periodoId, Periodo_IsDeleted: false },
+                include: [
+                  {
+                    model: Seguimiento_Semanal,
+                    as: "seguimientos",
+                    where: { Semana_IsDeleted: false },
+                    required: false  // Para incluir el período incluso si no tiene seguimientos
+                  }
+                ]
+              });
+            } catch (error) {
+              throw new Error(`Error al obtener el período con seguimientos: ${error.message}`);
+            }
+          }
+
     /** 🔹 Crear un nuevo período */
     //TODO: BULK CREATE
     static async create(data) {
@@ -29,6 +47,7 @@ export class PeriodoModel {
             console.log(data);
             return await Periodo.create(data);
         } catch (error) {
+            console.log(error);
             throw new Error(`Error al crear período: ${error.message}`);
         }
     }

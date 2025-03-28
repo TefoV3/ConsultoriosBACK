@@ -13,7 +13,7 @@ export const UsuarioXPeriodo = sequelize.define('UsuarioXPeriodo', {
         allowNull: false
     },
     Internal_ID: { 
-        type: DataTypes.STRING(13),
+        type: DataTypes.CHAR(15),
         allowNull: false
     },
     UsuarioXPeriodo_IsDeleted: {

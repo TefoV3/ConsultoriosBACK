@@ -21,6 +21,20 @@ export class PeriodoController {
         }
     }
 
+    
+static async getPeriodoConSeguimientos (req, res) {
+    const { id } = req.params;  // Se espera que el ID del período se pase en la URL
+    try {
+      const periodo = await PeriodoModel.getPeriodoConSeguimientos(id);
+      if (!periodo) {
+        return res.status(404).json({ message: "Período no encontrado" });
+      }
+      res.json(periodo);
+    } catch (error) {
+      res.status(500).json({ message: `Error al obtener el período: ${error.message}` });
+    }
+  };
+
     // Crear un nuevo periodo
     static async createPeriodo(req, res) {
         try {

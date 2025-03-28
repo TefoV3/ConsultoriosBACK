@@ -1,4 +1,5 @@
 import { Registro_Asistencia } from "../../schemas/schedules_tables/Registro_Asistencia_Schema.js";
+import { Op } from "sequelize";
  
  export class Registro_AsistenciaModel {
   
@@ -29,6 +30,7 @@ import { Registro_Asistencia } from "../../schemas/schedules_tables/Registro_Asi
          try {
              return await Registro_Asistencia.create(data);
          } catch (error) {
+            console.log('Error:', error);
              throw new Error(`Error al crear registro de asistencia: ${error.message}`);
          }
      }

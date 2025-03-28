@@ -42,11 +42,12 @@ export class HorarioModel {
                     SUM(CASE WHEN p.Parametro_Horario_Tipo = 'Tarde' THEN 1 ELSE 0 END) AS cantidadTarde
                 FROM Horarios h
                 INNER JOIN UsuarioXPeriodos ux ON h.UsuarioXPeriodo_ID = ux.UsuarioXPeriodo_ID
-                INNER JOIN Internal_User u ON ux.Internal_ID = u.Internal_ID
+                INNER JOIN Internal_Users u ON ux.Internal_ID = u.Internal_ID
                 INNER JOIN Parametro_Horarios p ON h.${columnaDia} = p.Parametro_Horario_ID
                 WHERE 
                     ux.Periodo_ID = :periodoId
                     AND u.Internal_Area = :area
+                    AND h.Horario_Modalidad = 'Presencial'
                     AND h.Horario_IsDeleted = 0
             `;
         
@@ -182,7 +183,7 @@ export class HorarioModel {
               u.Internal_Area
             FROM Horarios h
             INNER JOIN UsuarioXPeriodos ux ON h.UsuarioXPeriodo_ID = ux.UsuarioXPeriodo_ID
-            INNER JOIN Internal_User u ON ux.Internal_ID = u.Internal_ID
+            INNER JOIN Internal_Users u ON ux.Internal_ID = u.Internal_ID
             LEFT JOIN Parametro_Horarios phL 
               ON h.Horario_Dia_Lunes = phL.Parametro_Horario_ID AND phL.Parametro_Horario_IsDeleted = false
             LEFT JOIN Parametro_Horarios phM 
@@ -207,6 +208,7 @@ export class HorarioModel {
           
           return horarios;
         } catch (error) {
+            console.log(error);
           throw new Error(`Error al obtener horarios completos: ${error.message}`);
         }
       }

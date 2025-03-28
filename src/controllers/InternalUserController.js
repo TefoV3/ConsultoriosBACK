@@ -2,12 +2,30 @@ import { InternalUserModel } from "../models/InternalUserModel.js";
 import { z } from "zod";
 import { SALT_ROUNDS } from "../config.js";
 import { EMAIL_USER, EMAIL_PASS } from "../config.js";
+import jwt from "jsonwebtoken";
+import { SECRET_JWT_KEY } from "../config.js";
 
 import nodemailer from "nodemailer";
 import bcrypt from "bcrypt";
 
+
+//random password generator
+// Función para generar una contraseña aleatoria
+function generateRandomPassword(length = 8) {
+    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+    return password;
+  }
+
+
 export class InternalUserController {
 
+
+    
     // GET METHODS
 
     static async getInternalUsers(req, res) {
@@ -242,6 +260,112 @@ export class InternalUserController {
         }
     }
 
+    
+
+    static async createInternalUsersBulk(req, res) {
+        try {
+          // Normalizar: si no es un array, lo convertimos en array
+          const records = Array.isArray(req.body) ? req.body : [req.body];
+    
+          // Definir el esquema de validación para cada registro
+          const internalUserSchema = z.object({
+            Internal_ID:  z.string().min(1, { message: "El ID es obligatorio" }),
+            Internal_Name: z.string().min(1, { message: "El nombre es obligatorio" }),
+            Internal_LastName: z.string().min(1, { message: "El apellido es obligatorio" }),
+            Internal_Email: z.string().email({ message: "Correo no válido" }),
+            // Aquí ya no se realiza preprocess; manejaremos la contraseña por separado
+            Internal_Password: z.string().optional(),
+            Internal_Type: z.string().min(1, { message: "El tipo es obligatorio" }),
+            Internal_Area: z.string().min(1, { message: "El área es obligatoria" }),
+            Internal_Phone: z.string().optional(),
+            Internal_Status: z.string().min(1, { message: "El estado es obligatorio" }).default(""),
+            Internal_Huella: z.any().optional().nullable()
+          }).passthrough();
+    
+          // Crear el transporter de correo una sola vez
+          const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+          });
+    
+          // Array para almacenar resultados por cada registro
+          const results = [];
+    
+          // Procesar cada registro
+          for (const record of records) {
+            // Validar cada registro
+            const parseResult = internalUserSchema.safeParse(record);
+            if (!parseResult.success) {
+              const errorMessages = parseResult.error.errors.map((err) => err.message).join(', ');
+              results.push({ Internal_ID: record.Internal_ID || null, error: errorMessages });
+              continue;
+            }
+            const data = parseResult.data;
+    
+            // Verificar duplicados por cédula o correo
+            const existingID = await InternalUserModel.getById(data.Internal_ID);
+            const existingEmail = await InternalUserModel.getByEmail(data.Internal_Email);
+            if (existingID || existingEmail) {
+              results.push({ Internal_ID: data.Internal_ID, error: "Ya existe un usuario con esa cédula o correo" });
+              continue;
+            }
+    
+            // Manejo de la contraseña: si no se envía (o es cadena vacía), se genera una contraseña aleatoria.
+            // Conservamos la contraseña en texto plano para luego enviarla por correo.
+            let plainPassword = data.Internal_Password;
+            if (!plainPassword || plainPassword.trim() === "") {
+              plainPassword = generateRandomPassword(8);
+            }
+    
+            // Hashear la contraseña
+            const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
+            data.Internal_Password = hashedPassword;
+    
+            // Crear el usuario en la base de datos
+            const internalUser = await InternalUserModel.create(data);
+    
+            // Preparar las opciones del correo; se envía siempre, usando la contraseña en texto plano (ya sea la ingresada o generada)
+            const mailOptions = {
+              from: '"Support Balanza Web" <cjgpuce.system@gmail.com>',
+              to: data.Internal_Email,
+              subject: 'Tus credenciales de acceso',
+              html: `
+                <html>
+                  <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+                    <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                      <h2 style="text-align: center; color: #4a90e2;">Bienvenido a Balanza Web</h2>
+                      <p>Estas son tus credenciales de acceso:</p>
+                      <p><strong>Correo:</strong> ${data.Internal_Email}</p>
+                      <p><strong>Contraseña:</strong> ${plainPassword}</p>
+                      <p>Por favor, ingresa con estas credenciales y cambia tu contraseña lo antes posible.</p>
+                      <p>Saludos,</p>
+                      <p>El equipo de Balanza Web</p>
+                    </div>
+                  </body>
+                </html>
+              `
+            };
+    
+            // Enviar el correo y manejar errores individualmente
+            try {
+              await transporter.sendMail(mailOptions);
+              console.log(`Correo enviado a ${data.Internal_Email}`);
+            } catch (errorEmail) {
+              console.error(`Error al enviar email a ${data.Internal_Email}:`, errorEmail);
+            }
+    
+            results.push({ Internal_ID: data.Internal_ID, result: "Creado", user: internalUser });
+          }
+    
+          return res.status(201).json({ message: "Proceso completado", results });
+        } catch (error) {
+            console.error("Error al crear usuarios internos:", error);
+          return res.status(500).json({ error: error.message });
+        }
+      }
+
 
     //verifyCode: Verifica si el código de reseteo es válido
     static async verifyCode(req, res) {
@@ -326,7 +450,7 @@ export class InternalUserController {
                 }
     
                 // 🔹 Llamamos al modelo para actualizar la huella
-                const usuarioActualizado = await UsuarioModel.updateHuella(usuarioCedula, template);
+                const usuarioActualizado = await InternalUserModel.updateHuella(usuarioCedula, template);
     
                 if (!usuarioActualizado) {
                     return res.status(404).json({ message: "Usuario no encontrado o no se pudo actualizar." });
@@ -348,7 +472,7 @@ export class InternalUserController {
                 }
     
                 // 🔹 Llamamos al modelo para obtener la huella
-                const huellaBase64 = await UsuarioModel.getHuella(usuarioCedula);
+                const huellaBase64 = await InternalUserModel.getHuella(usuarioCedula);
     
                 if (!huellaBase64) {
                     return res.status(404).json({ message: "No se encontró huella para este usuario." });
@@ -358,6 +482,15 @@ export class InternalUserController {
             } catch (error) {
                 console.error("Error al obtener huella:", error);
                 res.status(500).json({ message: "Error interno del servidor." });
+            }
+        }
+
+        static async getInternalUserByTypeEstudiante(req, res) {
+            try {
+                const internalUsers = await InternalUserModel.getUserByTypeEstudiante();
+                res.json(internalUsers);
+            } catch (error) {
+                res.status(500).json(error);
             }
         }
 

@@ -1,3 +1,4 @@
+import { InternalUser } from "../../schemas/Internal_User.js";
 import { Resumen_Horas_Estudiantes } from "../../schemas/schedules_tables/Resumen_Horas_Estudiantes_schema.js";
 
 export class Resumen_Horas_EstudiantesModel {
@@ -29,6 +30,7 @@ export class Resumen_Horas_EstudiantesModel {
         try {
             return await Resumen_Horas_Estudiantes.create(data);
         } catch (error) {
+            console.log('Error:', error);
             throw new Error(`Error al crear resumen de horas: ${error.message}`);
         }
     }
@@ -66,6 +68,35 @@ export class Resumen_Horas_EstudiantesModel {
             return await Resumen_Horas_Estudiantes.findOne({ where: { Resumen_ID: id } }); // Retorna el resumen actualizado
         } catch (error) {
             throw new Error(`Error al eliminar resumen de horas estudiantiles: ${error.message}`);
+        }
+    }
+
+    static async getAllResumenesConEstudiantes() {
+        try {
+            return await Resumen_Horas_Estudiantes.findAll({
+                where: {
+                    Resumen_IsDeleted: false
+                },
+                include: [
+                    {
+                        model: InternalUser,
+                        as: "usuarioResumen",
+                        attributes: [
+                            "Internal_ID",
+                            "Internal_Name",
+                            "Internal_LastName",
+                            "Internal_Area",
+                            "Internal_Email"
+                        ],
+                        where: {
+                            Internal_Status: 'Activo'
+                        }
+                    }
+                ]
+            });
+        } catch (error) {
+            console.error(`❌ Error al obtener todos los resúmenes: ${error.message}`);
+            throw new Error(`Error al obtener todos los resúmenes: ${error.message}`);
         }
     }
 

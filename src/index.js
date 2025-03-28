@@ -20,10 +20,12 @@ import { PORT } from "./config.js";
 // main();
 
 //USO LOCAL
+// 🔹 Importa el archivo de asociaciones después de los modelos
+import "./schemas/schedules_tables/associations.js";
 
 async function main(){
    try { 
-      await sequelize.sync();
+      await sequelize.sync(/*{force: true}*/);
       app.listen(3000, () => {
          console.log("Server running on port 3000")
       })

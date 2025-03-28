@@ -1,6 +1,7 @@
 import { UsuarioXPeriodo } from "../../schemas/schedules_tables/UsuarioXPeriodo_schema.js";
 import { InternalUser } from "../../schemas/Internal_User.js";	
 import { Periodo } from "../../schemas/schedules_tables/Periodo_schema.js";
+import { where } from "sequelize";
 
 export class UsuarioXPeriodoModel {
     static async getUsuarioXPeriodos() {
@@ -41,6 +42,32 @@ export class UsuarioXPeriodoModel {
                 ]
             });
         } catch (error) {
+            console.log(error);
+            throw new Error(`Error al obtener usuarios con períodos: ${error.message}`);
+        }
+    }
+
+    static async getByCedula (cedula) {
+        try {
+            return await UsuarioXPeriodo.findAll({
+                where: { Internal_ID: cedula, UsuarioXPeriodo_IsDeleted: false },
+                include: [
+                    {
+                        model: InternalUser,
+                        as: "usuario",  // 📌 Usa el alias definido en UsuarioXPeriodo.js
+                        where: {Internal_Status: "Activo"},
+                        attributes: ["Internal_ID", "Internal_Name", "Internal_LastName", "Internal_Email", "Internal_Area"]
+                    },
+                    {
+                        model: Periodo,
+                        as: "periodo",  // 📌 Usa el alias definido en UsuarioXPeriodo.js
+                        where: { Periodo_IsDeleted: false }, // ✅ Filtro adicional
+                        attributes: ["Periodo_ID", "PeriodoNombre","Periodo_Inicio","Periodo_Fin"]
+                    }
+                ]
+            });
+        } catch (error) {
+            console.error(`❌ Error al obtener usuarios con períodos: ${error.message}`);
             throw new Error(`Error al obtener usuarios con períodos: ${error.message}`);
         }
     }
@@ -105,11 +132,45 @@ export class UsuarioXPeriodoModel {
 
     static async create(data) {
         try {
-            return await UsuarioXPeriodo.bulkCreate(data);
+            // Aseguramos que data sea un array
+            const usuarioxPeriodo = Array.isArray(data) ? data : [data];
+            const recordsToCreate = [];
+            const reactivatedRecords = [];
+    
+            // Para cada registro que se intenta crear
+            for (const item of usuarioxPeriodo) {
+                // Buscamos si existe un registro para el mismo período y estudiante
+                const existingRecord = await this.getByPeriodoAndCedula(item.Periodo_ID, item.Internal_ID);
+                if (existingRecord) {
+                    // Si existe y está marcado como eliminado, se reactiva
+                    if (existingRecord.UsuarioXPeriodo_IsDeleted) {
+                        await UsuarioXPeriodo.update(
+                            { UsuarioXPeriodo_IsDeleted: false },
+                            { where: { Periodo_ID: item.Periodo_ID, Internal_ID: item.Internal_ID } }
+                        );
+                        // Re-obtenemos el registro actualizado para incluirlo en el resultado
+                        const updatedRecord = await this.getByPeriodoAndCedula(item.Periodo_ID, item.Internal_ID);
+                        reactivatedRecords.push(updatedRecord);
+                    }
+                    // Si existe y no está eliminado, no hacemos nada (ya existe activo)
+                } else {
+                    // Si no existe, se añade a la lista de creación
+                    recordsToCreate.push(item);
+                }
+            }
+    
+            let createdRecords = [];
+            if (recordsToCreate.length > 0) {
+                createdRecords = await UsuarioXPeriodo.bulkCreate(recordsToCreate);
+            }
+    
+            return [...reactivatedRecords, ...createdRecords];
         } catch (error) {
+            console.log(error);
             throw new Error(`Error al crear usuarioXPeriodo: ${error.message}`);
         }
     }
+    
 
     static async update(periodoId, internalId, data) {
         try {

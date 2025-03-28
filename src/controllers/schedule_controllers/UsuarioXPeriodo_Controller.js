@@ -30,6 +30,18 @@ export class UsuarioXPeriodoController {
         }
     }
 
+    
+    static async getByCedula (req,res) {
+        const {usuarioCedula} = req.params;
+        try{
+            const usuarioXPeriodo = await UsuarioXPeriodoModel.getByCedula(usuarioCedula);
+            if (usuarioXPeriodo) return res.json(usuarioXPeriodo)
+            res.status(404).json({message: "UsuarioXPeriodo no encontrado"});
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    }
+
     static async getUsuariosAndPeriodosByPeriodo(req, res) {
         const { periodoId } = req.params;
         console.log("getUsuariosAndPeriodosByPeriodo");

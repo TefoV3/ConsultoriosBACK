@@ -44,6 +44,16 @@ export class resumenHorasController {
         }
     }
 
+    static async getAllResumen_Horas_Estudiantes(req, res) {
+        try {
+            const resumenHorasEstudiantes = await Resumen_Horas_EstudiantesModel.getAllResumenesConEstudiantes();
+            res.json(resumenHorasEstudiantes);
+        } catch (error) {
+            console.log(error);
+            res.status(500).json(error);
+        }
+    }
+
     static async delete(req, res) {
         try {
             const { id } = req.params;

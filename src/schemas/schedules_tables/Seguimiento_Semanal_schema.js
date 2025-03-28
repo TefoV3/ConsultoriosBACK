@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
+import { Periodo } from "./Periodo_schema.js";
 
 /*
 CREATE TABLE Seguimiento_Semanal (
@@ -22,6 +23,10 @@ export const Seguimiento_Semanal = sequelize.define('Seguimiento_Semanal', {
         autoIncrement: true,
         allowNull: false
     },
+    Periodo_ID: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
     Semana_Numero: {
         type: DataTypes.INTEGER,
         allowNull: false
@@ -36,11 +41,13 @@ export const Seguimiento_Semanal = sequelize.define('Seguimiento_Semanal', {
     },
     Semana_Horas: {
         type: DataTypes.DECIMAL(8,2),
-        allowNull: false
+        allowNull: false,
+        defaultValue: 0
     },
     Semana_Feriado: {
         type: DataTypes.DECIMAL(8,2),
-        allowNull: false
+        allowNull: false,
+        defaultValue: 0
     },
     Semana_Observacion: {
         type: DataTypes.STRING(200),

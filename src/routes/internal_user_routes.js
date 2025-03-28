@@ -1,17 +1,23 @@
 import { InternalUserController } from "../controllers/InternalUserController.js";
 import { Router } from "express";
+import { InternalUser } from "../schemas/Internal_User.js";
 
 export const InternalUserRouter = Router();
 
 InternalUserRouter.get('/usuariointerno', InternalUserController.getInternalUsers);
+InternalUserRouter.get('/usuariointerno/estudiantes', InternalUserController.getInternalUserByTypeEstudiante);
 InternalUserRouter.get('/usuariointerno/:id', InternalUserController.getById);
 InternalUserRouter.get('/usuariointerno/email/:email', InternalUserController.getByEmail);
+
+
 InternalUserRouter.get('/usuariointerno/abogados/activos/:area', InternalUserController.getAllActiveLawyers);
 InternalUserRouter.post('/usuariointerno', InternalUserController.createInternalUser);
+InternalUserRouter.post('/usuariointernoBulk', InternalUserController.createInternalUsersBulk);
 InternalUserRouter.put('/usuariointerno/:id', InternalUserController.update);
 InternalUserRouter.delete('/usuariointerno/:id', InternalUserController.delete);
 InternalUserRouter.put('/usuarios/actualizar-huella', InternalUserController.actualizarHuella);
 InternalUserRouter.get('/usuarios/obtener-huella/:usuarioCedula', InternalUserController.obtenerHuella);
+
 
 //AUTH ROUTES
 InternalUserRouter.post('/register', InternalUserController.createInternalUser);

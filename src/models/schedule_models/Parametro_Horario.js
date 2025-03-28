@@ -56,7 +56,7 @@ export class Parametro_HorarioModel {
                   SELECT COUNT(DISTINCT h.UsuarioXPeriodo_ID)
                   FROM Horarios h
                   INNER JOIN UsuarioXPeriodos ux ON h.UsuarioXPeriodo_ID = ux.UsuarioXPeriodo_ID
-                  INNER JOIN Internal_User u ON ux.Internal_ID = u.Internal_ID
+                  INNER JOIN Internal_Users u ON ux.Internal_ID = u.Internal_ID
                   WHERE ux.Periodo_ID = :periodoId
                     AND u.Internal_Area = :area
                     AND h.Horario_IsDeleted = 0
