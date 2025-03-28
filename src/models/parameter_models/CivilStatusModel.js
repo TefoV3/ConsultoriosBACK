@@ -5,7 +5,7 @@ export class CivilStatusModel {
     static async getAll() {
         try {
             return await Civil_Status.findAll({
-                where: { CivilStatus_Status: true }
+                where: { Civil_Status_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving civil statuses: ${error.message}`);
@@ -15,7 +15,7 @@ export class CivilStatusModel {
     static async getById(id) {
         try {
             return await Civil_Status.findOne({
-                where: { CivilStatus_ID: id, CivilStatus_Status: true }
+                where: { Civil_Status_ID: id, Civil_Status_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving civil status: ${error.message}`);
@@ -36,7 +36,7 @@ export class CivilStatusModel {
             if (!civilStatusRecord) return null;
 
             const [rowsUpdated] = await Civil_Status.update(data, {
-                where: { CivilStatus_ID: id, CivilStatus_Status: true }
+                where: { Civil_Status_ID: id, Civil_Status_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -52,8 +52,8 @@ export class CivilStatusModel {
             if (!civilStatusRecord) return null;
 
             await Civil_Status.update(
-                { CivilStatus_Status: false },
-                { where: { CivilStatus_ID: id, CivilStatus_Status: true } }
+                { Civil_Status_Status: false },
+                { where: { Civil_Status_ID: id, Civil_Status_Status: true } }
             );
             return civilStatusRecord;
         } catch (error) {
