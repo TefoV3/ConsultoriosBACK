@@ -1,11 +1,11 @@
-import { AcademicInstruction } from "../../schemas/parameter_tables/AcademicInstruction.js";
+import { Academic_Instruction } from "../../schemas/parameter_tables/Academic_Instruction.js";
 
 export class AcademicInstructionModel {
 
     static async getAll() {
         try {
-            return await AcademicInstruction.findAll({
-                where: { AcademicInstruction_Status: true }
+            return await Academic_Instruction.findAll({
+                where: { Academic_Instruction_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving academic instructions: ${error.message}`);
@@ -14,8 +14,8 @@ export class AcademicInstructionModel {
 
     static async getById(id) {
         try {
-            return await AcademicInstruction.findOne({
-                where: { AcademicInstruction_ID: id, AcademicInstruction_Status: true }
+            return await Academic_Instruction.findOne({
+                where: { Academic_Instruction_ID: id, Academic_Instruction_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving academic instruction: ${error.message}`);
@@ -24,7 +24,7 @@ export class AcademicInstructionModel {
 
     static async create(data) {
         try {
-            return await AcademicInstruction.create(data);
+            return await Academic_Instruction.create(data);
         } catch (error) {
             throw new Error(`Error creating academic instruction: ${error.message}`);
         }
@@ -32,11 +32,11 @@ export class AcademicInstructionModel {
 
     static async update(id, data) {
         try {
-            const academicInstructionRecord = await this.getById(id);
-            if (!academicInstructionRecord) return null;
+            const academic_InstructionRecord = await this.getById(id);
+            if (!academic_InstructionRecord) return null;
 
-            const [rowsUpdated] = await AcademicInstruction.update(data, {
-                where: { AcademicInstruction_ID: id, AcademicInstruction_Status: true }
+            const [rowsUpdated] = await Academic_Instruction.update(data, {
+                where: { Academic_Instruction_ID: id, Academic_Instruction_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -48,14 +48,14 @@ export class AcademicInstructionModel {
 
     static async delete(id) {
         try {
-            const academicInstructionRecord = await this.getById(id);
-            if (!academicInstructionRecord) return null;
+            const academic_InstructionRecord = await this.getById(id);
+            if (!academic_InstructionRecord) return null;
 
-            await AcademicInstruction.update(
-                { AcademicInstruction_Status: false },
-                { where: { AcademicInstruction_ID: id, AcademicInstruction_Status: true } }
+            await Academic_Instruction.update(
+                { Academic_Instruction_Status: false },
+                { where: { AcademicInstruction_ID: id, Academic_Instruction_Status: true } }
             );
-            return academicInstructionRecord;
+            return academic_InstructionRecord;
         } catch (error) {
             throw new Error(`Error deleting academic instruction: ${error.message}`);
         }

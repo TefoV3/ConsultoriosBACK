@@ -29,21 +29,22 @@ export class VulnerableSituationController {
         }
     }
 
-
-
     static async update(req, res) {
-        try {
-            await VulnerableSituationModel.findByIdAndUpdate(req.params.id, req.body);
-            res.status(204).end();
+        try{
+            const data = await VulnerableSituationModel.update(req.params.id, req.body);
+            if (!data) return res.status(404).json({ message: 'Vulnerable Situation not found' });
+            res.status(200).json(data);
         } catch (error) {
             res.status(404).json({ message: error.message });
         }
-    }
+    }   
+
 
     static async delete(req, res) {
         try {
-            await VulnerableSituationModel.findByIdAndDelete(req.params.id);
-            res.status(204).end();
+            const data = await VulnerableSituationModel.delete(req.params.id);
+            if (!data) return res.status(404).json({ message: 'Vulnerable Situation not found' });
+            res.status(200).json({ message: 'Vulnerable Situation deleted successfully' });
         } catch (error) {
             res.status(404).json({ message: error.message });
         }

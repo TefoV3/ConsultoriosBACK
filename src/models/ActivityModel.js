@@ -36,7 +36,7 @@ export class ActivityModel {
         try {
             return await Activity.findOne({
                 attributes: ['Documents'],
-                where: { Activity_Id: id }
+                where: { Activity_ID: id }
             });
         } catch (error) {
             throw new Error(`Error retrieving document: ${error.message}`);
@@ -44,73 +44,66 @@ export class ActivityModel {
     }
 
     static async create(data, file) {
-        const t = await sequelize.transaction(); // Crear la transacción
+        const t = await sequelize.transaction();
         try {
-            console.log("📥 Creando actividad con Internal_ID:", data.Internal_ID); // Log para verificar Internal_ID
+            console.log("📥 Creando actividad con Internal_ID:", data.Internal_ID);
 
-            // Crear la actividad usando la transacción
             const newActivity = await Activity.create({
                 Activity_ID: data.Activity_ID,
                 Init_Code: data.Init_Code,
-                Internal_ID: data.Internal_ID, // 📌 Usamos el Internal_ID del usuario autenticado
-                Activity_Last: data.Last_Activity,
+                Internal_ID: data.Internal_ID,
+                Activity_Last: data.Activity_Last,
                 Activity_Date: data.Activity_Date,
                 Activity_Name: data.Activity_Name,
-                Activity_Location: data.Location,
-                Activity_Time: data.Time,
-                Activity_Duration: data.Duration,
-                Activity_Counterparty: data.Counterparty,
-                Activity__JudgeName: data.Judge_Name,
-                Activity_Reference_File: data.Reference_File,
-                Activity_Status: data.Status,
+                Activity_Location: data.Activity_Location,
+                Activity_Time: data.Activity_Time,
+                Activity_Duration: data.Activity_Duration,
+                Activity_Counterparty: data.Activity_Counterparty,
+                Activity_Judged: data.Activity_Judged,
+                Activity_Judge_Name: data.Activity_Judge_Name,
+                Activity_ReferenceFile: data.Activity_ReferenceFile,
+                Activity_Status: data.Activity_Status,
                 Activity_Type: data.Activity_Type,
                 Activity_OnTime: data.Activity_OnTime,
-                Activity_Documents: file ? file.buffer : null
+                Documents: file ? file.buffer : null
             }, { transaction: t });
 
-            console.log("✅ Actividad creada con ID:", newActivity.Activity_ID); // Log para verificar creación
+            console.log("✅ Actividad creada con ID:", newActivity.Activity_ID);
 
-            // 🔹 Registrar en Audit que un usuario interno creó una actividad
             await AuditModel.registerAudit(
-                data.Internal_ID, 
+                data.Internal_ID,
                 "INSERT",
                 "Activity",
-                `El usuario interno ${data.Internal_ID} creó la actividad con ID ${newActivity.Activity_Id}`,
-                { transaction: t } // Usar la misma transacción
+                `El usuario interno ${data.Internal_ID} creó la actividad con ID ${newActivity.Activity_ID}`,
+                { transaction: t }
             );
 
-            await t.commit(); // Confirmar la transacción
+            await t.commit();
             return { message: "Actividad creada con éxito", data: newActivity };
         } catch (error) {
-            await t.rollback(); // Revertir la transacción en caso de error
+            await t.rollback();
             console.error("❌ Error al crear actividad:", error.message);
-
-            // 🔹 Registrar el error en Audit
-            console.log("📥 Registrando error en auditoría con Internal_ID:", data.Internal_ID); // Log para verificar Internal_ID en error
-            
-
             throw new Error(`Error creating activity: ${error.message}`);
         }
     }
 
     static async update(id, data, internalId) {
         try {
-            console.log("📥 Actualizando actividad con Internal_ID:", internalId); // Log para verificar Internal_ID
+            console.log("📥 Actualizando actividad con Internal_ID:", internalId);
 
             const activity = await this.getById(id);
             if (!activity) return null;
 
             const [rowsUpdated] = await Activity.update(data, {
-                where: { Activity_Id: id }
+                where: { Activity_ID: id }
             });
 
             if (rowsUpdated === 0) return null;
 
             const updatedActivity = await this.getById(id);
 
-            // 🔹 Registrar en Audit que un usuario interno actualizó una actividad
             await AuditModel.registerAudit(
-                internalId, 
+                internalId,
                 "UPDATE",
                 "Activity",
                 `El usuario interno ${internalId} actualizó la actividad con ID ${id}`

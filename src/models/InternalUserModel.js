@@ -66,6 +66,23 @@ export class InternalUserModel {
         }
     }
 
+    static async getIdByNameAndLastName(firstName, lastName) {
+        try {
+            const user = await InternalUser.findOne({
+                where: {
+                    Internal_Name: firstName,
+                    Internal_LastName: lastName
+                },
+                attributes: ['Internal_ID'] // Solo devuelve el ID
+            });
+    
+            return user ? user.Internal_ID : null;
+        } catch (error) {
+            throw new Error(`Error fetching user ID by name and last name: ${error.message}`);
+        }
+    }
+    
+
     //CREATE, UPDATE AND DELETE METHODS
 
     static async create(data, internalId) {

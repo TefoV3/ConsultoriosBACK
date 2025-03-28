@@ -1,11 +1,11 @@
-import { CivilStatus } from "../../schemas/parameter_tables/CivilStatus.js";
+import { Civil_Status } from "../../schemas/parameter_tables/Civil_Status.js";
 
 export class CivilStatusModel {
 
     static async getAll() {
         try {
-            return await CivilStatus.findAll({
-                where: { CivilStatus_Status: true }
+            return await Civil_Status.findAll({
+                where: { Civil_Status_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving civil statuses: ${error.message}`);
@@ -14,8 +14,8 @@ export class CivilStatusModel {
 
     static async getById(id) {
         try {
-            return await CivilStatus.findOne({
-                where: { CivilStatus_ID: id, CivilStatus_Status: true }
+            return await Civil_Status.findOne({
+                where: { Civil_Status_ID: id, Civil_Status_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving civil status: ${error.message}`);
@@ -24,7 +24,7 @@ export class CivilStatusModel {
 
     static async create(data) {
         try {
-            return await CivilStatus.create(data);
+            return await Civil_Status.create(data);
         } catch (error) {
             throw new Error(`Error creating civil status: ${error.message}`);
         }
@@ -35,8 +35,8 @@ export class CivilStatusModel {
             const civilStatusRecord = await this.getById(id);
             if (!civilStatusRecord) return null;
 
-            const [rowsUpdated] = await CivilStatus.update(data, {
-                where: { CivilStatus_ID: id, CivilStatus_Status: true }
+            const [rowsUpdated] = await Civil_Status.update(data, {
+                where: { Civil_Status_ID: id, Civil_Status_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -51,9 +51,9 @@ export class CivilStatusModel {
             const civilStatusRecord = await this.getById(id);
             if (!civilStatusRecord) return null;
 
-            await CivilStatus.update(
-                { CivilStatus_Status: false },
-                { where: { CivilStatus_ID: id, CivilStatus_Status: true } }
+            await Civil_Status.update(
+                { Civil_Status_Status: false },
+                { where: { Civil_Status_ID: id, Civil_Status_Status: true } }
             );
             return civilStatusRecord;
         } catch (error) {

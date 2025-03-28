@@ -1,17 +1,17 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
 
-export const AcademicInstruction = sequelize.define('AcademicInstruction', {
-    AcademicInstruction_ID: {
+export const Derived_By = sequelize.define('Derived_By', {
+    Derived_By_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    AcademicInstruction_Name: {
+    Derived_By_Name: {
         type: DataTypes.STRING(100),
         allowNull: false
     },
-    AcademicInstruction_Status: {
+    Derived_By_Status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     }

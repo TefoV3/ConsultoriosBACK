@@ -1,11 +1,11 @@
-import { PeriodType } from "../../schemas/parameter_tables/PeriodType.js";
+import { Period_Type } from "../../schemas/parameter_tables/Period_Type.js";
 
 export class PeriodTypeModel {
 
     static async getAll() {
         try {
-            return await PeriodType.findAll({
-                where: { PeriodType_Status: true }
+            return await Period_Type.findAll({
+                where: { Period_Type_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving period types: ${error.message}`);
@@ -14,8 +14,8 @@ export class PeriodTypeModel {
 
     static async getById(id) {
         try {
-            return await PeriodType.findOne({
-                where: { PeriodType_ID: id, PeriodType_Status: true }
+            return await Period_Type.findOne({
+                where: { Period_Type_ID: id, Period_Type_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving period type: ${error.message}`);
@@ -24,7 +24,7 @@ export class PeriodTypeModel {
 
     static async create(data) {
         try {
-            return await PeriodType.create(data);
+            return await Period_Type.create(data);
         } catch (error) {
             throw new Error(`Error creating period type: ${error.message}`);
         }
@@ -35,8 +35,8 @@ export class PeriodTypeModel {
             const periodTypeRecord = await this.getById(id);
             if (!periodTypeRecord) return null;
 
-            const [rowsUpdated] = await PeriodType.update(data, {
-                where: { PeriodType_ID: id, PeriodType_Status: true }
+            const [rowsUpdated] = await Period_Type.update(data, {
+                where: { Period_Type_ID: id, Period_Type_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -51,9 +51,9 @@ export class PeriodTypeModel {
             const periodTypeRecord = await this.getById(id);
             if (!periodTypeRecord) return null;
 
-            await PeriodType.update(
-                { PeriodType_Status: false },
-                { where: { PeriodType_ID: id, PeriodType_Status: true } }
+            await Period_Type.update(
+                { Period_Type_Status: false },
+                { where: { Period_Type_ID: id, Period_Type_Status: true } }
             );
             return periodTypeRecord;
         } catch (error) {

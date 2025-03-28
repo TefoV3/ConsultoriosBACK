@@ -21,32 +21,35 @@ export class CatastrophicIllnessController {
     }
 
     static async create(req, res) {
-        const catastrophicIllness = req.body;
-        const newCatastrophicIllness = new CatastrophicIllnessModel(catastrophicIllness);
         try {
-            await newCatastrophicIllness.save();
+            const newCatastrophicIllness = await CatastrophicIllnessModel.create(req.body);
             res.status(201).json(newCatastrophicIllness);
         } catch (error) {
-            res.status(409).json({ message: error.message });
+            res.status(400).json({ message: error.message });
         }
     }
 
     static async update(req, res) {
-        try {
-            await CatastrophicIllnessModel.findByIdAndUpdate(req.params.id, req.body);
-            res.status(200).json({ message: 'Catastrophic Illness updated successfully' });
-        } catch (error) {
-            res.status(404).json({ message: error.message });
+        try{
+            const updatedCatastrophicIllness = await CatastrophicIllnessModel.update(req.params.id, req.body);
+            res.status(200).json(updatedCatastrophicIllness);
+        }
+        catch (error) {
+            res.status(400).json({ message: error.message });
         }
     }
 
     static async delete(req, res) {
         try {
-            await CatastrophicIllnessModel.findByIdAndRemove(req.params.id);
-            res.status(200).json({ message: 'Catastrophic Illness deleted successfully' });
+            await CatastrophicIllnessModel.delete(req.params.id);
+            res.status(204).end();
         } catch (error) {
             res.status(404).json({ message: error.message });
         }
     }
+
+
+
+
 }
     

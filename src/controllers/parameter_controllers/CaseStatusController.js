@@ -29,7 +29,7 @@ export class CaseStatusController {
             const caseStatus = await CaseStatusModel.create(req.body);
             res.status(201).json(caseStatus);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            res.status(400).json({ error: error.message });
         }
     }
 

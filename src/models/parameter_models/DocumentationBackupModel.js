@@ -1,11 +1,11 @@
-import { DocumentationBackup } from "../../schemas/parameter_tables/DocumentationBackup.js";
+import { Documentation_Backup } from "../../schemas/parameter_tables/Documentation_Backup.js";
 
 export class DocumentationBackupModel {
 
     static async getAll() {
         try {
-            return await DocumentationBackup.findAll({
-                where: { DocumentationBackup_Status: true }
+            return await Documentation_Backup.findAll({
+                where: { Documentation_Backup_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving documentation backup: ${error.message}`);
@@ -14,8 +14,8 @@ export class DocumentationBackupModel {
 
     static async getById(id) {
         try {
-            return await DocumentationBackup.findOne({
-                where: { DocumentationBackup_ID: id, DocumentationBackup_Status: true }
+            return await Documentation_Backup.findOne({
+                where: { Documentation_Backup_ID: id, Documentation_Backup_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving documentation backup: ${error.message}`);
@@ -24,7 +24,7 @@ export class DocumentationBackupModel {
 
     static async create(data) {
         try {
-            return await DocumentationBackup.create(data);
+            return await Documentation_Backup.create(data);
         } catch (error) {
             throw new Error(`Error creating documentation backup: ${error.message}`);
         }
@@ -35,8 +35,8 @@ export class DocumentationBackupModel {
             const documentationBackupRecord = await this.getById(id);
             if (!documentationBackupRecord) return null;
 
-            const [rowsUpdated] = await DocumentationBackup.update(data, {
-                where: { DocumentationBackup_ID: id, DocumentationBackup_Status: true }
+            const [rowsUpdated] = await Documentation_Backup.update(data, {
+                where: { Documentation_Backup_ID: id, Documentation_Backup_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -51,9 +51,9 @@ export class DocumentationBackupModel {
             const documentationBackupRecord = await this.getById(id);
             if (!documentationBackupRecord) return null;
 
-            await DocumentationBackup.update(
-                { DocumentationBackup_Status: false },
-                { where: { DocumentationBackup_ID: id, DocumentationBackup_Status: true } }
+            await Documentation_Backup.update(
+                { Documentation_Backup_Status: false },
+                { where: { Documentation_Backup_ID: id, Documentation_Backup_Status: true } }
             );
             return documentationBackupRecord;
         } catch (error) {

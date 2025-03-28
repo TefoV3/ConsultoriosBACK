@@ -63,6 +63,27 @@ export class InternalUserController {
             res.status(500).json({ error: error.message });
         }
     }
+    
+    static async getIdByNameAndLastName(req, res) {
+        const { firstName, lastName } = req.params; // Cambiado de req.query a req.params
+    
+        try {
+            if (!firstName || !lastName) {
+                return res.status(400).json({ message: 'First name and last name are required' });
+            }
+    
+            const internalId = await InternalUserModel.getIdByNameAndLastName(firstName, lastName);
+    
+            if (!internalId) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+    
+            res.json({ Internal_ID: internalId });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Server error' });
+        }
+    }
 
     // CREATE, UPDATE AND DELETE METHODS
 

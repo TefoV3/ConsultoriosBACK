@@ -12,7 +12,7 @@ export const Topic = sequelize.define('Topic', {
         type: DataTypes.STRING(100),
         allowNull: false
     },
-    Subject_ID: {
+    Subject_FK: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {

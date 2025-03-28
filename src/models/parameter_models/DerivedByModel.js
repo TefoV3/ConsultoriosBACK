@@ -1,11 +1,11 @@
-import { DerivedBy } from "../../schemas/parameter_tables/DerivedBy.js";
+import { Derived_By } from "../../schemas/parameter_tables/Derived_By.js";
 
 export class DerivedByModel {
 
     static async getAll() {
         try {
-            return await DerivedBy.findAll({
-                where: { DerivedBy_Status: true }
+            return await Derived_By.findAll({
+                where: { Derived_By_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving derived by records: ${error.message}`);
@@ -14,8 +14,8 @@ export class DerivedByModel {
 
     static async getById(id) {
         try {
-            return await DerivedBy.findOne({
-                where: { DerivedBy_ID: id, DerivedBy_Status: true }
+            return await Derived_By.findOne({
+                where: { Derived_By_ID: id, Derived_By_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving derived by record: ${error.message}`);
@@ -24,7 +24,7 @@ export class DerivedByModel {
 
     static async create(data) {
         try {
-            return await DerivedBy.create(data);
+            return await Derived_By.create(data);
         } catch (error) {
             throw new Error(`Error creating derived by record: ${error.message}`);
         }
@@ -35,8 +35,8 @@ export class DerivedByModel {
             const derivedByRecord = await this.getById(id);
             if (!derivedByRecord) return null;
 
-            const [rowsUpdated] = await DerivedBy.update(data, {
-                where: { DerivedBy_ID: id, DerivedBy_Status: true }
+            const [rowsUpdated] = await Derived_By.update(data, {
+                where: { Derived_By_ID: id, Derived_By_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -51,9 +51,9 @@ export class DerivedByModel {
             const derivedByRecord = await this.getById(id);
             if (!derivedByRecord) return null;
 
-            await DerivedBy.update(
-                { DerivedBy_Status: false },
-                { where: { DerivedBy_ID: id, DerivedBy_Status: true } }
+            await Derived_By.update(
+                { Derived_By_Status: false },
+                { where: { Derived_By_ID: id, Derived_By_Status: true } }
             );
             return derivedByRecord;
         } catch (error) {

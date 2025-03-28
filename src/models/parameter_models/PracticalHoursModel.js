@@ -1,11 +1,11 @@
-import { PracticalHours } from "../../schemas/parameter_tables/PracticalHours.js";
+import { Practical_Hours } from "../../schemas/parameter_tables/Practical_Hours.js";
 
 export class PracticalHoursModel {
 
     static async getAll() {
         try {
-            return await PracticalHours.findAll({
-                where: { Status: true }
+            return await Practical_Hours.findAll({
+                where: { Practical_Hours_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving practical hours: ${error.message}`);
@@ -14,8 +14,8 @@ export class PracticalHoursModel {
 
     static async getById(id) {
         try {
-            return await PracticalHours.findOne({
-                where: { PracticalHours_ID: id, Status: true }
+            return await Practical_Hours.findOne({
+                where: { Practical_Hours_ID: id, Practical_Hours_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving practical hours: ${error.message}`);
@@ -24,7 +24,7 @@ export class PracticalHoursModel {
 
     static async create(data) {
         try {
-            return await PracticalHours.create(data);
+            return await Practical_Hours.create(data);
         } catch (error) {
             throw new Error(`Error creating practical hours: ${error.message}`);
         }
@@ -35,8 +35,8 @@ export class PracticalHoursModel {
             const hoursRecord = await this.getById(id);
             if (!hoursRecord) return null;
 
-            const [rowsUpdated] = await PracticalHours.update(data, {
-                where: { PracticalHours_ID: id, Status: true }
+            const [rowsUpdated] = await Practical_Hours.update(data, {
+                where: { Practical_Hours_ID: id, Practical_Hours_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -51,9 +51,9 @@ export class PracticalHoursModel {
             const hoursRecord = await this.getById(id);
             if (!hoursRecord) return null;
 
-            await PracticalHours.update(
-                { Status: false },
-                { where: { PracticalHours_ID: id, Status: true } }
+            await Practical_Hours.update(
+                { Practical_Hours_Status: false },
+                { where: { Practical_Hours_ID: id, Practical_Hours_Status: true } }
             );
             return hoursRecord;
         } catch (error) {
