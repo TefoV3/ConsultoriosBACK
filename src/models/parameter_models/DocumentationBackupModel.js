@@ -5,7 +5,7 @@ export class DocumentationBackupModel {
     static async getAll() {
         try {
             return await Documentation_Backup.findAll({
-                where: { DocumentationBackup_Status: true }
+                where: { Documentation_Backup_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving documentation backup: ${error.message}`);
@@ -15,7 +15,7 @@ export class DocumentationBackupModel {
     static async getById(id) {
         try {
             return await Documentation_Backup.findOne({
-                where: { DocumentationBackup_ID: id, DocumentationBackup_Status: true }
+                where: { Documentation_Backup_ID: id, Documentation_Backup_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving documentation backup: ${error.message}`);
@@ -36,7 +36,7 @@ export class DocumentationBackupModel {
             if (!documentationBackupRecord) return null;
 
             const [rowsUpdated] = await Documentation_Backup.update(data, {
-                where: { DocumentationBackup_ID: id, DocumentationBackup_Status: true }
+                where: { Documentation_Backup_ID: id, Documentation_Backup_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -52,8 +52,8 @@ export class DocumentationBackupModel {
             if (!documentationBackupRecord) return null;
 
             await Documentation_Backup.update(
-                { DocumentationBackup_Status: false },
-                { where: { DocumentationBackup_ID: id, DocumentationBackup_Status: true } }
+                { Documentation_Backup_Status: false },
+                { where: { Documentation_Backup_ID: id, Documentation_Backup_Status: true } }
             );
             return documentationBackupRecord;
         } catch (error) {

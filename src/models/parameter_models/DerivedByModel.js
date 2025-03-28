@@ -5,7 +5,7 @@ export class DerivedByModel {
     static async getAll() {
         try {
             return await Derived_By.findAll({
-                where: { DerivedBy_Status: true }
+                where: { Derived_By_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving derived by records: ${error.message}`);
@@ -15,7 +15,7 @@ export class DerivedByModel {
     static async getById(id) {
         try {
             return await Derived_By.findOne({
-                where: { DerivedBy_ID: id, DerivedBy_Status: true }
+                where: { Derived_By_ID: id, Derived_By_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving derived by record: ${error.message}`);
@@ -36,7 +36,7 @@ export class DerivedByModel {
             if (!derivedByRecord) return null;
 
             const [rowsUpdated] = await Derived_By.update(data, {
-                where: { DerivedBy_ID: id, DerivedBy_Status: true }
+                where: { Derived_By_ID: id, Derived_By_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -52,8 +52,8 @@ export class DerivedByModel {
             if (!derivedByRecord) return null;
 
             await Derived_By.update(
-                { DerivedBy_Status: false },
-                { where: { DerivedBy_ID: id, DerivedBy_Status: true } }
+                { Derived_By_Status: false },
+                { where: { Derived_By_ID: id, Derived_By_Status: true } }
             );
             return derivedByRecord;
         } catch (error) {

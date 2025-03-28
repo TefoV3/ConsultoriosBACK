@@ -31,19 +31,7 @@ import dotenv from "dotenv";
 
 //USO LOCAL
 
-// HEAD*/
-
-// export const sequelize = new Sequelize(
-//     'prueba', 
-//      'Sergio', 
-//     '12345', 
-//     {
-//         host: 'localhost',
-//        dialect: 'mysql'
-//    }
-//     )
-// /*
-
+/*
 export const sequelize = new Sequelize(
       'prueba', 
        'root', 
@@ -53,21 +41,21 @@ export const sequelize = new Sequelize(
           dialect: 'mysql'
      }
     )
-
-// export const sequelize = new Sequelize(
-//     'prueba', 
-//     'Sergio', 
-//     '12345', 
-//     {
-//         host: 'localhost',
-//         dialect: 'mysql'
-//     }
-// );
-
-
-
-/*TefoVirtual
+*/
 export const sequelize = new Sequelize(
+    'prueba', 
+    'root', 
+    '12345678', 
+    {
+        host: 'localhost',
+        dialect: 'mysql'
+    }
+);
+
+
+
+//TefoVirtual
+/*export const sequelize = new Sequelize(
     'ConsultoriosJuridicosevi', 
     'Cliente', 
     '2444', 
