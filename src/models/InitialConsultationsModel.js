@@ -49,12 +49,14 @@ export class InitialConsultationsModel {
             throw new Error(`Error fetching consultations: ${error.message}`);
         }
     }
-    static async getByInitTypeAndSubject(initType, initSubject) {
+    
+    static async getByInitTypeAndSubjectAndStatus(initType, initSubject, initStatus) {
         try {
             return await InitialConsultations.findAll({
                 where: {
                     Init_Type: initType,
-                    Init_Subject: initSubject
+                    Init_Subject: initSubject,
+                    Init_Status: initStatus
                 }
             });
         } catch (error) {
@@ -216,9 +218,6 @@ export class InitialConsultationsModel {
             throw new Error(`Error al crear la consulta inicial: ${error.message}`);
         }
     }
-
-    
-
 
     static async update(id, data, internalId) {
         try {

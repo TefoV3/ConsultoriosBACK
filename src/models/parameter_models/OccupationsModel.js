@@ -35,7 +35,7 @@ export class OccupationsModel {
             if (!OccupationsRecord) return null;
 
             const [rowsUpdated] = await Occupations.update(data, {
-                where: { Occupations_Id: id, Occupations_Status: true }
+                where: { Occupation_Id: id, Occupation_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -51,8 +51,8 @@ export class OccupationsModel {
             if (!OccupationsRecord) return null;
 
             await Occupations.update(
-                { Occupations_Status: false },
-                { where: { Occupations_Id: id, Occupations_Status: true } }
+                { Occupation_Status: false },
+                { where: { Occupation_Id: id, Occupation_Status: true } }
             );
             return OccupationsRecord;
         } catch (error) {

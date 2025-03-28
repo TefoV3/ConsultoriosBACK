@@ -47,7 +47,7 @@ export class ActivityModel {
         const t = await sequelize.transaction();
         try {
             console.log("📥 Creando actividad con Internal_ID:", data.Internal_ID);
-
+    
             const newActivity = await Activity.create({
                 Activity_ID: data.Activity_ID,
                 Init_Code: data.Init_Code,
@@ -65,11 +65,11 @@ export class ActivityModel {
                 Activity_Status: data.Activity_Status,
                 Activity_Type: data.Activity_Type,
                 Activity_OnTime: data.Activity_OnTime,
-                Documents: file ? file.buffer : null
+                Documents: file?.buffer || null
             }, { transaction: t });
-
+    
             console.log("✅ Actividad creada con ID:", newActivity.Activity_ID);
-
+    
             await AuditModel.registerAudit(
                 data.Internal_ID,
                 "INSERT",
@@ -77,7 +77,7 @@ export class ActivityModel {
                 `El usuario interno ${data.Internal_ID} creó la actividad con ID ${newActivity.Activity_ID}`,
                 { transaction: t }
             );
-
+    
             await t.commit();
             return { message: "Actividad creada con éxito", data: newActivity };
         } catch (error) {
