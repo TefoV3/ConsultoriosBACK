@@ -138,9 +138,26 @@ export class InitialConsultationsModel {
                 throw new Error(`El usuario interno con ID ${data.Internal_ID} no existe.`);
             }
 
+            // Obtener el último Init_Code ordenado descendentemente
+            const lastRecord = await InitialConsultations.findOne({
+                order: [['Init_Code', 'DESC']],
+                transaction: t
+            });
+
+            let lastNumber = 0;
+            if (lastRecord && lastRecord.Init_Code) {
+                const lastCode = lastRecord.Init_Code;
+                const numberPart = lastCode.substring(3); // Extraer número después de "AT-"
+                lastNumber = parseInt(numberPart, 10);
+            }
+
+            const newNumber = lastNumber + 1;
+            const newCode = `AT-${String(newNumber).padStart(6, '0')}`;
+
+
             // Crear la consulta inicial
             const newConsultation = await InitialConsultations.create({
-                Init_Code: data.Init_Code,
+                Init_Code: newCode,
                 Internal_ID: data.Internal_ID,
                 User_ID: data.User_ID,
                 Init_ClientType: data.Init_ClientType,
@@ -160,6 +177,13 @@ export class InitialConsultationsModel {
 
             }, { transaction: t });
 
+            console.log("🔹 Nuevo Init_Code generado:", newConsultation.Init_Code); // ✅ Verificar que tiene valor
+
+            // Validar que Init_Code no sea null antes de continuar
+            if (!newConsultation.Init_Code) {
+                throw new Error("No se pudo generar Init_Code para la consulta.");
+            }
+
             // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
             await AuditModel.registerAudit(
                 data.Internal_ID, 
@@ -168,13 +192,13 @@ export class InitialConsultationsModel {
                 `El usuario interno ${data.Internal_ID} creó la consulta inicial ${data.Init_Code} para el usuario ${data.User_ID}`
             );
 
-            // 🔹 Verificar si se subió un archivo PDF
+
 
 
             // 🔹 Crear la evidencia asociada
             const newEvidence = await Evidence.create({
                 Internal_ID: data.Internal_ID,
-                Init_Code: data.Init_Code,
+                Init_Code: newConsultation.Init_Code,
                 Evidence_Name: evidenceFile ? evidenceFile.originalname : "Sin Documento",
                 Evidence_Document_Type: evidenceFile ? evidenceFile.mimetype : null,
                 Evidence_URL: null,

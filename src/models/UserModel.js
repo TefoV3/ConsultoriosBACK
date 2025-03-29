@@ -40,6 +40,21 @@ export class UserModel {
         }
     }
 
+    static async getDocumentById(id) {
+        try {
+            return await User.findOne({
+                attributes: ['User_HealthDocuments'],
+                where: { User_ID: id }
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving document: ${error.message}`);
+        }
+    }
+
+
+
+
+
     static async create(data, internalId) {
         try {
             // ✅ Crear usuario
