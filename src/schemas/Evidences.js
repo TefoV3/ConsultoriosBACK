@@ -28,15 +28,9 @@ export const Evidence = sequelize.define('Evidences', {
     },
     Init_Code: {
         type: DataTypes.CHAR(50),
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
-
-    /*
-    Activity_ID: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    */
     
     Evidence_Name: DataTypes.STRING(250),
     Evidence_Document_Type: DataTypes.STRING(100),
@@ -50,13 +44,12 @@ export const Evidence = sequelize.define('Evidences', {
 
 // Define associations
 Evidence.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
+InitialConsultations.hasOne(Evidence, { foreignKey: "Init_Code" });
 
-/*
-Evidence.belongsTo(Activity, { foreignKey: "Activity_ID" });
-*/
-
-InitialConsultations.hasMany(Evidence, { foreignKey: "Init_Code" });
 
 /*
 Activity.hasMany(Evidence, { foreignKey: "Activity_ID" });
+*/
+/*
+Evidence.belongsTo(Activity, { foreignKey: "Activity_ID" });
 */

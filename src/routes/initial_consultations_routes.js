@@ -12,7 +12,6 @@ InitialConsultationsRouter.get('/initial-consultations/type/:initSubject/:initTy
 
 
 
-//InitialConsultationsRouter.post('/initial-consultations', FirstConsultationsController.createFirstConsultations);
 InitialConsultationsRouter.post(
     "/initial-consultations",
     upload.fields([
@@ -21,6 +20,7 @@ InitialConsultationsRouter.post(
     ]),
     FirstConsultationsController.createFirstConsultations
 );
+InitialConsultationsRouter.post('/initial-consultations/new', FirstConsultationsController.createNewConsultation);
 InitialConsultationsRouter.put('/initial-consultations/:id', FirstConsultationsController.update);
 InitialConsultationsRouter.delete('/initial-consultations/:id', FirstConsultationsController.delete);
 

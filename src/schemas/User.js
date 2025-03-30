@@ -85,7 +85,7 @@ export const User = sequelize.define('User', {
     User_DisabilityPercentage: DataTypes.INTEGER,
     User_CatastrophicIllness: DataTypes.STRING(50),
     User_HealthDocuments: DataTypes.BLOB("long"),
-    
+    User_HealthDocumentsName: DataTypes.STRING(150),
     User_IsDeleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false

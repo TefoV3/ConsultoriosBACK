@@ -79,24 +79,24 @@ export const sequelize = new Sequelize(
 // );
 
 // Francis
-// export const sequelize = new Sequelize(
-//     'consultoriosjuridicos2', 
-//     'fvelasco', 
-//     'ltic', 
-//     {
-//        host: '192.168.56.102',
-//        dialect: 'mysql'
-//     }
-// );
-
 export const sequelize = new Sequelize(
-    'seguimiento_final2', 
-    'user_control', 
+    'consultoriosjuridicos', 
+    'fvelasco', 
     'ltic', 
     {
-        host: 'localhost',
-        dialect: 'mysql',
-        timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
+       host: '192.168.56.102',
+       dialect: 'mysql'
     }
 );
+
+// export const sequelize = new Sequelize(
+//     'seguimiento_final2', 
+//     'user_control', 
+//     'ltic', 
+//     {
+//         host: 'localhost',
+//         dialect: 'mysql',
+//         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
+//     }
+// );
 

@@ -24,7 +24,7 @@ import "./schemas/schedules_tables/associations.js";
 
 async function main(){
    try { 
-      await sequelize.sync({force: true});
+      await sequelize.sync({force: false}); // true si hay cambios en el schemas, false si no hay cambios
       app.listen(3000, () => {
          console.log("Server running on port 3000")
       })
