@@ -448,6 +448,8 @@ export class InternalUserController {
               return res.status(500).json({ error: error.message });
             }
           }
+
+        
     
     
     
@@ -470,6 +472,15 @@ export class InternalUserController {
             } catch (error) {
                 console.error("Error al obtener huella:", error);
                 res.status(500).json({ message: "Error interno del servidor." });
+            }
+        }
+
+        static async getInternalUserByTypeEstudiante(req, res) {
+            try {
+                const internalUsers = await InternalUserModel.getUserByTypeEstudiante();
+                res.json(internalUsers);
+            } catch (error) {
+                res.status(500).json(error);
             }
         }
 

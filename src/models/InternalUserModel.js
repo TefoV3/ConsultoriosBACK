@@ -262,6 +262,17 @@ export class InternalUserModel {
         }
     }
 
+    static async getUserByTypeEstudiante() {
+        try {
+            return await InternalUser.findAll({
+                where: { Internal_Type: 'Estudiante', Internal_Status: 'Activo' }
+            });
+        } catch (error) {
+            throw new Error(`Error al obtener usuarios tipo estudiante: ${error.message}`);
+        }
+    }
+
+
     //deleteResetCode: Elimina un código de reseteo de la base de datos (Recibe el email)
     static async deleteResetCode(email) {
         try {
