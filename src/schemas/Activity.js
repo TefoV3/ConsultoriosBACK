@@ -37,20 +37,18 @@ export const Activity = sequelize.define('Activity', {
         allowNull: false
     },
 
-    Activity_Last: DataTypes.STRING(250),
-    Activity_Date: DataTypes.DATE,
     Activity_Name :DataTypes.STRING(250),
+    Activity_Start_Date: DataTypes.DATE,
+    Activity_Start_Time: DataTypes.TIME,
     Activity_Location: DataTypes.STRING(250),
-    Activity_Time: DataTypes.TIME,
     Activity_Duration: DataTypes.TIME,
     Activity_Counterparty: DataTypes.STRING(50),
     Activity_Judged: DataTypes.STRING(50),
     Activity_Judge_Name: DataTypes.STRING(50),
-    Activity_ReferenceFile: DataTypes.STRING(25),
+    Activity_Reference_File: DataTypes.STRING(25),
     Activity_Status: DataTypes.STRING(50),
-    Activity_Type: DataTypes.STRING(15),
     Activity_OnTime:DataTypes.BOOLEAN,
-    Documents: {
+    Activity_Document: {
         type: DataTypes.BLOB("long"),
         allowNull: true
     }

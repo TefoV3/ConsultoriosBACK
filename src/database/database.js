@@ -31,23 +31,23 @@ export const sequelize = new Sequelize(
 
 //USO LOCAL
 
-/*
-export const sequelize = new Sequelize(
-      'prueba', 
-       'root', 
-      '12345', 
-      {
-         host: 'localhost',
-          dialect: 'mysql'
-     }
-    )
-*/
+
+// export const sequelize = new Sequelize(
+//       'prueba', 
+//        'root', 
+//       '12345', 
+//       {
+//          host: 'localhost',
+//           dialect: 'mysql'
+//      }
+//     )
+
 
 /*
 export const sequelize = new Sequelize(
     'prueba', 
     'root', 
-    '12345678', 
+    '12345', 
     {
         host: 'localhost',
         dialect: 'mysql'
@@ -90,7 +90,7 @@ export const sequelize = new Sequelize(
 
 // Francis
 // export const sequelize = new Sequelize(
-//     'consultoriosjuridicos2', 
+//     'consultoriosjuridicos', 
 //     'fvelasco', 
 //     'ltic', 
 //     {
@@ -99,6 +99,27 @@ export const sequelize = new Sequelize(
 //     }
 // );
 
+// export const sequelize = new Sequelize(
+//     'seguimiento_final2', 
+//     'user_control', 
+//     'ltic', 
+//     {
+//         host: 'localhost',
+//         dialect: 'mysql',
+//         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
+//     }
+// );
+
+// export const sequelize = new Sequelize(
+//     'seguimiento_final2', 
+//     'user_control', 
+//     'ltic', 
+//     {
+//         host: 'localhost',
+//         dialect: 'mysql',
+//         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
+//     }
+// );
 // export const sequelize = new Sequelize(
 //     'seguimiento_final2', 
 //     'user_control', 
