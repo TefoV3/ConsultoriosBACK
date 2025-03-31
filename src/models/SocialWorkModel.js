@@ -56,8 +56,8 @@ export class SocialWorkModel {
     static async create(data, req) {
         try {
             // 🔹 Obtener `Internal_ID` desde el middleware
-            const userId = getUserId();
-
+            const internalId = getUserId();
+            
             
 
             // 🔹 Verificar si el `Init_Code` existe en la tabla `InitialConsultations`
@@ -84,10 +84,10 @@ export class SocialWorkModel {
 
             // 🔹 Registrar en auditoría
             await AuditModel.registerAudit(
-                userId,
+                internalId,
                 "INSERT",
                 "SocialWork",
-                `El usuario interno ${userId} creó el registro de trabajo social con ID ${newRecord.SW_ProcessNumber}`
+                `El usuario interno ${internalId} creó el registro de trabajo social con ID ${newRecord.SW_ProcessNumber}`
             );
 
             return newRecord;
@@ -97,11 +97,12 @@ export class SocialWorkModel {
     }
 
     // Actualizar una evaluación de trabajo social
-    static async update(id, data, internalId) {
+    static async update(id, data) {
         try {
             const record = await this.getById(id);
             if (!record) return null;
 
+            const internalId = getUserId();
             const [rowsUpdated] = await SocialWork.update(data, { where: { SW_ProcessNumber: id } });
 
             if (rowsUpdated === 0) return null;
@@ -121,11 +122,12 @@ export class SocialWorkModel {
     }
 
     // Eliminar (borrado lógico) una evaluación de trabajo social
-    static async delete(id, internalId) {
+    static async delete(id) {
         try {
             const record = await this.getById(id);
             if (!record) return null;
-
+            
+            const internalId = getUserId();
             await SocialWork.update({ SW_Status: false }, { where: { SW_ProcessNumber: id } });
 
             // 🔹 Registrar en auditoría la eliminación (borrado lógico)

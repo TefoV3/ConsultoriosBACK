@@ -1,6 +1,7 @@
 import { AuditModel } from "../models/AuditModel.js";
 import { ActivityRecord } from "../schemas/Activity_Record.js";
 import { sequelize } from "../database/database.js";
+import { getUserId } from './sessionData.js';
 
 export class ActivityRecordModel {
     static async getAll() {
@@ -31,10 +32,11 @@ export class ActivityRecordModel {
         }
     }
 
-    static async create(data, internalId) {
+    static async create(data) {
         const t = await sequelize.transaction();
         try {
             console.log("📥 Creating activity record for Activity_ID:", data.Activity_ID);
+            const internalId = getUserId();
 
             const newRecord = await ActivityRecord.create({
                 Activity_ID: data.Activity_ID,
@@ -65,10 +67,11 @@ export class ActivityRecordModel {
         }
     }
 
-    static async update(id, data, internalId) {
+    static async update(id, data) {
         const t = await sequelize.transaction();
         try {
             console.log("📥 Updating activity record with ID:", id);
+            const internalId = getUserId();
 
             const record = await this.getById(id);
             if (!record) {
@@ -104,7 +107,7 @@ export class ActivityRecordModel {
         }
     }
 
-    static async delete(id, internalId) {
+    static async delete(id) {
         const t = await sequelize.transaction();
         try {
             const record = await this.getById(id);
@@ -113,6 +116,8 @@ export class ActivityRecordModel {
                 return null;
             }
 
+            const internalId = getUserId();
+            
             await ActivityRecord.destroy({
                 where: { Record_ID: id },
                 transaction: t

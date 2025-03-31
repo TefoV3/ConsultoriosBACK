@@ -244,7 +244,8 @@ export class InitialConsultationsModel {
     }
 
 
-    static async createNewConsultation(data, internalId) {
+    static async createNewConsultation(data) {
+        const internalId = getUserId();
         const t = await sequelize.transaction();
         try {
             let user = await User.findOne({ where: { User_ID: data.User_ID }, transaction: t });
@@ -294,6 +295,7 @@ export class InitialConsultationsModel {
                 Init_Type: data.Init_Type,
 
             });
+            
 
             // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
             await AuditModel.registerAudit(
@@ -310,10 +312,12 @@ export class InitialConsultationsModel {
     }
     
 
-    static async update(id, data, internalId) {
+    static async update(id, data) {
         try {
             const consultation = await this.getById(id);
             if (!consultation) return null;
+
+            const internalId = getUserId();
 
             const [rowsUpdated] = await InitialConsultations.update(data, {
                 where: { Init_Code: id }
@@ -337,11 +341,12 @@ export class InitialConsultationsModel {
         }
     }
 
-    static async delete(id, internalId) {
+    static async delete(id) {
         try {
             const consultation = await this.getById(id);
             if (!consultation) return null;
 
+            const internalId = getUserId();
             await InitialConsultations.destroy({ where: { Init_Code: id } });
 
             // 🔹 Registrar en Audit que un usuario interno eliminó una consulta inicial

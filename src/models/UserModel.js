@@ -56,16 +56,16 @@ export class UserModel {
     static async create(data) {
         try {
             // ✅ Crear usuario
-            const userId = getUserId();
+            const internalId = getUserId();
             const newUser = await User.create(data);
             
 
             // ✅ Registrar en Audit quién creó el usuario
             await AuditModel.registerAudit(
-                userId, 
+                internalId, 
                 "INSERT",
                 "User",
-                `El usuario interno ${userId} creó al usuario ${data.User_ID}`
+                `El usuario interno ${internalId} creó al usuario ${data.User_ID}`
             );
 
             return newUser;
@@ -74,9 +74,10 @@ export class UserModel {
         }
     }
 
-    static async update(id, data, internalId, file) {
+    static async update(id, data, file) {
         try {
             const user = await this.getById(id);
+            const internalId = getUserId();
             if (!user) return null;
 
             const [rowsUpdated] = await User.update(data, {
@@ -99,12 +100,14 @@ export class UserModel {
         }
     }
 
-    static async delete(id, internalId) {
+    static async delete(id) {
         try {
+            
             if (!id) {
                 throw new Error("The User_ID field is required to delete a user");
             }
-    
+            
+            const internalId = getUserId();
             const user = await this.getById(id);
             if (!user) return null;
     
@@ -168,9 +171,10 @@ export class UserModel {
     //     }
     //   }
 
-    static async uploadDocument(id, file, internalId, documentName) {
+    static async uploadDocument(id, file, documentName) {
         try {
           const user = await this.getById(id);
+          const internalId = getUserId();
           if (!user) {
             console.error("No se encontró el usuario con id:", id);
             return null;
@@ -210,9 +214,10 @@ export class UserModel {
 
 
 
-    static async deleteDocument(id, internalId) {
+    static async deleteDocument(id) {
         try {
             const user = await this.getById(id);
+            const internalId = getUserId();
             if (!user) return null;
 
             // Eliminar el documento de salud del usuario

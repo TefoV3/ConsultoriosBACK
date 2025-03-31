@@ -32,11 +32,11 @@ export class EvidenceModel {
         const t = await sequelize.transaction();
 
         try {
-            const userId = getUserId();
+            const internalId = getUserId();
 
             // Guardar la evidencia en la base de datos
             const newEvidence = await Evidence.create({
-                Internal_ID: userId,
+                Internal_ID: internalId,
                 Init_Code: data.Init_Code,
                 Evidence_Name: data.Evidence_Name || file.originalname,
                 Evidence_Document_Type: file.mimetype,
@@ -47,10 +47,10 @@ export class EvidenceModel {
 
             // Registrar en Audit
             await AuditModel.registerAudit(
-                userId,
+                internalId,
                 "INSERT",
                 "Evidences",
-                `El usuario interno ${userId} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
+                `El usuario interno ${internalId} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
             );
 
             await t.commit();
@@ -69,10 +69,12 @@ export class EvidenceModel {
         }
     }
 
-  static async update(id, data, internalId) {
+  static async update(id, data) {
     try {
       const record = await this.getById(id);
       if (!record) return null;
+
+      const internalId = getUserId();
 
       const [rowsUpdated] = await SocialWork.update(data, {
         where: { SW_ProcessNumber: id },
@@ -94,11 +96,12 @@ export class EvidenceModel {
     }
   }
 
-  static async delete(id, internalId) {
+  static async delete(id) {
     try {
       const evidences = await this.getById(id);
       if (!evidences) return null;
 
+      const internalId = getUserId();
       await Evidence.destroy({ where: { Evidence_ID: id } });
 
       // 🔹 Registrar en Audit que un usuario interno eliminó una consulta inicial
@@ -116,13 +119,15 @@ export class EvidenceModel {
   }
 
   
-  static async uploadDocument(id, file, internalId, documentName) {
+  static async uploadDocument(id, file, documentName) {
     try {
         const evidence = await this.getById(id);
         if (!evidence) {
             console.error("No se encontró la evidencia con id:", id);
             return null;
         }
+
+        const internalId = getUserId();
 
         console.log("Archivo recibido:", file);
 
@@ -155,11 +160,12 @@ export class EvidenceModel {
     }
   }
 
-  static async deleteDocument(id, internalId) {
+  static async deleteDocument(id) {
     try {
         const evidence = await this.getById(id);
         if (!evidence) return null;
 
+        const internalId = getUserId();
         // Eliminar el documento de evidencia
         evidence.Evidence_File = null; // O la ruta que corresponda para eliminar el archivo
         evidence.Evidence_Name = null; // Limpiar el nombre del archivo

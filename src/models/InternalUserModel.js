@@ -105,7 +105,9 @@ export class InternalUserModel {
 
     static async update(id, data) {
         try {
+            const internalId = getUserId(); // Obtener el ID del usuario activo desde la sesión
             const internalUser = await this.getById(id);
+
             if (!internalUser) return null;
 
             const [rowsUpdated] = await InternalUser.update(data, {
@@ -128,7 +130,9 @@ export class InternalUserModel {
 
     static async delete(id, internalId) {
         try {
+            const internalId = getUserId();
             const internalUser = await this.getById(id);
+            
             if (!internalUser) return null;
 
             await InternalUser.update(
