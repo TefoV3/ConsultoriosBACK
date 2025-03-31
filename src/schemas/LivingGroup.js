@@ -10,15 +10,15 @@ export const LivingGroup = sequelize.define('LivingGroup', {
     },
     LG_Name: {
         type: DataTypes.STRING(100),
-        allowNull: false
+        allowNull: true
     },
     LG_Age: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     LG_Relationship: {
         type: DataTypes.STRING(50), // Describes the relationship (e.g., sibling, parent)
-        allowNull: false
+        allowNull: true
     },
     LG_Occupation: {
         type: DataTypes.STRING(100), // The individual's occupation
