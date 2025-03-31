@@ -76,6 +76,23 @@ export class FirstConsultationsController {
             res.status(500).json({ error: error.message });
         }
     }
+
+
+    static async createNewConsultation(req, res) {
+        try {
+            const internalId = req.headers["internal-id"];
+            if (!internalId) {
+                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            }
+
+            const newConsultation = await InitialConsultationsModel.createNewConsultation(req.body, internalId);
+
+            res.status(201).json({ message: "Consulta inicial creada", data: newConsultation });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
     
     
 
