@@ -1,7 +1,9 @@
 import { LivingGroup } from "../schemas/LivingGroup.js";
 import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
+import { getUserId } from '../sessionData.js';
 
 export class LivingGroupModel {
+    
     static async getById(id) {
         try {
             return await LivingGroup.findOne({
@@ -22,14 +24,16 @@ export class LivingGroupModel {
         }
     }
 
-    static async create(data, internalId) {
+    static async create(data) {
         try {
+            const userId = getUserId();
+
             const newRecord = await LivingGroup.create(data);
             await AuditModel.registerAudit(
-                internalId,
+                userId,
                 "INSERT",
                 "LivingGroup",
-                `El usuario interno ${internalId} creó el registro de grupo de convivencia con ID ${newRecord.LG_LivingGroup_ID}`
+                `El usuario interno ${userId} creó el registro de grupo de convivencia con ID ${newRecord.LG_LivingGroup_ID}`
             );
             return newRecord;
         } catch (error) {

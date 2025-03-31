@@ -2,6 +2,7 @@ import { SocialWork } from "../schemas/SocialWork.js";
 import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
 import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { User } from "../schemas/User.js";
+import { getUserId } from '../sessionData.js';
 
 export class SocialWorkModel {
     // Obtener todas las evaluaciones de trabajo social
@@ -55,10 +56,9 @@ export class SocialWorkModel {
     static async create(data, req) {
         try {
             // 🔹 Obtener `Internal_ID` desde el middleware
-            const internalId = req.user?.id;
-            if (!internalId) {
-                throw new Error("No se pudo recuperar el Internal_ID del token.");
-            }
+            const userId = getUserId();
+
+            
 
             // 🔹 Verificar si el `Init_Code` existe en la tabla `InitialConsultations`
             const initialConsultation = await InitialConsultations.findOne({ 
@@ -84,10 +84,10 @@ export class SocialWorkModel {
 
             // 🔹 Registrar en auditoría
             await AuditModel.registerAudit(
-                internalId,
+                userId,
                 "INSERT",
                 "SocialWork",
-                `El usuario interno ${internalId} creó el registro de trabajo social con ID ${newRecord.SW_ProcessNumber}`
+                `El usuario interno ${userId} creó el registro de trabajo social con ID ${newRecord.SW_ProcessNumber}`
             );
 
             return newRecord;

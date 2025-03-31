@@ -2,6 +2,7 @@ import { AuditModel } from "../models/AuditModel.js";
 import { Assignment } from "../schemas/Assignment.js";
 import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { InternalUser } from "../schemas/Internal_User.js";
+import { getUserId } from '../sessionData.js';
 
 export class AssignmentModel {
 
@@ -32,16 +33,17 @@ export class AssignmentModel {
         }
     }
 
-    static async create(data, internalId) {
+    static async create(data) {
         try {
             const newAssignment = await Assignment.create(data);
+            const userId = getUserId();
 
             // 🔹 Registrar en Audit que un usuario interno creó una asignación
             await AuditModel.registerAudit(
-                internalId, 
+                userId, 
                 "INSERT",
                 "Assignment",
-                `El usuario interno ${internalId} creó la asignación con ID ${newAssignment.Assignment_Id}`
+                `El usuario interno ${userId} creó la asignación con ID ${newAssignment.Assignment_Id}`
             );
 
             return newAssignment;

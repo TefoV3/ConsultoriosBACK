@@ -1,6 +1,7 @@
 import { User } from "../schemas/User.js"; // Nombre traducido del esquema
 import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { AuditModel } from "../models/AuditModel.js";
+import { getUserId } from '../sessionData.js';
 
 export class UserModel {
 
@@ -40,17 +41,34 @@ export class UserModel {
         }
     }
 
-    static async create(data, internalId) {
+    static async getDocumentById(id) {
+        try {
+            return await User.findOne({
+                attributes: ['User_HealthDocuments'],
+                where: { User_ID: id }
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving document: ${error.message}`);
+        }
+    }
+
+
+
+
+
+    static async create(data) {
         try {
             // ✅ Crear usuario
+            const userId = getUserId();
             const newUser = await User.create(data);
+            
 
             // ✅ Registrar en Audit quién creó el usuario
             await AuditModel.registerAudit(
-                internalId, 
+                userId, 
                 "INSERT",
                 "User",
-                `El usuario interno ${internalId} creó al usuario ${data.User_ID}`
+                `El usuario interno ${userId} creó al usuario ${data.User_ID}`
             );
 
             return newUser;

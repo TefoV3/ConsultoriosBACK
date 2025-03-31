@@ -1,6 +1,7 @@
 import { Evidence } from "../schemas/Evidences.js";
 import { AuditModel } from "../models/AuditModel.js";
 import { sequelize } from "../database/database.js";
+import { getUserId } from '../sessionData.js';
 
 export class EvidenceModel {
 
@@ -26,10 +27,11 @@ export class EvidenceModel {
         const t = await sequelize.transaction();
 
         try {
+            const userId = getUserId();
 
             // Guardar la evidencia en la base de datos
             const newEvidence = await Evidence.create({
-                Internal_ID: data.Internal_ID,
+                Internal_ID: userId,
                 Init_Code: data.Init_Code,
                 Evidence_Name: data.Evidence_Name || file.originalname,
                 Evidence_Document_Type: file.mimetype,
@@ -40,10 +42,10 @@ export class EvidenceModel {
 
             // Registrar en Audit
             await AuditModel.registerAudit(
-                data.Internal_ID,
+                userId,
                 "INSERT",
                 "Evidences",
-                `El usuario interno ${data.Internal_ID} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
+                `El usuario interno ${userId} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
             );
 
             await t.commit();

@@ -85,16 +85,19 @@ export class InternalUserModel {
 
     //CREATE, UPDATE AND DELETE METHODS
 
-    static async create(data, internalId) {
+    static async create(data, internalIdFromSession) {
         try {
-            const newRecord = await InternalUser.create(data);
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "LivingGroup",
-                            `El usuario interno ${internalId} creó el registro de grupo de convivencia con ID ${newRecord.Internal_ID}`
-                        );
-                        return newRecord;
+            const newRecord = await InternalUser.create(data, internalIdFromSession);
+    
+            // Registrar la auditoría usando la cédula del usuario de la sesión activa
+            await AuditModel.registerAudit(
+                internalIdFromSession, // Usar la cédula del usuario activo
+                "INSERT",
+                "InternalUser",
+                `El usuario interno ${internalIdFromSession} creó el registro de usuario interno con ID ${newRecord.Internal_ID}`
+            );
+    
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating internal user: ${error.message}`);
         }
@@ -226,6 +229,52 @@ export class InternalUserModel {
             throw error;
         }
     }
+
+     /** 🔹 Actualizar la huella del usuario */
+     static async updateHuella(cedula, huellaBase64) {
+        try {
+            const usuario = await this.getById(cedula);
+            if (!usuario) return null; // 🔹 Usuario no encontrado
+
+            // 🔹 Convertir la huella de Base64 a Buffer (BLOB)
+            const huellaBuffer = Buffer.from(huellaBase64, "base64");
+
+            // 🔹 Actualizar la huella en la base de datos
+            const [rowsUpdated] = await InternalUser.update(
+                { Internal_Huella: huellaBuffer },
+                { where: { Internal_ID: cedula, Internal_Status: 'Activo' } }
+            );
+
+            if (rowsUpdated === 0) return null; // 🔹 Si no se actualizó nada
+            return await this.getById(cedula); // ✅ Retorna el usuario actualizado
+        } catch (error) {
+            throw new Error(`Error al actualizar huella: ${error.message}`);
+        }
+    }
+
+    /** 🔹 Obtener la huella de un usuario */
+    static async getHuella(cedula) {
+        try {
+            const usuario = await this.getById(cedula);
+            if (!usuario || !usuario.Internal_Huella) return null; // 🔹 Si no hay huella
+
+            // 🔹 Convertir la huella de Buffer a Base64 para enviarla al frontend
+            return usuario.Internal_Huella.toString("base64");
+        } catch (error) {
+            throw new Error(`Error al obtener la huella: ${error.message}`);
+        }
+    }
+
+    static async getUserByTypeEstudiante() {
+        try {
+            return await InternalUser.findAll({
+                where: { Internal_Type: 'Estudiante', Internal_Status: 'Activo' }
+            });
+        } catch (error) {
+            throw new Error(`Error al obtener usuarios tipo estudiante: ${error.message}`);
+        }
+    }
+
 
     //deleteResetCode: Elimina un código de reseteo de la base de datos (Recibe el email)
     static async deleteResetCode(email) {

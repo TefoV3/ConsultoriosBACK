@@ -16,6 +16,7 @@ export function authMiddleware(req, res, next) {
 
         // Agregar mensaje de registro para verificar el Internal_ID
         console.log("🔍 Internal_ID obtenido en middleware:", data.id);
+        setUserId(data.id);
 
     } catch (error) {
         return res.status(401).json({ message: 'Invalid token' });
