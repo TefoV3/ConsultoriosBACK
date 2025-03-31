@@ -1,5 +1,6 @@
 import { InternalUserController } from "../controllers/InternalUserController.js";
 import { Router } from "express";
+import { authMiddleware } from "../middlewares/auth.js";
 
 export const InternalUserRouter = Router();
 

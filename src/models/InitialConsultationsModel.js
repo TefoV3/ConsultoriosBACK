@@ -5,6 +5,7 @@ import { InternalUser } from "../schemas/Internal_User.js";
 import {AuditModel} from "../models/AuditModel.js"
 import { UserModel } from "../models/UserModel.js";
 import { Evidence } from "../schemas/Evidences.js";
+import { getUserId } from '../sessionData.js';
 
 export class InitialConsultationsModel {
 
@@ -65,6 +66,8 @@ export class InitialConsultationsModel {
     }
 
     static async createInitialConsultation(data,files) {
+        const userId = getUserId();
+
         const t = await sequelize.transaction();
         let userCreated = false;
 
@@ -125,17 +128,17 @@ export class InitialConsultationsModel {
 
                 // 🔹 Registrar en Audit que un usuario interno creó este usuario externo
                 await AuditModel.registerAudit(
-                    data.Internal_ID, 
+                    userId, 
                     "INSERT",
                     "User",
-                    `El usuario interno ${data.Internal_ID} creó al usuario externo ${data.User_ID}`
+                    `El usuario interno ${userId} creó al usuario externo ${data.User_ID}`
                 );
             }
 
             // Verificar si el usuario interno existe
-            const internalUser = await InternalUser.findOne({ where: { Internal_ID: data.Internal_ID }, transaction: t });
+            const internalUser = await InternalUser.findOne({ where: { Internal_ID: userId }, transaction: t });
             if (!internalUser) {
-                throw new Error(`El usuario interno con ID ${data.Internal_ID} no existe.`);
+                throw new Error(`El usuario interno con ID ${userId} no existe.`);
             }
 
             // Obtener el último Init_Code ordenado descendentemente
@@ -158,7 +161,7 @@ export class InitialConsultationsModel {
             // Crear la consulta inicial
             const newConsultation = await InitialConsultations.create({
                 Init_Code: newCode,
-                Internal_ID: data.Internal_ID,
+                Internal_ID: userId,
                 User_ID: data.User_ID,
                 Init_ClientType: data.Init_ClientType,
                 Init_Date: data.Init_Date,
@@ -186,10 +189,10 @@ export class InitialConsultationsModel {
 
             // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
             await AuditModel.registerAudit(
-                data.Internal_ID, 
+                userId, 
                 "INSERT",
                 "Initial_Consultations",
-                `El usuario interno ${data.Internal_ID} creó la consulta inicial ${data.Init_Code} para el usuario ${data.User_ID}`
+                `El usuario interno ${userId} creó la consulta inicial ${data.Init_Code} para el usuario ${data.User_ID}`
             );
 
 
@@ -197,7 +200,7 @@ export class InitialConsultationsModel {
 
             // 🔹 Crear la evidencia asociada
             const newEvidence = await Evidence.create({
-                Internal_ID: data.Internal_ID,
+                Internal_ID: userId,
                 Init_Code: newConsultation.Init_Code,
                 Evidence_Name: evidenceFile ? evidenceFile.originalname : "Sin Documento",
                 Evidence_Document_Type: evidenceFile ? evidenceFile.mimetype : null,
@@ -209,10 +212,10 @@ export class InitialConsultationsModel {
 
             // 🔹 Registrar en Audit la creación de la evidencia
             await AuditModel.registerAudit(
-                data.Internal_ID, 
+                userId, 
                 "INSERT",
                 "Evidences",
-                `El usuario interno ${data.Internal_ID} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
+                `El usuario interno ${userId} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
             );
 
             await t.commit();
@@ -232,10 +235,10 @@ export class InitialConsultationsModel {
 
                 // 🔹 Registrar en Audit que se eliminó el usuario por error en la transacción
                 await AuditModel.registerAudit(
-                    data.Internal_ID, 
+                    userId, 
                     "DELETE",
                     "User",
-                    `El usuario interno ${data.Internal_ID} eliminó al usuario externo ${data.User_ID} debido a un error en la creación de la consulta inicial`
+                    `El usuario interno ${userId} eliminó al usuario externo ${data.User_ID} debido a un error en la creación de la consulta inicial`
                 );
             }
 
