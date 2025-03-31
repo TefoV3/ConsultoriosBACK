@@ -120,7 +120,7 @@ export class InitialConsultationsModel {
                     User_DisabilityPercentage: data.User_DisabilityPercentage,
                     User_CatastrophicIllness: data.User_CatastrophicIllness,
                     User_HealthDocuments: healthDocument ? healthDocument.buffer : null,
-
+                    User_HealthDocumentsName: data.User_HealthDocumentsName,
                 }, { transaction: t });
                 console.log("Buffer de documento de salud:", healthDocument ? healthDocument.buffer : "No hay archivo de documento de salud");
 
@@ -195,9 +195,6 @@ export class InitialConsultationsModel {
                 `El usuario interno ${userId} creó la consulta inicial ${data.Init_Code} para el usuario ${data.User_ID}`
             );
 
-
-
-
             // 🔹 Crear la evidencia asociada
             const newEvidence = await Evidence.create({
                 Internal_ID: userId,
@@ -245,6 +242,73 @@ export class InitialConsultationsModel {
             throw new Error(`Error al crear la consulta inicial: ${error.message}`);
         }
     }
+
+
+    static async createNewConsultation(data, internalId) {
+        const t = await sequelize.transaction();
+        try {
+            let user = await User.findOne({ where: { User_ID: data.User_ID }, transaction: t });
+            if (!user) {
+                throw new Error(`El usuario externo con ID ${data.User_ID} no existe.`);
+            }
+
+            // Verificar si el usuario interno existe
+            const internalUser = await InternalUser.findOne({ where: { Internal_ID: internalId }, transaction: t });
+            if (!internalUser) {
+                throw new Error(`El usuario interno con ID ${internalId} no existe.`);
+            }
+
+            // Obtener el último Init_Code ordenado descendentemente
+            const lastRecord = await InitialConsultations.findOne({
+                order: [['Init_Code', 'DESC']],
+                transaction: t
+            });
+
+            let lastNumber = 0;
+            if (lastRecord && lastRecord.Init_Code) {
+                const lastCode = lastRecord.Init_Code;
+                const numberPart = lastCode.substring(3); // Extraer número después de "AT-"
+                lastNumber = parseInt(numberPart, 10);
+            }
+
+            const newNumber = lastNumber + 1;
+            const newCode = `AT-${String(newNumber).padStart(6, '0')}`;
+
+            const newConsultation = await InitialConsultations.create({
+                Init_Code: newCode,
+                Internal_ID: internalId,
+                User_ID: data.User_ID,
+                Init_ClientType: data.Init_ClientType,
+                Init_Date: data.Init_Date,
+                Init_EndDate: data.Init_EndDate,
+                Init_Subject: data.Init_Subject,
+                Init_Lawyer: data.Init_Lawyer,
+                Init_Notes: data.Init_Notes,
+                Init_Office: data.Init_Office,
+                Init_Topic: data.Init_Topic,
+                Init_Service: data.Init_Service,
+                Init_Referral: data.Init_Referral,
+                Init_Complexity: data.Init_Complexity,
+                Init_Status: data.Init_Status,
+                Init_SocialWork : data.Init_SocialWork,
+                Init_Type: data.Init_Type,
+
+            });
+
+            // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
+            await AuditModel.registerAudit(
+                internalId, 
+                "INSERT",
+                "Initial_Consultations",
+                `El usuario interno ${internalId} creó una nueva consulta inicial ${newConsultation.Init_Code} para el usuario ${data.User_ID}`
+            );
+
+            return newConsultation;
+        } catch (error) {
+            throw new Error(`Error creating new initial consultation: ${error.message}`);
+        }
+    }
+    
 
     static async update(id, data, internalId) {
         try {

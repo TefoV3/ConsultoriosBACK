@@ -13,7 +13,7 @@ export class OccupationsModel {
     static async getById(id) {
         try {
             return await Occupations.findOne({
-                where: { Occupations_Id: id, Occupations_Status: true }
+                where: { Occupation_Id: id, Occupation_Status: true }
             });
         }
         catch (error) {
