@@ -32,6 +32,23 @@ export class AssignmentModel {
         }
     }
 
+    static async getStudentByInitCode(initCode) {
+        try {
+            const assignment = await Assignment.findOne({
+                where: { Init_Code: initCode },
+                attributes: ['Internal_User_ID_Student'],
+            });
+
+            if (assignment) {
+                return assignment.Internal_User_ID_Student;
+            } else {
+                return null;
+            }
+        } catch (error) {
+            throw new Error(`Error al buscar el estudiante por código de consulta inicial: ${error.message}`);
+        }
+    }
+
     static async create(data, internalId) {
         try {
             const newAssignment = await Assignment.create(data);

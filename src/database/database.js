@@ -31,7 +31,7 @@ import dotenv from "dotenv";
 
 //USO LOCAL
 
-/*
+
 export const sequelize = new Sequelize(
       'prueba', 
        'root', 
@@ -41,7 +41,7 @@ export const sequelize = new Sequelize(
           dialect: 'mysql'
      }
     )
-*/
+
 
 /*
 export const sequelize = new Sequelize(
@@ -89,14 +89,14 @@ export const sequelize = new Sequelize(
 //     }
 // );
 
-export const sequelize = new Sequelize(
-    'seguimiento_final2', 
-    'user_control', 
-    'ltic', 
-    {
-        host: 'localhost',
-        dialect: 'mysql',
-        timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
-    }
-);
+// export const sequelize = new Sequelize(
+//     'seguimiento_final2', 
+//     'user_control', 
+//     'ltic', 
+//     {
+//         host: 'localhost',
+//         dialect: 'mysql',
+//         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
+//     }
+// );
 
