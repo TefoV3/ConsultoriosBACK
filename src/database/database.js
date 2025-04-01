@@ -80,7 +80,7 @@ export const sequelize = new Sequelize(
 
 // Francis
 export const sequelize = new Sequelize(
-    'consultoriosjuridicos', 
+    'consultoriosjuridicos2', 
     'fvelasco', 
     'ltic', 
     {
