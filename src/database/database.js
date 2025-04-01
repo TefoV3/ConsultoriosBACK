@@ -56,7 +56,7 @@ import dotenv from "dotenv";
 
 // //Francis
 export const sequelize = new Sequelize(
-    'consultoriosjuridicos2', 
+    'consultoriosjuridicos3', 
     'fvelasco', 
     'ltic', 
     {

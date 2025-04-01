@@ -1,5 +1,5 @@
 import { City } from "../../schemas/parameter_tables/City.js";
-import { Country } from "../../schemas/parameter_tables/Country.js";
+import { Province } from "../../schemas/parameter_tables/Province.js";
 
 export class CityModel {
 
@@ -8,8 +8,8 @@ export class CityModel {
             return await City.findAll({
                 where: { City_Status: true },
                 include: {
-                    model: Country, // Incluir información de Country
-                    attributes: ["Country_Name"] // Campos que deseas incluir
+                    model: Province, // Incluir información de Country
+                    attributes: ["Province_Name"] // Campos que deseas incluir
                 }
             });
         } catch (error) {
@@ -22,8 +22,8 @@ export class CityModel {
             return await City.findOne({
                 where: { City_ID: id, City_Status: true },
                 include: {
-                    model: Country, // Incluir información de Country
-                    attributes: ["Country_Name"]
+                    model: Province, // Incluir información de Country
+                    attributes: ["Province_Name"] // Campos que deseas incluir
                 }
             });
         } catch (error) {

@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
-import { City } from "./City.js"; // Importar la tabla City
+import { Country } from "./Country.js"; 
 
 export const Province = sequelize.define('Province', {
     Province_ID: {
@@ -16,17 +16,17 @@ export const Province = sequelize.define('Province', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
-    City_FK: { // Clave foránea
+    Country_FK: { // Clave foránea
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: City,
-            key: 'City_ID'
+            model: Country,
+            key: 'Country_ID'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     }
 }, { timestamps: false });
 
-// Establecer la relación con la tabla City
-Province.belongsTo(City, { foreignKey: "City_ID" });
+// Establecer la relación con la tabla Country
+Province.belongsTo(Country, { foreignKey: "Country_ID" });

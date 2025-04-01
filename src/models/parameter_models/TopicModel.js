@@ -1,4 +1,5 @@
 import { Topic } from "../../schemas/parameter_tables/Topic.js";
+import { Subject } from "../../schemas/parameter_tables/Subject.js";
 
 export class TopicModel {
 
