@@ -1,6 +1,7 @@
 import { AuditModel } from "../models/AuditModel.js";
 import { Activity } from "../schemas/Activity.js";
 import { sequelize } from "../database/database.js";
+import { getUserId } from './sessionData.js';
 
 export class ActivityModel {
 
@@ -35,7 +36,7 @@ export class ActivityModel {
     static async getDocumentById(id) {
         try {
             return await Activity.findOne({
-                attributes: ['Documents'],
+                attributes: ['Activity_Document'],
                 where: { Activity_ID: id }
             });
         } catch (error) {
@@ -46,35 +47,35 @@ export class ActivityModel {
     static async create(data, file) {
         const t = await sequelize.transaction();
         try {
-            console.log("📥 Creando actividad con Internal_ID:", data.Internal_ID);
-    
+            const internalId = getUserId();
+            console.log("📥 Creando actividad con Internal_ID:", userId);
+            
+
             const newActivity = await Activity.create({
                 Activity_ID: data.Activity_ID,
                 Init_Code: data.Init_Code,
                 Internal_ID: data.Internal_ID,
-                Activity_Last: data.Activity_Last,
-                Activity_Date: data.Activity_Date,
+                Activity_Start_Date: data.Activity_Start_Date,
                 Activity_Name: data.Activity_Name,
                 Activity_Location: data.Activity_Location,
-                Activity_Time: data.Activity_Time,
+                Activity_Start_Time: data.Activity_Start_Time,
                 Activity_Duration: data.Activity_Duration,
                 Activity_Counterparty: data.Activity_Counterparty,
                 Activity_Judged: data.Activity_Judged,
                 Activity_Judge_Name: data.Activity_Judge_Name,
-                Activity_ReferenceFile: data.Activity_ReferenceFile,
+                Activity_Reference_File: data.Activity_Reference_File,
                 Activity_Status: data.Activity_Status,
-                Activity_Type: data.Activity_Type,
                 Activity_OnTime: data.Activity_OnTime,
-                Documents: file?.buffer || null
+                Activity_Document: file ? file.buffer : null // Store the Buffer directly if file exists
             }, { transaction: t });
     
             console.log("✅ Actividad creada con ID:", newActivity.Activity_ID);
     
             await AuditModel.registerAudit(
-                data.Internal_ID,
+                internalId,
                 "INSERT",
                 "Activity",
-                `El usuario interno ${data.Internal_ID} creó la actividad con ID ${newActivity.Activity_ID}`,
+                `El usuario interno ${internalId} creó la actividad con ID ${newActivity.Activity_ID}`,
                 { transaction: t }
             );
     
@@ -87,31 +88,47 @@ export class ActivityModel {
         }
     }
 
-    static async update(id, data, internalId) {
+    static async update(id, activityData, file = null) {
+        const t = await sequelize.transaction();
         try {
-            console.log("📥 Actualizando actividad con Internal_ID:", internalId);
-
-            const activity = await this.getById(id);
-            if (!activity) return null;
-
-            const [rowsUpdated] = await Activity.update(data, {
-                where: { Activity_ID: id }
+            const existingActivity = await Activity.findOne({
+                where: { Activity_Id: id },
+                transaction: t
             });
 
-            if (rowsUpdated === 0) return null;
+            const internalId = getUserId();
+            
+            if (!existingActivity) {
+                await t.rollback();
+                return null; // Activity not found
+            }
 
-            const updatedActivity = await this.getById(id);
+            // Update the activity data
+            await existingActivity.update(activityData, { transaction: t });
 
+            // Check if a file was uploaded
+            if (file) {
+                // Update the document information
+                await existingActivity.update({
+                    Activity_Document: file.buffer
+                }, { transaction: t });
+            }
+
+            // Register audit
             await AuditModel.registerAudit(
-                internalId,
+                activityData.Internal_ID,
                 "UPDATE",
                 "Activity",
-                `El usuario interno ${internalId} actualizó la actividad con ID ${id}`
+                `El usuario interno ${activityData.Internal_ID} actualizó la actividad con ID ${id}`,
+                { transaction: t }
             );
 
-            return updatedActivity;
+            await t.commit();
+            return existingActivity; // Return the updated activity
         } catch (error) {
-            throw new Error(`Error updating activity: ${error.message}`);
+            await t.rollback();
+            console.error("Error updating activity in model:", error);
+            throw error;
         }
     }
 }

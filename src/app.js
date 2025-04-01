@@ -12,6 +12,8 @@ import { AuditRouter } from './routes/audit_routes.js'
 import { corsMiddleware } from './middlewares/cors.js'
 import {SocialWorkRouter} from './routes/social_work_routes.js'
 import { LivingGroupRouter } from './routes/living_group_routes.js'
+import { ActivityRecordRouter } from "./routes/activity_record_routes.js";
+
 //Parameter Routes
 import { CaseStatusRouter } from './routes/parameter_routes/case_status_routes.js'
 import { CatastrophicIllnessRouter } from './routes/parameter_routes/catastrophic_illness_routes.js'
@@ -78,6 +80,7 @@ app.use(UserRouter)
 app.use(AuditRouter)
 app.use(SocialWorkRouter);
 app.use(LivingGroupRouter)
+app.use(ActivityRecordRouter);
 
 //Parameter Routes
 app.use(CaseStatusRouter)
@@ -124,9 +127,6 @@ app.use(Registro_Asistencias_Routes)
 app.use(ResumenHorasRouter)
 app.use(Seguimiento_SemanalRouter)
 app.use(UsuarioXPeriodoRouter)
-
-
-
 
 
 export default app;

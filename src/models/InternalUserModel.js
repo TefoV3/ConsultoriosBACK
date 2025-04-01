@@ -85,16 +85,19 @@ export class InternalUserModel {
 
     //CREATE, UPDATE AND DELETE METHODS
 
-    static async create(data, internalId) {
+    static async create(data, internalIdFromSession) {
         try {
-            const newRecord = await InternalUser.create(data);
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "LivingGroup",
-                            `El usuario interno ${internalId} creó el registro de grupo de convivencia con ID ${newRecord.Internal_ID}`
-                        );
-                        return newRecord;
+            const newRecord = await InternalUser.create(data, internalIdFromSession);
+    
+            // Registrar la auditoría usando la cédula del usuario de la sesión activa
+            await AuditModel.registerAudit(
+                internalIdFromSession, // Usar la cédula del usuario activo
+                "INSERT",
+                "InternalUser",
+                `El usuario interno ${internalIdFromSession} creó el registro de usuario interno con ID ${newRecord.Internal_ID}`
+            );
+    
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating internal user: ${error.message}`);
         }
@@ -102,7 +105,9 @@ export class InternalUserModel {
 
     static async update(id, data) {
         try {
+            const internalId = getUserId(); // Obtener el ID del usuario activo desde la sesión
             const internalUser = await this.getById(id);
+
             if (!internalUser) return null;
 
             const [rowsUpdated] = await InternalUser.update(data, {
@@ -125,7 +130,9 @@ export class InternalUserModel {
 
     static async delete(id, internalId) {
         try {
+            const internalId = getUserId();
             const internalUser = await this.getById(id);
+            
             if (!internalUser) return null;
 
             await InternalUser.update(

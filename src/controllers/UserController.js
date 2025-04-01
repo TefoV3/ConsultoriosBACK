@@ -59,13 +59,8 @@ export class UserController {
     
     static async createUser(req, res) {
         try {
-            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
 
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-
-            const newUser = await UserModel.create(req.body, internalId);
+            const newUser = await UserModel.create(req.body);
 
             return res.status(201).json(newUser);
         } catch (error) {
