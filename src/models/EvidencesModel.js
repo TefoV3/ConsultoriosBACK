@@ -1,7 +1,6 @@
 import { Evidence } from "../schemas/Evidences.js";
 import { AuditModel } from "../models/AuditModel.js";
 import { sequelize } from "../database/database.js";
-import { getUserId } from '../sessionData.js';
 
 export class EvidenceModel {
 
@@ -18,63 +17,74 @@ export class EvidenceModel {
     }
   }
 
-    static async getById(id) {
-        try {
-            return await Evidence.findOne({
-                where: { Evidence_ID: id }
-            });
-        } catch (error) {
-            throw new Error(`Error retrieving evidence: ${error.message}`);
-        }
+  static async getById(id) {
+    try {
+      return await Evidence.findOne({
+        where: { Evidence_ID: id },
+      });
+    } catch (error) {
+      throw new Error(`Error retrieving evidence: ${error.message}`);
     }
+  }
 
-    static async create(data, file) {
-        const t = await sequelize.transaction();
-
-        try {
-            const internalId = getUserId();
-
-            // Guardar la evidencia en la base de datos
-            const newEvidence = await Evidence.create({
-                Internal_ID: internalId,
-                Init_Code: data.Init_Code,
-                Evidence_Name: data.Evidence_Name || file.originalname,
-                Evidence_Document_Type: file.mimetype,
-                Evidence_URL: null, // Se usa NULL ya que el PDF está en BLOB
-                Evidence_Date: new Date(),
-                Evidence_File: file ? file.buffer : null  // Guardar el archivo en formato BLOB
-            }, { transaction: t });
-
-            // Registrar en Audit
-            await AuditModel.registerAudit(
-                internalId,
-                "INSERT",
-                "Evidences",
-                `El usuario interno ${internalId} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
-            );
-
-            await t.commit();
-            return newEvidence;
-        } catch (error) {
-            await t.rollback();
-            throw new Error(`Error al subir la evidencia: ${error.message}`);
-        }
+  static async getByConsultationsCode(code) {
+    try {
+      return await Evidence.findOne({
+        where: { Init_Code: code },
+      });
+    } catch (error) {
+      throw new Error(`Error retrieving evidence: ${error.message}`);
     }
+  }
 
-    static async getEvidenceById(id) {
-        try {
-            return await Evidence.findByPk(id);
-        } catch (error) {
-            throw new Error(`Error al obtener la evidencia: ${error.message}`);
-        }
+  static async getDocumentById(id) {
+    try {
+      return await Evidence.findOne({
+        attributes: ["Evidence_File"],
+        where: { Evidence_ID: id },
+      });
+    } catch (error) {
+      throw new Error(`Error retrieving document: ${error.message}`);
     }
+  }
 
-  static async update(id, data) {
+  static async create(data, file) {
+    const t = await sequelize.transaction();
+    try {
+      const newEvidence = await Evidence.create(
+        {
+          Internal_ID: data.Internal_ID,
+          Init_Code: data.Init_Code,
+          Evidence_Name: data.Evidence_Name || "Sin Documento", // Nombre de la evidencia (ej. "Factura", "Recibo")
+          Evidence_Document_Type: file.mimetype || null, // Tipo de documento (ej. application/pdf)
+          Evidence_URL: file.path || null, // URL del archivo (si es necesario)
+          Evidence_File: file.buffer ? file.buffer : null, // Archivo de evidencia, // Guardar el archivo en formato BLOB
+          Evidence_Date: new Date(),
+        },
+        { transaction: t }
+      );
+  
+      await t.commit();
+      return newEvidence;
+    } catch (error) {
+      await t.rollback();
+      throw new Error(`Error al subir la evidencia: ${error.message}`);
+    }
+  }
+  
+
+  static async getEvidenceById(id) {
+    try {
+      return await Evidence.findByPk(id);
+    } catch (error) {
+      throw new Error(`Error al obtener la evidencia: ${error.message}`);
+    }
+  }
+
+  static async update(id, data, internalId) {
     try {
       const record = await this.getById(id);
       if (!record) return null;
-
-      const internalId = getUserId();
 
       const [rowsUpdated] = await SocialWork.update(data, {
         where: { SW_ProcessNumber: id },
@@ -96,12 +106,11 @@ export class EvidenceModel {
     }
   }
 
-  static async delete(id) {
+  static async delete(id, internalId) {
     try {
       const evidences = await this.getById(id);
       if (!evidences) return null;
 
-      const internalId = getUserId();
       await Evidence.destroy({ where: { Evidence_ID: id } });
 
       // 🔹 Registrar en Audit que un usuario interno eliminó una consulta inicial
@@ -119,15 +128,13 @@ export class EvidenceModel {
   }
 
   
-  static async uploadDocument(id, file, documentName) {
+  static async uploadDocument(id, file, internalId, documentName) {
     try {
         const evidence = await this.getById(id);
         if (!evidence) {
             console.error("No se encontró la evidencia con id:", id);
             return null;
         }
-
-        const internalId = getUserId();
 
         console.log("Archivo recibido:", file);
 
@@ -160,12 +167,11 @@ export class EvidenceModel {
     }
   }
 
-  static async deleteDocument(id) {
+  static async deleteDocument(id, internalId) {
     try {
         const evidence = await this.getById(id);
         if (!evidence) return null;
 
-        const internalId = getUserId();
         // Eliminar el documento de evidencia
         evidence.Evidence_File = null; // O la ruta que corresponda para eliminar el archivo
         evidence.Evidence_Name = null; // Limpiar el nombre del archivo
@@ -183,15 +189,4 @@ export class EvidenceModel {
         throw new Error(`Error deleting document: ${error.message}`);
     }
   }
-
-
-
-
-
-
-
-
-
-
-
 }
