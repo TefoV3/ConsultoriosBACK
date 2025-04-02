@@ -6,6 +6,9 @@ import {AuditModel} from "../models/AuditModel.js"
 import { UserModel } from "../models/UserModel.js";
 import { Evidence } from "../schemas/Evidences.js";
 import { getUserId } from '../sessionData.js';
+import { PDFDocument } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit'; // Importa fontkit correctamente
+import fs from 'fs';
 
 export class InitialConsultationsModel {
 
@@ -24,6 +27,23 @@ export class InitialConsultationsModel {
             });
         } catch (error) {
             throw new Error(`Error retrieving initial consultation: ${error.message}`);
+        }
+    }
+
+
+    static async findById(id) {
+        try {
+            return await InitialConsultations.findOne({
+                where: { Init_Code: id },
+                include: [
+                    {
+                        model: User,
+                        attributes: ["User_ID", "User_FirstName", "User_LastName", "User_Age", "User_Phone"]
+                    }
+                ]
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving consultation: ${error.message}`);
         }
     }
 
@@ -64,6 +84,21 @@ export class InitialConsultationsModel {
             throw new Error(`Error fetching consultations: ${error.message}`);
         }
     }
+
+    static async getByTypeAndStatus(initType, initStatus) {
+        try {
+            return await InitialConsultations.findAll({
+                where: {
+                    Init_Type: initType,
+                    Init_Status: initStatus
+                }
+                
+            });
+        } catch (error) {
+            throw new Error(`Error fetching consultations: ${error.message}`);
+        }
+    }
+
 
     static async createInitialConsultation(data,files) {
         const userId = getUserId();
@@ -362,4 +397,135 @@ export class InitialConsultationsModel {
             throw new Error(`Error deleting initial consultation: ${error.message}`);
         }
     }
+
+
+    
+    
+     
+    static async generateAttentionSheetBuffer(data) {
+        try {
+            // Traemos los datos del usuario de forma asíncrona
+            const userData = await User.findOne({
+                where: { User_ID: data.User_ID },
+                attributes: ["User_FirstName", "User_LastName", "User_Age", "User_Phone"]
+            });
+    
+            if (!userData) {
+                throw new Error("No se encontraron datos del usuario.");
+            }
+    
+            console.log("Datos del usuario:", userData);
+    
+            // Limpiar etiquetas HTML del campo Init_Notes
+            const cleanNotes = data.Init_Notes.replace(/<\/?[^>]+(>|$)/g, "");
+
+       
+            // Cargar la plantilla PDF
+            const templatePath = './src/docs/FICHA DE ATENCION.pdf'; // Asegúrate de que la ruta sea correcta
+            const templateBytes = fs.readFileSync(templatePath);
+    
+            // Crear un nuevo documento PDF basado en la plantilla
+            const pdfDoc = await PDFDocument.load(templateBytes);
+    
+           // Registrar fontkit antes de usarlo
+            pdfDoc.registerFontkit(fontkit);
+
+            // Cargar la fuente Aptos
+            const AptosBytes = fs.readFileSync('./src/docs/Aptos.ttf'); // Asegúrate de que la ruta sea correcta
+            const AptosFont = await pdfDoc.embedFont(AptosBytes);
+
+
+    
+            // Obtener la primera página del PDF
+            const pages = pdfDoc.getPages();
+            const firstPage = pages[0];
+            const fontSize = 11; // Tamaño de fuente para los textos
+
+    
+            // Rellenar los campos con los datos proporcionados
+            firstPage.drawText(`${data.User_ID}`, {
+                x: 113,
+                y: 655,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${userData.User_FirstName} ${userData.User_LastName}`, {
+                x: 123,
+                y: 632,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${data.Init_Date ? new Date(data.Init_Date).toLocaleDateString() : ""}`, {
+                x: 397,
+                y: 655,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${userData.User_Age}`, {
+                x: 391,
+                y: 632,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${userData.User_Phone}`, {
+                x: 120,
+                y: 608,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${data.Init_Subject}`, {
+                x: 116,
+                y: 584.5,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${data.Init_Service}`, {
+                x: 448,
+                y: 608,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(cleanNotes, {
+                x: 76,
+                y: 536,
+                size: 10,
+                font: AptosFont,
+                maxWidth: 500,
+                lineHeight: 14,
+                
+            });
+    
+            firstPage.drawText(`${userData.User_FirstName} ${userData.User_LastName}`, {
+                x: 92,
+                y: 194.5,
+                size: 10,
+                font: AptosFont,
+            });
+            firstPage.drawText(`${data.User_ID}`, {
+                x: 284,
+                y: 194.5,
+                size: 10,
+                font: AptosFont,
+            });
+    
+            // Generar el PDF modificado
+            const pdfBytes = await pdfDoc.save();
+    
+            // Retornar el buffer del PDF generado
+            return Buffer.from(pdfBytes);
+        } catch (error) {
+            console.error("Error generando el buffer del PDF:", error);
+            throw error;
+        }
+    }
+
+
+    
 }

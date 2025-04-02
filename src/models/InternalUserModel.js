@@ -3,7 +3,7 @@ import { ResetPassword } from '../schemas/Reset_Password.js';
 import { SECRET_JWT_KEY } from "../config.js";
 import { SALT_ROUNDS } from '../config.js';
 import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
-
+import { getUserId } from '../sessionData.js';
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -52,6 +52,22 @@ export class InternalUserModel {
             throw new Error(`Error al obtener abogados activos: ${error.message}`);
         }
     }
+
+    static async getAllLawyers() {
+        try {
+            return await InternalUser.findAll({
+                where: {
+                    Internal_Type: 'Abogado',
+                    Internal_Status: 'Activo'
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error al obtener abogados activos: ${error.message}`);
+        }
+    }
+
+
+
 
     static async getStudentsByArea(area) {
         try {
@@ -128,7 +144,7 @@ export class InternalUserModel {
         }
     }
 
-    static async delete(id, internalId) {
+    static async delete(id) {
         try {
             const internalId = getUserId();
             const internalUser = await this.getById(id);

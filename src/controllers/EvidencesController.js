@@ -150,7 +150,7 @@ export class EvidenceController {
       }
 
       const file = req.file;
-      const documentName = req.body.Evidence_Name || file.originalname;
+      const documentName = req.body.Evidence_Name;
 
       // Llamar al modelo para guardar el archivo
       const updatedEvidence = await EvidenceModel.uploadDocument(id, file, internalId, documentName);

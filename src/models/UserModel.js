@@ -129,52 +129,10 @@ export class UserModel {
         }
     }
 
-    // static async uploadDocument(id, file, internalId, documentName) {
-    //     try {
-    //       const user = await this.getById(id);
-    //       if (!user) {
-    //         console.error("No se encontró el usuario con id:", id);
-    //         return null;
-    //       }
-      
-    //       console.log("Archivo recibido:", file);
-      
-    //       // Asignar el buffer del archivo y el nombre personalizado
-    //       user.User_HealthDocuments = file.buffer;
-    //       user.User_HealthDocumentsName = documentName;
-
-    //       //Verificamos que el espacio del archivo no supere el límite de 5MB
-    //         const fileSizeInMB = file.buffer.length / (1024 * 1024); // Convertir a MB
-    //         if (fileSizeInMB > 5) {
-    //             console.error("El tamaño del archivo excede el límite de 5MB.");
-    //             return res.status(401).json({ message: 'El archivo supera el límite de los 5MB' });
-    //         }
-      
-    //       // Actualizar la base de datos con el nuevo archivo y nombre
-    //       await user.update({
-    //         User_HealthDocuments: file.buffer,
-    //         User_HealthDocumentsName: documentName,
-    //       });
-      
-    //       await AuditModel.registerAudit(
-    //         internalId,
-    //         "UPDATE",
-    //         "User",
-    //         `El usuario interno ${internalId} subió un documento de salud para el usuario ${id}`
-    //       );
-    //       console.log("Usuario actualizado con el nuevo documento y auditoría registrada.");
-      
-    //       return user;
-    //     } catch (error) {
-    //       console.error("Error en UserModel.uploadDocument:", error.message);
-    //       throw new Error(`Error uploading document: ${error.message}`);
-    //     }
-    //   }
-
-    static async uploadDocument(id, file, documentName) {
+    static async uploadDocument(id, file, internalId, documentName) {
         try {
+            const internalId = getUserId();
           const user = await this.getById(id);
-          const internalId = getUserId();
           if (!user) {
             console.error("No se encontró el usuario con id:", id);
             return null;
@@ -182,14 +140,18 @@ export class UserModel {
       
           console.log("Archivo recibido:", file);
       
-          // Verificar tamaño del archivo
-          const fileSizeInMB = file.buffer.length / (1024 * 1024);
-          if (fileSizeInMB > 5) {
-            console.error("El tamaño del archivo excede el límite de 5MB.");
-            throw new Error("El archivo supera el límite de los 5MB.");
-          }
+          // Asignar el buffer del archivo y el nombre personalizado
+          user.User_HealthDocuments = file.buffer;
+          user.User_HealthDocumentsName = documentName;
+
+          //Verificamos que el espacio del archivo no supere el límite de 5MB
+            const fileSizeInMB = file.buffer.length / (1024 * 1024); // Convertir a MB
+            if (fileSizeInMB > 2) {
+                console.error("El tamaño del archivo excede el límite de 2MB.");
+                return res.status(401).json({ message: 'El archivo supera el límite de los 2MB' });
+            }
       
-          // Actualizar la base de datos con el archivo
+          // Actualizar la base de datos con el nuevo archivo y nombre
           await user.update({
             User_HealthDocuments: file.buffer,
             User_HealthDocumentsName: documentName,
@@ -201,7 +163,6 @@ export class UserModel {
             "User",
             `El usuario interno ${internalId} subió un documento de salud para el usuario ${id}`
           );
-      
           console.log("Usuario actualizado con el nuevo documento y auditoría registrada.");
       
           return user;

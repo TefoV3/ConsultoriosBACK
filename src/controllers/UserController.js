@@ -169,7 +169,8 @@ export class UserController {
           }
       
           const file = req.file;
-          const documentName = req.body.User_HealthDocumentsName || file.originalname;
+          const documentName = req.body.User_HealthDocumentsName;
+          console.log("Nombre del documento:", documentName);
       
           // Llamar al modelo para guardar el archivo
           const updatedUser = await UserModel.uploadDocument(id, file, internalId, documentName);
