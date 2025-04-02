@@ -56,6 +56,15 @@ export class InternalUserController {
         }
     }
 
+    static async getAllLawyers (req, res) {
+        try {
+            const lawyers = await InternalUserModel.getAllLawyers();
+            res.json(lawyers);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
     static async getStudentsByArea(req, res) {
         const { area } = req.params;
         try {

@@ -48,6 +48,7 @@ import {DocumentationBackupRouter} from './routes/parameter_routes/documentation
 import {PeriodTypeRouter} from './routes/parameter_routes/period_type_routes.js'
 import {NumberOfAttemptsRouter} from './routes/parameter_routes/number_of_attempts_routes.js'
 import {PracticalHoursRouter} from './routes/parameter_routes/practical_hours_routes.js'
+import { ClientTypeRouter } from './routes/parameter_routes/client_type_routes.js'
 
 
 //Schedules routes
@@ -116,6 +117,7 @@ app.use(DocumentationBackupRouter)
 app.use(PeriodTypeRouter)
 app.use(NumberOfAttemptsRouter)
 app.use(PracticalHoursRouter)
+app.use(ClientTypeRouter)
 
 //Schedules routes
 app.use(AlertaRouter)
