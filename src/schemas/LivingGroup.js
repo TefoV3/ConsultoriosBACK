@@ -24,7 +24,10 @@ export const LivingGroup = sequelize.define('LivingGroup', {
         type: DataTypes.STRING(100), // The individual's occupation
         allowNull: true
     },
-    LG_Notes: DataTypes.TEXT,
+    LG_Notes: {
+        type: DataTypes.TEXT, // Additional notes or observations about the individual
+        allowNull: true
+    },
 
     SW_ProcessNumber: {
         type: DataTypes.INTEGER,
