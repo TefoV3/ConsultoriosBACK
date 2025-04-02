@@ -1,7 +1,7 @@
 import { AuditModel } from "../models/AuditModel.js";
 import { Activity } from "../schemas/Activity.js";
 import { sequelize } from "../database/database.js";
-import { getUserId } from './sessionData.js';
+import { getUserId } from '../sessionData.js';
 
 export class ActivityModel {
 
