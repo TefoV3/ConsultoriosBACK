@@ -58,7 +58,7 @@ export const User = sequelize.define('User', {
 
     User_SocialBenefit: DataTypes.BOOLEAN,
     User_EconomicDependence: DataTypes.BOOLEAN,
-    User_Academic_Instruction: DataTypes.STRING(50),
+    User_AcademicInstruction: DataTypes.STRING(50),
     User_Profession: DataTypes.STRING(50),
     User_MaritalStatus: DataTypes.STRING(20),
     User_Dependents: DataTypes.INTEGER,

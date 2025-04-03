@@ -136,7 +136,7 @@ export class InitialConsultationsModel {
                     
                     User_SocialBenefit: data.User_SocialBenefit,
                     User_EconomicDependence: data.User_EconomicDependence,
-                    User_Academic_Instruction: data.User_Academic_Instruction,
+                    User_AcademicInstruction: data.User_AcademicInstruction,
                     User_Profession: data.User_Profession,
                     User_MaritalStatus: data.User_MaritalStatus,
                     User_Dependents: data.User_Dependents,
