@@ -395,6 +395,12 @@ export class InitialConsultationsModel {
             });
 
             console.log(`✅ Se insertó un registro en SocialWork con SW_ProcessNumber: ${swProcessNumber}`);
+            await AuditModel.registerAudit(
+                internalId, 
+                "INSERT",
+                "SocialWork",
+                `El usuario interno ${internalId} creó el registro de trabajo social con ID ${swProcessNumber}`
+            );
         }
 
         return updatedConsultation;
