@@ -131,6 +131,7 @@ export class UserModel {
 
     static async uploadDocument(id, file, internalId, documentName) {
         try {
+            const internalId = getUserId();
           const user = await this.getById(id);
           if (!user) {
             console.error("No se encontró el usuario con id:", id);

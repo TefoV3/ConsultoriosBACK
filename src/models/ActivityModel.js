@@ -96,7 +96,6 @@ export class ActivityModel {
                 transaction: t
             });
 
-            const internalId = getUserId();
             
             if (!existingActivity) {
                 await t.rollback();

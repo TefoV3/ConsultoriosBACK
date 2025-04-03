@@ -43,15 +43,15 @@ import dotenv from "dotenv";
 //     )
 
 //TefoVirtual
-// export const sequelize = new Sequelize(
-//     'ConsultoriosJuridicosevi', 
-//     'Cliente', 
-//     '2444', 
-//     {
-//         host: '192.168.56.101', 
-//         dialect: 'mysql'
-//     }
-// );
+export const sequelize = new Sequelize(
+    'ConsultoriosJuridicosevi', 
+    'Cliente', 
+    '2444', 
+    {
+        host: '192.168.56.101', 
+        dialect: 'mysql'
+    }
+);
 
 
 // //Francis

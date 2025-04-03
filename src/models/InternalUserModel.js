@@ -3,7 +3,7 @@ import { ResetPassword } from '../schemas/Reset_Password.js';
 import { SECRET_JWT_KEY } from "../config.js";
 import { SALT_ROUNDS } from '../config.js';
 import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
-
+import { getUserId } from '../sessionData.js';
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -144,7 +144,7 @@ export class InternalUserModel {
         }
     }
 
-    static async delete(id, internalId) {
+    static async delete(id) {
         try {
             const internalId = getUserId();
             const internalUser = await this.getById(id);
