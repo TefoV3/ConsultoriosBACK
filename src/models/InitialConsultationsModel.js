@@ -426,26 +426,59 @@ export class InitialConsultationsModel {
         try {
             const consultation = await this.getById(id);
             if (!consultation) return null;
-
+    
             const internalId = getUserId();
-
+    
             const [rowsUpdated] = await InitialConsultations.update(data, {
                 where: { Init_Code: id }
             });
-
+    
             if (rowsUpdated === 0) return null;
-
+    
             const updatedConsultation = await this.getById(id);
-
-            // 🔹 Registrar en Audit que un usuario interno actualizó una consulta inicial
+    
+            // 🔹 Registrar en auditoría la actualización
             await AuditModel.registerAudit(
-                internalId, 
+                internalId,
                 "UPDATE",
                 "Initial_Consultations",
                 `El usuario interno ${internalId} actualizó la consulta inicial ${id}`
             );
+    
+            // 🔹 Verificar si se debe insertar en SocialWork
+        if (data.SW_Status === true && consultation.SW_Status !== true) {  
+            // 📌 Solo insertar si antes era `false` y ahora es `true`
+            
+            const currentDate = moment().format("YYYY-MM-DD"); // Obtener la fecha actual
+            const count = await SocialWork.count({ 
+                where: { createdAt: { [Op.startsWith]: currentDate } } 
+            }) + 1; // Contar registros de hoy y sumar 1
 
-            return updatedConsultation;
+            const swProcessNumber = `TS${currentDate.replace(/-/g, "")}-${String(count).padStart(5, "0")}`;
+
+            await SocialWork.create({
+                SW_ProcessNumber: swProcessNumber, // 📌 Ahora se genera con el formato correcto
+                SW_UserRequests: null,
+                SW_ReferralAreaRequests: null,
+                SW_ViolenceEpisodes: null,
+                SW_Complaints: null,
+                SW_DisabilityType: null,
+                SW_DisabilityPercentage: null,
+                SW_HasDisabilityCard: null,
+                SW_Status: true,
+                Init_Code: id
+            });
+
+            console.log(`✅ Se insertó un registro en SocialWork con SW_ProcessNumber: ${swProcessNumber}`);
+            await AuditModel.registerAudit(
+                internalId, 
+                "INSERT",
+                "SocialWork",
+                `El usuario interno ${internalId} creó el registro de trabajo social con ID ${swProcessNumber}`
+            );
+        }
+
+        return updatedConsultation;
         } catch (error) {
             throw new Error(`Error updating initial consultation: ${error.message}`);
         }
