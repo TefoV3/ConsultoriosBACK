@@ -59,8 +59,8 @@ export class UserController {
     
     static async createUser(req, res) {
         try {
-
-            const newUser = await UserModel.create(req.body);
+            //const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+            const newUser = await UserModel.create(req.body); 
 
             return res.status(201).json(newUser);
         } catch (error) {
@@ -71,15 +71,13 @@ export class UserController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const internalId = req.headers["internal-id"];
+            //const internalId = req.headers["internal-id"];
             const file = req.file; // Capturamos el archivo enviado en la solicitud
     
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
+            
     
             // Pasamos el archivo al modelo junto con los datos
-            const updatedUser = await UserModel.update(id, req.body, internalId, file);
+            const updatedUser = await UserModel.update(id, req.body, file);
     
             if (!updatedUser) {
                 return res.status(404).json({ message: "User not found" });
@@ -94,13 +92,11 @@ export class UserController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+            //const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
 
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
+            
 
-            const deletedUser = await UserModel.delete(id, internalId);
+            const deletedUser = await UserModel.delete(id);
 
             if (!deletedUser) return res.status(404).json({ message: "Usuario no encontrado" });
 
@@ -152,7 +148,7 @@ export class UserController {
     static async uploadDocument(req, res) {
         try {
           const { id } = req.params;
-          const internalId = req.headers["internal-id"]; // Usuario interno desde headers
+          //const internalId = req.headers["internal-id"]; // Usuario interno desde headers
       
           console.log("Contenido de req.file:", req.file);
           console.log("Contenido de req.body:", req.body);
@@ -163,17 +159,14 @@ export class UserController {
             return res.status(400).json({ error: "No se proporcionó ningún archivo." });
           }
       
-          if (!internalId) {
-            console.error("El internal-id no está presente en los headers.");
-            return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-          }
+          
       
           const file = req.file;
           const documentName = req.body.User_HealthDocumentsName;
           console.log("Nombre del documento:", documentName);
       
           // Llamar al modelo para guardar el archivo
-          const updatedUser = await UserModel.uploadDocument(id, file, internalId, documentName);
+          const updatedUser = await UserModel.uploadDocument(id, file, documentName);
       
           if (!updatedUser) {
             console.error("Usuario no encontrado con id:", id);
@@ -195,13 +188,10 @@ export class UserController {
     static async deleteDocument(req, res) {
         try {
             const { id } = req.params;
-            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+            //const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
 
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
 
-            const deletedDocument = await UserModel.deleteDocument(id, internalId);
+            const deletedDocument = await UserModel.deleteDocument(id);
 
             if (!deletedDocument) return res.status(404).json({ message: "Documento no encontrado" });
 

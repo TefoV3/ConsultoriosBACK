@@ -53,7 +53,6 @@ export class SocialWorkController {
                 return res.status(400).json({ error: "El campo 'Init_Code' es obligatorio." });
             }
 
-            // 🔹 Pasamos `req` para obtener el `Internal_ID` desde el token
             const newSocialWork = await SocialWorkModel.create(req.body, req);
 
             res.status(201).json({ message: "Registro de trabajo social creado con éxito", data: newSocialWork });
@@ -68,11 +67,7 @@ export class SocialWorkController {
             const { id } = req.params;
             const { Internal_ID, ...data } = req.body;
 
-            if (!Internal_ID) {
-                return res.status(400).json({ error: "Internal_ID is required for auditing" });
-            }
-
-            const updatedRecord = await SocialWorkModel.update(id, data, Internal_ID);
+            const updatedRecord = await SocialWorkModel.update(id, data);
 
             if (!updatedRecord) return res.status(404).json({ message: "Social work record not found" });
 
@@ -86,13 +81,9 @@ export class SocialWorkController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const { Internal_ID } = req.body;
+            //const { Internal_ID } = req.body;
 
-            if (!Internal_ID) {
-                return res.status(400).json({ error: "Internal_ID is required for auditing" });
-            }
-
-            const deletedRecord = await SocialWorkModel.delete(id, Internal_ID);
+            const deletedRecord = await SocialWorkModel.delete(id);
             if (!deletedRecord) return res.status(404).json({ message: "Social work record not found" });
 
             res.json({ message: "Social work record deleted (soft delete)", record: deletedRecord });

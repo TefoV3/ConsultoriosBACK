@@ -109,12 +109,12 @@ export class FirstConsultationsController {
 
     static async createNewConsultation(req, res) {
         try {
-            const internalId = req.headers["internal-id"];
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
+            // const internalId = req.headers["internal-id"];
+            // if (!internalId) {
+            //     return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            // }
 
-            const newConsultation = await InitialConsultationsModel.createNewConsultation(req.body, internalId);
+            const newConsultation = await InitialConsultationsModel.createNewConsultation(req.body);
 
             res.status(201).json({ message: "Consulta inicial creada", data: newConsultation });
         } catch (error) {
@@ -125,13 +125,9 @@ export class FirstConsultationsController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+            //const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
 
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-
-            const updatedConsultation = await InitialConsultationsModel.update(id, req.body, internalId);
+            const updatedConsultation = await InitialConsultationsModel.update(id, req.body);
 
             if (!updatedConsultation) return res.status(404).json({ message: "Consulta inicial no encontrada" });
 
@@ -144,13 +140,9 @@ export class FirstConsultationsController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+            //const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
 
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-
-            const deletedConsultation = await InitialConsultationsModel.delete(id, internalId);
+            const deletedConsultation = await InitialConsultationsModel.delete(id);
 
             if (!deletedConsultation) return res.status(404).json({ message: "Consulta inicial no encontrada" });
 

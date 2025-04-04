@@ -48,7 +48,7 @@ export class ActivityModel {
         const t = await sequelize.transaction();
         try {
             const internalId = getUserId();
-            console.log("📥 Creando actividad con Internal_ID:", userId);
+            console.log("📥 Creando actividad con Internal_ID:", internalId);
             
 
             const newActivity = await Activity.create({
