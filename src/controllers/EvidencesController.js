@@ -133,7 +133,6 @@ export class EvidenceController {
     static async uploadNewDocument(req, res) {
     try {
       const { id } = req.params;
-      const internalId = req.headers["internal-id"]; // Usuario interno desde headers
 
       console.log("Contenido de req.file:", req.file);
       console.log("Contenido de req.body:", req.body);
@@ -144,16 +143,11 @@ export class EvidenceController {
         return res.status(400).json({ error: "No se proporcionó ningún archivo." });
       }
 
-      if (!internalId) {
-        console.error("El internal-id no está presente en los headers.");
-        return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-      }
-
       const file = req.file;
       const documentName = req.body.Evidence_Name;
 
       // Llamar al modelo para guardar el archivo
-      const updatedEvidence = await EvidenceModel.uploadDocument(id, file, internalId, documentName);
+      const updatedEvidence = await EvidenceModel.uploadDocument(id, file, documentName);
 
       if (!updatedEvidence) {
         console.error("Evidencia no encontrada con id:", id);

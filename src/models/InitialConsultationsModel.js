@@ -10,6 +10,50 @@ import { PDFDocument } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit'; // Importa fontkit correctamente
 import fs from 'fs';
 
+function buildInitAlertNote({ 
+    prefix = "", 
+    User_AcademicInstruction, 
+    User_Profession, 
+    User_IncomeLevel, 
+    User_FamilyIncome,
+    prefix2 = "",
+    Init_Subject,
+    prefix3 = "",
+    User_City,
+}) {
+    const messages = [];
+    
+    // Validaciones socioeconómicas
+    const socioEconomicMessages = [];
+    if (["Superior", "Postgrado", "Doctorado"].includes(User_AcademicInstruction)) {
+        socioEconomicMessages.push(`<br>El usuario tiene una instrucción: ${User_AcademicInstruction}.`);
+    }
+    if (["Empleado Privado", "Patrono", "Socio"].includes(User_Profession)) {
+        socioEconomicMessages.push(`<br>El usuario tiene una profesión: ${User_Profession}.`);
+    }
+    if (["3 SBU", "4 SBU", "5 SBU", ">5 SBU"].includes(User_IncomeLevel)) {
+        socioEconomicMessages.push(`<br>El usuario tiene un nivel de ingresos: ${User_IncomeLevel}.`);
+    }
+    if (["3 SBU", "4 SBU", "5 SBU", ">5 SBU"].includes(User_FamilyIncome)) {
+        socioEconomicMessages.push(`<br>El usuario tiene un ingreso familiar: ${User_FamilyIncome}.`);
+    }
+    if (socioEconomicMessages.length > 0) {
+        messages.push(`<strong>${prefix}</strong>${socioEconomicMessages.join(" ")}`);
+    }
+    
+    // Validación de materia
+    if (["Tierras", "Administrativo", "Constitucional"].includes(Init_Subject)) {
+        messages.push(`<br><strong>${prefix2}</strong><br>El usuario busca atención en la materia de: ${Init_Subject}.`);
+    }
+    
+    // Validación de ciudad
+    if (!["Quito"].includes(User_City)) {
+        messages.push(`<br><strong>${prefix3}</strong><br>El usuario reside en: ${User_City}`);
+    }
+    
+    return messages.length > 0 ? messages.join("<br>") : null;
+}
+
 export class InitialConsultationsModel {
 
     static async getAll() {
@@ -176,6 +220,15 @@ export class InitialConsultationsModel {
                 throw new Error(`El usuario interno con ID ${userId} no existe.`);
             }
 
+
+
+
+
+
+
+
+
+            //CREACION DE CÓDIGO DE CONSULTA INICIAL
             // Obtener el último Init_Code ordenado descendentemente
             const lastRecord = await InitialConsultations.findOne({
                 order: [['Init_Code', 'DESC']],
@@ -212,6 +265,17 @@ export class InitialConsultationsModel {
                 Init_Status: data.Init_Status,
                 Init_SocialWork : data.Init_SocialWork,
                 Init_Type: data.Init_Type,
+                Init_AlertNote: buildInitAlertNote({
+                    prefix: "No cumple perfil socio económico, debido a:",
+                    User_AcademicInstruction: data.User_AcademicInstruction,
+                    User_Profession: data.User_Profession,
+                    User_IncomeLevel: data.User_IncomeLevel,
+                    User_FamilyIncome: data.User_FamilyIncome,
+                    prefix2: "Solicita materia no atendida por el CJG:",
+                    Init_Subject: data.Init_Subject,
+                    prefix3: "Recide fuera del DMQ (Distrito Metropolitano de Quito)",
+                    User_City: data.User_City,
+                }),
 
             }, { transaction: t });
 
@@ -307,7 +371,7 @@ export class InitialConsultationsModel {
                 lastNumber = parseInt(numberPart, 10);
             }
 
-            const newNumber = lastNumber + 1;
+            const newNumber = lastNumber + 1
             const newCode = `AT-${String(newNumber).padStart(6, '0')}`;
 
             const newConsultation = await InitialConsultations.create({
@@ -328,6 +392,17 @@ export class InitialConsultationsModel {
                 Init_Status: data.Init_Status,
                 Init_SocialWork : data.Init_SocialWork,
                 Init_Type: data.Init_Type,
+                Init_AlertNote: buildInitAlertNote({
+                prefix: "No cumple perfil socio económico, debido a:",
+                User_AcademicInstruction: user.User_AcademicInstruction,
+                User_Profession: user.User_Profession,
+                User_IncomeLevel: user.User_IncomeLevel,
+                User_FamilyIncome: user.User_FamilyIncome,
+                prefix2: "Solicita materia no atendida por el CJG:",
+                Init_Subject: data.Init_Subject,
+                prefix3: "Recide fuera del DMQ (Distrito Metropolitano de Quito)",
+                User_City: user.User_City,
+                }),
 
             });
             

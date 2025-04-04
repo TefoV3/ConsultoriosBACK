@@ -46,6 +46,10 @@ export const InitialConsultations = sequelize.define('Initial_Consultations', {
         type: DataTypes.BLOB('long'),
         allowNull: true,
     },
+    Init_AlertNote: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
     User_ID: {  
         type: DataTypes.CHAR(10),
         allowNull: false
