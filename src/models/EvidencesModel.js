@@ -48,7 +48,7 @@ export class EvidenceModel {
     }
   }
 
-  static async create(data, file) {
+  static async create(data, file, internalUser) {
     const t = await sequelize.transaction();
     try {
       const newEvidence = await Evidence.create(
@@ -66,7 +66,7 @@ export class EvidenceModel {
   
       await t.commit();
 
-      const internalId = getUserId();
+      const internalId = internalUser || getUserId();
       await AuditModel.registerAudit(
         internalId, 
         "INSERT",
@@ -89,12 +89,12 @@ export class EvidenceModel {
     }
   }
 
-  static async update(id, data, internalId) {
+  static async update(id, data, internalUser) {
     try {
       const record = await this.getById(id);
       if (!record) return null;
 
-      const internalId = getUserId();
+      const internalId = internalUser || getUserId();
       const [rowsUpdated] = await SocialWork.update(data, {
         where: { SW_ProcessNumber: id },
       });
@@ -115,11 +115,11 @@ export class EvidenceModel {
     }
   }
 
-  static async delete(id, internalId) {
+  static async delete(id, internalUser) {
     try {
       const evidences = await this.getById(id);
       if (!evidences) return null;
-      const internalId = getUserId();
+      const internalId = internalUser || getUserId();
       await Evidence.destroy({ where: { Evidence_ID: id } });
 
       // 🔹 Registrar en Audit que un usuario interno eliminó una consulta inicial
@@ -137,7 +137,7 @@ export class EvidenceModel {
   }
 
   
-  static async uploadDocument(id, file, documentName) {
+  static async uploadDocument(id, file, documentName, internalUser) {
     try {
         const evidence = await this.getById(id);
         if (!evidence) {
@@ -159,7 +159,7 @@ export class EvidenceModel {
             Evidence_File: file.buffer,
             Evidence_Name: documentName,
         });
-        const internalId = getUserId();
+        const internalId = internalUser || getUserId();
         await AuditModel.registerAudit(
             internalId,
             "UPDATE",
@@ -176,11 +176,11 @@ export class EvidenceModel {
     }
   }
 
-  static async deleteDocument(id, internalId) {
+  static async deleteDocument(id, internalUser) {
     try {
         const evidence = await this.getById(id);
         if (!evidence) return null;
-        const internalId = getUserId();
+        const internalId = internalUser || getUserId();
 
         // Eliminar el documento de evidencia
         evidence.Evidence_File = null; // O la ruta que corresponda para eliminar el archivo

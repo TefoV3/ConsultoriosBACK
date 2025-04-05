@@ -56,7 +56,7 @@ export class EvidenceController {
     try {
       console.log("req.body:", req.body);
       console.log("req.file:", req.file);
-
+      const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
       // Si no se recibió archivo, se asigna un objeto vacío
       const file = req.file || { mimetype: null, path: null, buffer: null };
 
@@ -66,9 +66,10 @@ export class EvidenceController {
         {
           Internal_ID,
           Init_Code,
-          Evidence_Name: Evidence_Name || "Sin Documento", // Si se envió vacío, se asigna un nombre predeterminado
+          Evidence_Name: Evidence_Name || "Sin Documento", 
         },
-        file
+        file,
+        internalId// Si se envió vacío, se asigna un nombre predeterminado
       );
 
       res.status(201).json({
@@ -104,7 +105,8 @@ export class EvidenceController {
   static async update(req, res) {
     try {
       const { id } = req.params;
-      const updatedEvidence = await EvidenceModel.update(id, req.body);
+      const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+      const updatedEvidence = await EvidenceModel.update(id, req.body, internalId);
       if (!updatedEvidence)
         return res.status(404).json({ message: "Evidence not found" });
 
@@ -117,7 +119,8 @@ export class EvidenceController {
   static async delete(req, res) {
     try {
       const { id } = req.params;
-      const deletedEvidence = await EvidenceModel.delete(id);
+      const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+      const deletedEvidence = await EvidenceModel.delete(id, internalId);
       if (!deletedEvidence)
         return res.status(404).json({ message: "Evidence not found" });
 
@@ -133,7 +136,7 @@ export class EvidenceController {
     static async uploadNewDocument(req, res) {
     try {
       const { id } = req.params;
-
+      const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
       console.log("Contenido de req.file:", req.file);
       console.log("Contenido de req.body:", req.body);
 
@@ -147,7 +150,7 @@ export class EvidenceController {
       const documentName = req.body.Evidence_Name;
 
       // Llamar al modelo para guardar el archivo
-      const updatedEvidence = await EvidenceModel.uploadDocument(id, file, documentName);
+      const updatedEvidence = await EvidenceModel.uploadDocument(id, file, documentName, internalId);
 
       if (!updatedEvidence) {
         console.error("Evidencia no encontrada con id:", id);
@@ -175,14 +178,6 @@ export class EvidenceController {
     try {
       const { id } = req.params;
       const internalId = req.headers["internal-id"]; // ✅ Se obtiene el usuario interno desde los headers
-
-      if (!internalId) {
-        return res
-          .status(400)
-          .json({
-            error: "El Internal_ID es obligatorio para registrar la acción",
-          });
-      }
 
       const deletedDocument = await EvidenceModel.deleteDocument(
         id,
