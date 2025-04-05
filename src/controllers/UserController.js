@@ -59,7 +59,7 @@ export class UserController {
     
     static async createUser(req, res) {
         try {
-
+            const internalId = req.headers["internal-id"]; // ✅ Se obtiene el usuario interno desde los headers
             const newUser = await UserModel.create(req.body);
 
             return res.status(201).json(newUser);
