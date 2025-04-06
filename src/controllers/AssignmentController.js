@@ -49,13 +49,9 @@ export class AssignmentController {
     
     static async createAssignment(req, res) {
         try {
-            const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
+           // const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
 
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-
-            const newAssignment = await AssignmentModel.create(req.body, internalId);
+            const newAssignment = await AssignmentModel.create(req.body);
             return res.status(201).json(newAssignment);
         } catch (error) {
             return res.status(500).json({ error: error.message });
@@ -75,13 +71,9 @@ export class AssignmentController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
+            //const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
 
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-
-            const updatedAssignment = await AssignmentModel.update(id, req.body, internalId);
+            const updatedAssignment = await AssignmentModel.update(id, req.body);
             if (!updatedAssignment) return res.status(404).json({ message: "Assignment not found" });
 
             return res.json(updatedAssignment);
@@ -93,13 +85,9 @@ export class AssignmentController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
+            //const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
 
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-
-            const deletedAssignment = await AssignmentModel.delete(id, internalId);
+            const deletedAssignment = await AssignmentModel.delete(id);
             if (!deletedAssignment) return res.status(404).json({ message: "Assignment not found" });
 
             return res.json({ message: "Assignment deleted", assignment: deletedAssignment });

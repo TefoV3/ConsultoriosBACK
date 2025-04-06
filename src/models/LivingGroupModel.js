@@ -26,14 +26,14 @@ export class LivingGroupModel {
 
     static async create(data) {
         try {
-            const userId = getUserId();
+            const internalId = getUserId();
 
             const newRecord = await LivingGroup.create(data);
             await AuditModel.registerAudit(
-                userId,
+                internalId,
                 "INSERT",
                 "LivingGroup",
-                `El usuario interno ${userId} creó el registro de grupo de convivencia con ID ${newRecord.LG_LivingGroup_ID}`
+                `El usuario interno ${internalId} creó el registro de grupo de convivencia con ID ${newRecord.LG_LivingGroup_ID}`
             );
             return newRecord;
         } catch (error) {
@@ -41,10 +41,12 @@ export class LivingGroupModel {
         }
     }
 
-    static async update(id, data, internalId) {
+    static async update(id, data) {
         try {
             const livingGroupRecord = await this.getById(id);
             if (!livingGroupRecord) return null;
+
+            const internalId = getUserId();
 
             const [rowsUpdated] = await LivingGroup.update(data, {
                 where: { LG_LivingGroup_ID: id, Status: true }
@@ -70,6 +72,8 @@ export class LivingGroupModel {
         try {
             const record = await this.getById(id);
                         if (!record) return null;
+                        
+                        const internalId = getUserId();
             
                         await SocialWork.update({ LG_Status: false }, { where: { LG_LivingGroup_ID: id } });
             

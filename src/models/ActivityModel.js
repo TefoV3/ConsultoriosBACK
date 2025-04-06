@@ -1,7 +1,7 @@
 import { AuditModel } from "../models/AuditModel.js";
 import { Activity } from "../schemas/Activity.js";
 import { sequelize } from "../database/database.js";
-import { getUserId } from './sessionData.js';
+import { getUserId } from '../sessionData.js'; // Adjust the import path as necessary
 
 export class ActivityModel {
 
@@ -47,8 +47,8 @@ export class ActivityModel {
     static async create(data, file) {
         const t = await sequelize.transaction();
         try {
-            const userId = getUserId();
-            console.log("📥 Creando actividad con Internal_ID:", userId);
+            const internalId = getUserId();
+            console.log("📥 Creando actividad con Internal_ID:", internalId);
             
 
             const newActivity = await Activity.create({
@@ -72,10 +72,10 @@ export class ActivityModel {
             console.log("✅ Actividad creada con ID:", newActivity.Activity_ID);
     
             await AuditModel.registerAudit(
-                userId,
+                internalId,
                 "INSERT",
                 "Activity",
-                `El usuario interno ${userId} creó la actividad con ID ${newActivity.Activity_ID}`,
+                `El usuario interno ${internalId} creó la actividad con ID ${newActivity.Activity_ID}`,
                 { transaction: t }
             );
     
@@ -96,6 +96,7 @@ export class ActivityModel {
                 transaction: t
             });
 
+            
             if (!existingActivity) {
                 await t.rollback();
                 return null; // Activity not found

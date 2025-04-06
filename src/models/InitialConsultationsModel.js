@@ -6,6 +6,53 @@ import {AuditModel} from "../models/AuditModel.js"
 import { UserModel } from "../models/UserModel.js";
 import { Evidence } from "../schemas/Evidences.js";
 import { getUserId } from '../sessionData.js';
+import { PDFDocument } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit'; // Importa fontkit correctamente
+import fs from 'fs';
+
+function buildInitAlertNote({ 
+    prefix = "", 
+    User_AcademicInstruction, 
+    User_Profession, 
+    User_IncomeLevel, 
+    User_FamilyIncome,
+    prefix2 = "",
+    Init_Subject,
+    prefix3 = "",
+    User_City,
+}) {
+    const messages = [];
+    
+    // Validaciones socioeconómicas
+    const socioEconomicMessages = [];
+    if (["Superior", "Postgrado", "Doctorado"].includes(User_AcademicInstruction)) {
+        socioEconomicMessages.push(`<br>El usuario tiene una instrucción: ${User_AcademicInstruction}.`);
+    }
+    if (["Empleado Privado", "Patrono", "Socio"].includes(User_Profession)) {
+        socioEconomicMessages.push(`<br>El usuario tiene una profesión: ${User_Profession}.`);
+    }
+    if (["3 SBU", "4 SBU", "5 SBU", ">5 SBU"].includes(User_IncomeLevel)) {
+        socioEconomicMessages.push(`<br>El usuario tiene un nivel de ingresos: ${User_IncomeLevel}.`);
+    }
+    if (["3 SBU", "4 SBU", "5 SBU", ">5 SBU"].includes(User_FamilyIncome)) {
+        socioEconomicMessages.push(`<br>El usuario tiene un ingreso familiar: ${User_FamilyIncome}.`);
+    }
+    if (socioEconomicMessages.length > 0) {
+        messages.push(`<strong>${prefix}</strong>${socioEconomicMessages.join(" ")}`);
+    }
+    
+    // Validación de materia
+    if (["Tierras", "Administrativo", "Constitucional"].includes(Init_Subject)) {
+        messages.push(`<br><strong>${prefix2}</strong><br>El usuario busca atención en la materia de: ${Init_Subject}.`);
+    }
+    
+    // Validación de ciudad
+    if (!["Quito"].includes(User_City)) {
+        messages.push(`<br><strong>${prefix3}</strong><br>El usuario reside en: ${User_City}`);
+    }
+    
+    return messages.length > 0 ? messages.join("<br>") : null;
+}
 
 export class InitialConsultationsModel {
 
@@ -24,6 +71,23 @@ export class InitialConsultationsModel {
             });
         } catch (error) {
             throw new Error(`Error retrieving initial consultation: ${error.message}`);
+        }
+    }
+
+
+    static async findById(id) {
+        try {
+            return await InitialConsultations.findOne({
+                where: { Init_Code: id },
+                include: [
+                    {
+                        model: User,
+                        attributes: ["User_ID", "User_FirstName", "User_LastName", "User_Age", "User_Phone"]
+                    }
+                ]
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving consultation: ${error.message}`);
         }
     }
 
@@ -65,6 +129,21 @@ export class InitialConsultationsModel {
         }
     }
 
+    static async getByTypeAndStatus(initType, initStatus) {
+        try {
+            return await InitialConsultations.findAll({
+                where: {
+                    Init_Type: initType,
+                    Init_Status: initStatus
+                }
+                
+            });
+        } catch (error) {
+            throw new Error(`Error fetching consultations: ${error.message}`);
+        }
+    }
+
+
     static async createInitialConsultation(data,files) {
         const userId = getUserId();
 
@@ -101,7 +180,7 @@ export class InitialConsultationsModel {
                     
                     User_SocialBenefit: data.User_SocialBenefit,
                     User_EconomicDependence: data.User_EconomicDependence,
-                    User_Academic_Instruction: data.User_Academic_Instruction,
+                    User_AcademicInstruction: data.User_AcademicInstruction,
                     User_Profession: data.User_Profession,
                     User_MaritalStatus: data.User_MaritalStatus,
                     User_Dependents: data.User_Dependents,
@@ -141,6 +220,15 @@ export class InitialConsultationsModel {
                 throw new Error(`El usuario interno con ID ${userId} no existe.`);
             }
 
+
+
+
+
+
+
+
+
+            //CREACION DE CÓDIGO DE CONSULTA INICIAL
             // Obtener el último Init_Code ordenado descendentemente
             const lastRecord = await InitialConsultations.findOne({
                 order: [['Init_Code', 'DESC']],
@@ -177,6 +265,17 @@ export class InitialConsultationsModel {
                 Init_Status: data.Init_Status,
                 Init_SocialWork : data.Init_SocialWork,
                 Init_Type: data.Init_Type,
+                Init_AlertNote: buildInitAlertNote({
+                    prefix: "No cumple perfil socio económico, debido a:",
+                    User_AcademicInstruction: data.User_AcademicInstruction,
+                    User_Profession: data.User_Profession,
+                    User_IncomeLevel: data.User_IncomeLevel,
+                    User_FamilyIncome: data.User_FamilyIncome,
+                    prefix2: "Solicita materia no atendida por el CJG:",
+                    Init_Subject: data.Init_Subject,
+                    prefix3: "Recide fuera del DMQ (Distrito Metropolitano de Quito)",
+                    User_City: data.User_City,
+                }),
 
             }, { transaction: t });
 
@@ -199,7 +298,7 @@ export class InitialConsultationsModel {
             const newEvidence = await Evidence.create({
                 Internal_ID: userId,
                 Init_Code: newConsultation.Init_Code,
-                Evidence_Name: data.Evidence_Name || null,
+                Evidence_Name: evidenceFile ? evidenceFile.originalname : "Sin Documento",
                 Evidence_Document_Type: evidenceFile ? evidenceFile.mimetype : null,
                 Evidence_URL: null,
                 Evidence_Date: new Date(),
@@ -244,7 +343,8 @@ export class InitialConsultationsModel {
     }
 
 
-    static async createNewConsultation(data, internalId) {
+    static async createNewConsultation(data) {
+        const internalId = getUserId();
         const t = await sequelize.transaction();
         try {
             let user = await User.findOne({ where: { User_ID: data.User_ID }, transaction: t });
@@ -271,7 +371,7 @@ export class InitialConsultationsModel {
                 lastNumber = parseInt(numberPart, 10);
             }
 
-            const newNumber = lastNumber + 1;
+            const newNumber = lastNumber + 1
             const newCode = `AT-${String(newNumber).padStart(6, '0')}`;
 
             const newConsultation = await InitialConsultations.create({
@@ -292,8 +392,20 @@ export class InitialConsultationsModel {
                 Init_Status: data.Init_Status,
                 Init_SocialWork : data.Init_SocialWork,
                 Init_Type: data.Init_Type,
+                Init_AlertNote: buildInitAlertNote({
+                prefix: "No cumple perfil socio económico, debido a:",
+                User_AcademicInstruction: user.User_AcademicInstruction,
+                User_Profession: user.User_Profession,
+                User_IncomeLevel: user.User_IncomeLevel,
+                User_FamilyIncome: user.User_FamilyIncome,
+                prefix2: "Solicita materia no atendida por el CJG:",
+                Init_Subject: data.Init_Subject,
+                prefix3: "Recide fuera del DMQ (Distrito Metropolitano de Quito)",
+                User_City: user.User_City,
+                }),
 
             });
+            
 
             // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
             await AuditModel.registerAudit(
@@ -310,38 +422,74 @@ export class InitialConsultationsModel {
     }
     
 
-    static async update(id, data, internalId) {
+    static async update(id, data) {
         try {
             const consultation = await this.getById(id);
             if (!consultation) return null;
-
+    
+            const internalId = getUserId();
+    
             const [rowsUpdated] = await InitialConsultations.update(data, {
                 where: { Init_Code: id }
             });
-
+    
             if (rowsUpdated === 0) return null;
-
+    
             const updatedConsultation = await this.getById(id);
-
-            // 🔹 Registrar en Audit que un usuario interno actualizó una consulta inicial
+    
+            // 🔹 Registrar en auditoría la actualización
             await AuditModel.registerAudit(
-                internalId, 
+                internalId,
                 "UPDATE",
                 "Initial_Consultations",
                 `El usuario interno ${internalId} actualizó la consulta inicial ${id}`
             );
+    
+            // 🔹 Verificar si se debe insertar en SocialWork
+        if (data.SW_Status === true && consultation.SW_Status !== true) {  
+            // 📌 Solo insertar si antes era `false` y ahora es `true`
+            
+            const currentDate = moment().format("YYYY-MM-DD"); // Obtener la fecha actual
+            const count = await SocialWork.count({ 
+                where: { createdAt: { [Op.startsWith]: currentDate } } 
+            }) + 1; // Contar registros de hoy y sumar 1
 
-            return updatedConsultation;
+            const swProcessNumber = `TS${currentDate.replace(/-/g, "")}-${String(count).padStart(5, "0")}`;
+
+            await SocialWork.create({
+                SW_ProcessNumber: swProcessNumber, // 📌 Ahora se genera con el formato correcto
+                SW_UserRequests: null,
+                SW_ReferralAreaRequests: null,
+                SW_ViolenceEpisodes: null,
+                SW_Complaints: null,
+                SW_DisabilityType: null,
+                SW_DisabilityPercentage: null,
+                SW_HasDisabilityCard: null,
+                SW_Status: true,
+                Init_Code: id
+            });
+
+            console.log(`✅ Se insertó un registro en SocialWork con SW_ProcessNumber: ${swProcessNumber}`);
+            await AuditModel.registerAudit(
+                internalId, 
+                "INSERT",
+                "SocialWork",
+                `El usuario interno ${internalId} creó el registro de trabajo social con ID ${swProcessNumber}`
+            );
+        }
+
+        return updatedConsultation;
         } catch (error) {
             throw new Error(`Error updating initial consultation: ${error.message}`);
         }
     }
 
-    static async delete(id, internalId) {
+    static async delete(id) {
         try {
             const consultation = await this.getById(id);
             if (!consultation) return null;
 
+            const internalId = getUserId();
             await InitialConsultations.destroy({ where: { Init_Code: id } });
 
             // 🔹 Registrar en Audit que un usuario interno eliminó una consulta inicial
@@ -357,4 +505,135 @@ export class InitialConsultationsModel {
             throw new Error(`Error deleting initial consultation: ${error.message}`);
         }
     }
+
+
+    
+    
+     
+    static async generateAttentionSheetBuffer(data) {
+        try {
+            // Traemos los datos del usuario de forma asíncrona
+            const userData = await User.findOne({
+                where: { User_ID: data.User_ID },
+                attributes: ["User_FirstName", "User_LastName", "User_Age", "User_Phone"]
+            });
+    
+            if (!userData) {
+                throw new Error("No se encontraron datos del usuario.");
+            }
+    
+            console.log("Datos del usuario:", userData);
+    
+            // Limpiar etiquetas HTML del campo Init_Notes
+            const cleanNotes = data.Init_Notes.replace(/<\/?[^>]+(>|$)/g, "");
+
+       
+            // Cargar la plantilla PDF
+            const templatePath = './src/docs/FICHA DE ATENCION.pdf'; // Asegúrate de que la ruta sea correcta
+            const templateBytes = fs.readFileSync(templatePath);
+    
+            // Crear un nuevo documento PDF basado en la plantilla
+            const pdfDoc = await PDFDocument.load(templateBytes);
+    
+           // Registrar fontkit antes de usarlo
+            pdfDoc.registerFontkit(fontkit);
+
+            // Cargar la fuente Aptos
+            const AptosBytes = fs.readFileSync('./src/docs/Aptos.ttf'); // Asegúrate de que la ruta sea correcta
+            const AptosFont = await pdfDoc.embedFont(AptosBytes);
+
+
+    
+            // Obtener la primera página del PDF
+            const pages = pdfDoc.getPages();
+            const firstPage = pages[0];
+            const fontSize = 11; // Tamaño de fuente para los textos
+
+    
+            // Rellenar los campos con los datos proporcionados
+            firstPage.drawText(`${data.User_ID}`, {
+                x: 113,
+                y: 655,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${userData.User_FirstName} ${userData.User_LastName}`, {
+                x: 123,
+                y: 632,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${data.Init_Date ? new Date(data.Init_Date).toLocaleDateString() : ""}`, {
+                x: 397,
+                y: 655,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${userData.User_Age}`, {
+                x: 391,
+                y: 632,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${userData.User_Phone}`, {
+                x: 120,
+                y: 608,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${data.Init_Subject}`, {
+                x: 116,
+                y: 584.5,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(`${data.Init_Service}`, {
+                x: 448,
+                y: 608,
+                size: fontSize,
+                font: AptosFont,
+            });
+    
+            firstPage.drawText(cleanNotes, {
+                x: 76,
+                y: 536,
+                size: 10,
+                font: AptosFont,
+                maxWidth: 500,
+                lineHeight: 14,
+                
+            });
+    
+            firstPage.drawText(`${userData.User_FirstName} ${userData.User_LastName}`, {
+                x: 92,
+                y: 194.5,
+                size: 10,
+                font: AptosFont,
+            });
+            firstPage.drawText(`${data.User_ID}`, {
+                x: 284,
+                y: 194.5,
+                size: 10,
+                font: AptosFont,
+            });
+    
+            // Generar el PDF modificado
+            const pdfBytes = await pdfDoc.save();
+    
+            // Retornar el buffer del PDF generado
+            return Buffer.from(pdfBytes);
+        } catch (error) {
+            console.error("Error generando el buffer del PDF:", error);
+            throw error;
+        }
+    }
+
+
+    
 }

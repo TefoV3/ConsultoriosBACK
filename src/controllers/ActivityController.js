@@ -1,6 +1,7 @@
 import { ActivityModel } from "../models/ActivityModel.js";
 import { AuditModel } from "../models/AuditModel.js";
 import { InternalUserModel } from "../models/InternalUserModel.js";
+import { getUserId } from '../sessionData.js';
 
 export class ActivityController {
     static async getActivities(req, res) {
@@ -59,15 +60,10 @@ export class ActivityController {
             console.log("📥 Recibiendo solicitud para crear actividad...");
             const { Init_Code } = req.body;
     
-            const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+            //const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
     
             console.log("🔍 Internal_ID obtenido:", internalId);
-    
-            if (!internalId) {
-                console.error("❌ Internal_ID no proporcionado.");
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-    
+            const internalId = getUserId(); // Obtener el Internal_ID desde la sesión
             // Verificar que el Internal_ID exista en la tabla internal_users
             const internalUser = await InternalUserModel.getById(internalId);
             if (!internalUser) {
@@ -76,12 +72,12 @@ export class ActivityController {
             }
     
             // Llamar al modelo y pasar `file` y `internalId`
-            const newActivity = await ActivityModel.create({ ...req.body, Internal_ID: internalId }, req.file); // Pass req.file
+            const newActivity = await ActivityModel.create({ ...req.body }, req.file); // Pass req.file
     
             console.log("📝 Registrando auditoría...");
     
             // Registrar en Audit
-            await AuditModel.registerAudit(internalId, "INSERT", "Activity", `El usuario interno ${internalId} creó la actividad con ID ${newActivity.Activity_Id}`);
+            //await AuditModel.registerAudit(internalId, "INSERT", "Activity", `El usuario interno ${internalId} creó la actividad con ID ${newActivity.Activity_Id}`);
     
             console.log("✅ Actividad creada con éxito.");
     
@@ -95,12 +91,9 @@ export class ActivityController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const internalId = req.headers["internal-id"];
+            //const internalId = req.headers["internal-id"];
 
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-
+            const internalId = getUserId(); // Obtener el Internal_ID desde la sesión
             // Check if the internal user exists
             const internalUser = await InternalUserModel.getById(internalId);
             if (!internalUser) {
@@ -108,7 +101,7 @@ export class ActivityController {
             }
 
             // Prepare the data for the update
-            const activityData = { ...req.body, Internal_ID: internalId }; // Include Internal_ID in the data
+            const activityData = { ...req.body }; 
 
             // Check if a file was uploaded
             const file = req.file;
@@ -123,25 +116,6 @@ export class ActivityController {
             return res.json({ message: "Activity updated successfully", data: updatedActivity });
         } catch (error) {
             console.error("Error updating activity:", error);
-            return res.status(500).json({ error: error.message });
-        }
-    }
-
-    static async delete(req, res) {
-        try {
-            const { id } = req.params;
-
-            const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
-
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-
-            const deletedActivity = await ActivityModel.delete(id, internalId);
-            if (!deletedActivity) return res.status(404).json({ message: "Activity not found" });
-
-            return res.json({ message: "Activity deleted", activity: deletedActivity });
-        } catch (error) {
             return res.status(500).json({ error: error.message });
         }
     }

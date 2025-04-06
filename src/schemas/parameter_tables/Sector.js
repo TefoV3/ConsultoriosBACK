@@ -21,7 +21,7 @@ export const Sector = sequelize.define('Sector', {
         allowNull: false,
         references: {
             model: Zone,
-            key: 'Zone_Sector_ID'
+            key: 'Zone_ID'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
