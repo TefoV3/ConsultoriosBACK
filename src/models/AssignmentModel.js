@@ -33,10 +33,10 @@ export class AssignmentModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalUser) {
         try {
             const newAssignment = await Assignment.create(data);
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
 
             // 🔹 Registrar en Audit que un usuario interno creó una asignación
             await AuditModel.registerAudit(
@@ -126,13 +126,13 @@ export class AssignmentModel {
             throw new Error(`Error al asignar casos: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalUser) {
         try {
             const assignment = await this.getById(id);
             
             if (!assignment) return null;
 
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
 
             const [rowsUpdated] = await Assignment.update(data, {
                 where: { Assignment_Id: id }
@@ -155,12 +155,12 @@ export class AssignmentModel {
             throw new Error(`Error updating assignment: ${error.message}`);
         }
     }
-    static async delete(id) {
+    static async delete(id, internalUser) {
         try {
             const assignment = await this.getById(id);
             if (!assignment) return null;
 
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
             
             await Assignment.destroy({ where: { Assignment_Id: id } });
 

@@ -39,17 +39,12 @@ export class ActivityRecordController {
             console.log("📥 Received request to create activity record...");
             const internalId = req.headers["internal-id"];
 
-            if (!internalId) {
-                console.error("❌ Internal_ID not provided.");
-                return res.status(400).json({ error: "Internal_ID is required" });
-            }
-
             // Verify internal user exists
-            const internalUser = await InternalUserModel.getById(internalId);
-            if (!internalUser) {
-                console.error(`❌ Internal_ID ${internalId} not found`);
-                return res.status(400).json({ error: `Internal_ID ${internalId} not found` });
-            }
+            // const internalUser = await InternalUserModel.getById(internalId);
+            // if (!internalUser) {
+            //     console.error(`❌ Internal_ID ${internalId} not found`);
+            //     return res.status(400).json({ error: `Internal_ID ${internalId} not found` });
+            // }
 
             // Validate required fields
             if (!req.body.Activity_ID || !req.body.Activity_Record_Type || 
@@ -75,10 +70,6 @@ export class ActivityRecordController {
             const { id } = req.params;
             const internalId = req.headers["internal-id"];
 
-            if (!internalId) {
-                return res.status(400).json({ error: "Internal_ID is required" });
-            }
-
             const updatedRecord = await ActivityRecordModel.update(id, req.body, internalId);
             if (!updatedRecord) return res.status(404).json({ message: "Activity record not found" });
 
@@ -92,10 +83,6 @@ export class ActivityRecordController {
         try {
             const { id } = req.params;
             const internalId = req.headers["internal-id"];
-
-            if (!internalId) {
-                return res.status(400).json({ error: "Internal_ID is required" });
-            }
 
             const deletedRecord = await ActivityRecordModel.delete(id, internalId);
             if (!deletedRecord) return res.status(404).json({ message: "Activity record not found" });

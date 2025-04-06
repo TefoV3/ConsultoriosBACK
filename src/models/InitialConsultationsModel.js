@@ -58,11 +58,18 @@ export class InitialConsultationsModel {
 
     static async getAll() {
         try {
-            return await InitialConsultations.findAll();
+            return await InitialConsultations.findAll(
+                {
+                    attributes: {
+                        exclude: ['Init_AttentionSheet']
+                    },
+                }
+            );
         } catch (error) {
             throw new Error(`Error retrieving initial consultations: ${error.message}`);
         }
     }
+
 
     static async getById(id) {
         try {
@@ -144,8 +151,8 @@ export class InitialConsultationsModel {
     }
 
 
-    static async createInitialConsultation(data,files) {
-        const userId = getUserId();
+    static async createInitialConsultation(data,files, internalUser) {
+        const userId = internalUser || getUserId();
 
         const t = await sequelize.transaction();
         let userCreated = false;
@@ -220,14 +227,6 @@ export class InitialConsultationsModel {
                 throw new Error(`El usuario interno con ID ${userId} no existe.`);
             }
 
-
-
-
-
-
-
-
-
             //CREACION DE CÓDIGO DE CONSULTA INICIAL
             // Obtener el último Init_Code ordenado descendentemente
             const lastRecord = await InitialConsultations.findOne({
@@ -266,14 +265,14 @@ export class InitialConsultationsModel {
                 Init_SocialWork : data.Init_SocialWork,
                 Init_Type: data.Init_Type,
                 Init_AlertNote: buildInitAlertNote({
-                    prefix: "No cumple perfil socio económico, debido a:",
+                    prefix: "No cumple perfil socio económico:",
                     User_AcademicInstruction: data.User_AcademicInstruction,
                     User_Profession: data.User_Profession,
                     User_IncomeLevel: data.User_IncomeLevel,
                     User_FamilyIncome: data.User_FamilyIncome,
                     prefix2: "Solicita materia no atendida por el CJG:",
                     Init_Subject: data.Init_Subject,
-                    prefix3: "Recide fuera del DMQ (Distrito Metropolitano de Quito)",
+                    prefix3: "Recide fuera del DMQ (Distrito Metropolitano de Quito):",
                     User_City: data.User_City,
                 }),
 
@@ -343,8 +342,8 @@ export class InitialConsultationsModel {
     }
 
 
-    static async createNewConsultation(data) {
-        const internalId = getUserId();
+    static async createNewConsultation(data, internalUser) {
+        const internalId = internalUser || getUserId(); // Obtener el ID del usuario interno desde la sesión o el argumento
         const t = await sequelize.transaction();
         try {
             let user = await User.findOne({ where: { User_ID: data.User_ID }, transaction: t });
@@ -393,14 +392,14 @@ export class InitialConsultationsModel {
                 Init_SocialWork : data.Init_SocialWork,
                 Init_Type: data.Init_Type,
                 Init_AlertNote: buildInitAlertNote({
-                prefix: "No cumple perfil socio económico, debido a:",
+                prefix: "No cumple perfil socio económico:",
                 User_AcademicInstruction: user.User_AcademicInstruction,
                 User_Profession: user.User_Profession,
                 User_IncomeLevel: user.User_IncomeLevel,
                 User_FamilyIncome: user.User_FamilyIncome,
                 prefix2: "Solicita materia no atendida por el CJG:",
                 Init_Subject: data.Init_Subject,
-                prefix3: "Recide fuera del DMQ (Distrito Metropolitano de Quito)",
+                prefix3: "Recide fuera del DMQ (Distrito Metropolitano de Quito):",
                 User_City: user.User_City,
                 }),
 
@@ -422,12 +421,12 @@ export class InitialConsultationsModel {
     }
     
 
-    static async update(id, data) {
+    static async update(id, data, internalUser) {
         try {
             const consultation = await this.getById(id);
             if (!consultation) return null;
     
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
     
             const [rowsUpdated] = await InitialConsultations.update(data, {
                 where: { Init_Code: id }
@@ -484,12 +483,12 @@ export class InitialConsultationsModel {
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalUser) {
         try {
             const consultation = await this.getById(id);
             if (!consultation) return null;
 
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
             await InitialConsultations.destroy({ where: { Init_Code: id } });
 
             // 🔹 Registrar en Audit que un usuario interno eliminó una consulta inicial
@@ -505,10 +504,6 @@ export class InitialConsultationsModel {
             throw new Error(`Error deleting initial consultation: ${error.message}`);
         }
     }
-
-
-    
-    
      
     static async generateAttentionSheetBuffer(data) {
         try {
@@ -525,7 +520,10 @@ export class InitialConsultationsModel {
             console.log("Datos del usuario:", userData);
     
             // Limpiar etiquetas HTML del campo Init_Notes
-            const cleanNotes = data.Init_Notes.replace(/<\/?[^>]+(>|$)/g, "");
+                const cleanNotes = data.Init_Notes
+                .replace(/&nbsp;/g, " ")
+                .replace(/<\/?[^>]+(>|$)/g, "")
+                .trim();
 
        
             // Cargar la plantilla PDF
@@ -633,7 +631,6 @@ export class InitialConsultationsModel {
             throw error;
         }
     }
-
 
     
 }

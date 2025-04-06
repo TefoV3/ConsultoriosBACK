@@ -32,11 +32,11 @@ export class ActivityRecordModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalUser) {
         const t = await sequelize.transaction();
         try {
             console.log("📥 Creating activity record for Activity_ID:", data.Activity_ID);
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
 
             const newRecord = await ActivityRecord.create({
                 Activity_ID: data.Activity_ID,
@@ -67,11 +67,11 @@ export class ActivityRecordModel {
         }
     }
 
-    static async update(id, data) {
+    static async update(id, data, internalUser) {
         const t = await sequelize.transaction();
         try {
             console.log("📥 Updating activity record with ID:", id);
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
 
             const record = await this.getById(id);
             if (!record) {
@@ -107,7 +107,7 @@ export class ActivityRecordModel {
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalUser) {
         const t = await sequelize.transaction();
         try {
             const record = await this.getById(id);
@@ -116,7 +116,7 @@ export class ActivityRecordModel {
                 return null;
             }
 
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
             
             await ActivityRecord.destroy({
                 where: { Record_ID: id },
