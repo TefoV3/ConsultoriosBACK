@@ -1,5 +1,8 @@
 import { InitialConsultationsModel } from "../models/InitialConsultationsModel.js";
 import { AssignmentModel } from "../models/AssignmentModel.js";
+import { UserModel } from "../models/UserModel.js";
+import nodemailer from "nodemailer";
+import { EMAIL_USER, EMAIL_PASS } from "../config.js"; 
 
 export class FirstConsultationsController {
     static async getFirstConsultations(req, res) {
@@ -90,6 +93,7 @@ export class FirstConsultationsController {
     static async createFirstConsultations(req, res) {
         try {
             console.log("📂 Archivos recibidos:", req.files);
+            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
     
             // Crear un objeto con los archivos recibidos
             const files = {
@@ -98,7 +102,7 @@ export class FirstConsultationsController {
             };
     
             // 🔹 Llamar al método del modelo pasando los archivos correctamente
-            const newConsultation = await InitialConsultationsModel.createInitialConsultation(req.body, files);
+            const newConsultation = await InitialConsultationsModel.createInitialConsultation(req.body, files, internalId);
     
             res.status(201).json({ message: "Consulta inicial creada", data: newConsultation });
         } catch (error) {
@@ -109,12 +113,12 @@ export class FirstConsultationsController {
 
     static async createNewConsultation(req, res) {
         try {
-            // const internalId = req.headers["internal-id"];
+            const internalId = req.headers["internal-id"];
             // if (!internalId) {
             //     return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
             // }
 
-            const newConsultation = await InitialConsultationsModel.createNewConsultation(req.body);
+            const newConsultation = await InitialConsultationsModel.createNewConsultation(req.body, internalId);
 
             res.status(201).json({ message: "Consulta inicial creada", data: newConsultation });
         } catch (error) {
@@ -125,9 +129,9 @@ export class FirstConsultationsController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            //const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
 
-            const updatedConsultation = await InitialConsultationsModel.update(id, req.body);
+            const updatedConsultation = await InitialConsultationsModel.update(id, req.body, internalId);
 
             if (!updatedConsultation) return res.status(404).json({ message: "Consulta inicial no encontrada" });
 
@@ -140,9 +144,8 @@ export class FirstConsultationsController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            //const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
-
-            const deletedConsultation = await InitialConsultationsModel.delete(id);
+            const internalId = req.headers["internal-id"];  // ✅ Se obtiene el usuario interno desde los headers
+            const deletedConsultation = await InitialConsultationsModel.delete(id, internalId);
 
             if (!deletedConsultation) return res.status(404).json({ message: "Consulta inicial no encontrada" });
 
@@ -187,11 +190,105 @@ export class FirstConsultationsController {
             return res.status(500).json({ error: error.message });
         }
     }
+
+    static async automaticMailToRejectCase(req, res) {
+        try {
+            const { id } = req.body; // Asegúrate de que el id esté correctamente extraído
+            if (!id) {
+                return res.status(400).json({ message: "El 'id' es obligatorio." });
+            }
     
+            const consultation = await InitialConsultationsModel.getById(id);
+            if (!consultation) {
+                throw new Error("Consulta inicial no encontrada.");
+            }
+    
+            const user = await UserModel.getById(consultation.User_ID);
+            if (!user) {
+                throw new Error("Usuario no encontrado.");
+            }
     
 
+            const userName = user.User_FirstName;
+            const userLastName = user.User_LastName;
+            const subject = consultation.Init_Subject;
+            const date = new Date(consultation.Init_Date).toLocaleDateString("es-EC", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            });
+            const mail = user.User_Email;
+            if (!mail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
+                return res.status(400).json({ message: "El correo electrónico del destinatario no es válido." });
+            }
+    
+            const transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 465,
+                secure: true,
+                auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+            });
+    
+            const alertNote = consultation.Init_AlertNote || "";
+            const strongTagsContent = alertNote.match(/<strong>(.*?)<\/strong>/gi)?.map(tag =>
+                tag.replace(/<\/?strong>/gi, "").trim()
+            ) || [];
+            
+            // Realizamos ambas transformaciones en un solo paso
+            strongTagsContent.forEach((tag, index) => {
+                // Eliminamos las comas y reemplazamos ":" por un salto de línea
+                strongTagsContent[index] = tag
+                    .replace(/,/g, " ")  // Reemplazamos todas las comas con espacio
+                    .replace(/:/g, "\n"); // Reemplazamos los dos puntos con un salto de línea
+            });
+            
 
-
+            const mailOptions = {
+                from: EMAIL_USER,
+                to: mail,
+                subject: "Notificación de Rechazo - Consulta Inicial",
+                html: `
+                    <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <img src="https://img.icons8.com/color/48/000000/communication.png" alt="Icono Comunicación"/>
+                            <h1 style="margin: 10px 0; color:rgb(0, 56, 146);">Notificación</h1>
+                        </div>
+                        <p>Estimado/a, <strong>${userName} ${userLastName}</strong>,</p>
+                        <p style="line-height: 1.6;">
+                            Lamentamos informarle que su <strong>consulta inicial</strong> correspondiente a la fecha <strong>${date}</strong>,
+                            sobre la materia de <strong>${subject}</strong>, ha sido <strong>rechazada</strong>.
+                            Esto se debe a la siguiente razón:
+                        </p>
+                        <p style="background: #f9f9f9; border-left: 4px solid #d32f2f; padding: 10px 15px; margin: 20px 0;">
+                           <strong>${strongTagsContent.join(" ")}</strong>
+                        </p>
+                        <p style="line-height: 1.6;">
+                            Si desea más información o necesita agendar una nueva consulta, estamos a su disposición.
+                        </p>
+                        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;"/>
+                        <div style="font-size: 0.9em;">
+                            <p>Atentamente,</p>
+                            <p><strong>CJG de la PUCE</strong></p>
+                            <p>📞 Teléfono: +593 (2) 2991783</p>
+                            <p>📧 Correo: <a href="mailto:cjg@puce.edu.ec" style="color: rgb(0, 56, 146); text-decoration: none;">cjg@puce.edu.ec</a></p>
+                        </div>
+                    </div>
+                `
+            };
+    
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error("Error al enviar email:", error);
+                    return res.status(500).json({ message: "Error al enviar el correo.", error });
+                }
+                return res.status(200).json({ message: "Correo enviado exitosamente." });
+            });
+    
+        } catch (error) {
+            console.error("Error al enviar el correo:", error);
+            return res.status(500).json({ message: `Error al enviar el correo: ${error.message}` });
+        }
+    }
 
 
 }

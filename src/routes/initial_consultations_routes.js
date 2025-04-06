@@ -21,6 +21,7 @@ InitialConsultationsRouter.post(
     FirstConsultationsController.createFirstConsultations
 );
 InitialConsultationsRouter.post('/initial-consultations/new', FirstConsultationsController.createNewConsultation);
+InitialConsultationsRouter.post('/initial-consultations/reject', FirstConsultationsController.automaticMailToRejectCase);
 InitialConsultationsRouter.get('/initial-consultations/attention/:id', FirstConsultationsController.generateAttentionSheet);
 InitialConsultationsRouter.put('/initial-consultations/:id', FirstConsultationsController.update);
 InitialConsultationsRouter.delete('/initial-consultations/:id', FirstConsultationsController.delete);

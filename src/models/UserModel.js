@@ -52,10 +52,10 @@ export class UserModel {
     }
 
 
-    static async create(data) {
+    static async create(data, internalUser) {
         try {
             // ✅ Crear usuario
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
             const newUser = await User.create(data);
             
 
@@ -73,10 +73,10 @@ export class UserModel {
         }
     }
 
-    static async update(id, data, file) {
+    static async update(id, data, file, internalUser) {
         try {
             const user = await this.getById(id);
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
             if (!user) return null;
 
             const [rowsUpdated] = await User.update(data, {
@@ -99,14 +99,14 @@ export class UserModel {
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalUser) {
         try {
             
             if (!id) {
                 throw new Error("The User_ID field is required to delete a user");
             }
             
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
             const user = await this.getById(id);
             if (!user) return null;
     
@@ -128,9 +128,9 @@ export class UserModel {
         }
     }
 
-    static async uploadDocument(id, file, internalId, documentName) {
+    static async uploadDocument(id, file, documentName, internalUser) {
         try {
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
           const user = await this.getById(id);
           if (!user) {
             console.error("No se encontró el usuario con id:", id);
@@ -174,10 +174,10 @@ export class UserModel {
 
 
 
-    static async deleteDocument(id) {
+    static async deleteDocument(id, internalUser) {
         try {
             const user = await this.getById(id);
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
             if (!user) return null;
 
             // Eliminar el documento de salud del usuario
