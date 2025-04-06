@@ -6,11 +6,17 @@ export class UserModel {
 
     static async getAll() {
         try {
-            return await User.findAll({ where: { User_IsDeleted: false } });
+            return await User.findAll({ 
+                where: { User_IsDeleted: false },
+                attributes: {
+                    exclude: ['User_HealthDocuments']
+                }
+             });
         } catch (error) {
             throw new Error(`Error retrieving users: ${error.message}`);
         }
     }
+
 
         static async getUsersWithSocialWork() {
             try {

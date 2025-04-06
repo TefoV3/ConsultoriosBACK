@@ -51,34 +51,36 @@ export class EvidenceModel {
   static async create(data, file, internalUser) {
     const t = await sequelize.transaction();
     try {
-      const newEvidence = await Evidence.create(
-        {
-          Internal_ID: data.Internal_ID,
-          Init_Code: data.Init_Code,
-          Evidence_Name: data.Evidence_Name || "Sin Documento", // Nombre de la evidencia (ej. "Factura", "Recibo")
-          Evidence_Document_Type: file.mimetype || null, // Tipo de documento (ej. application/pdf)
-          Evidence_URL: file.path || null, // URL del archivo (si es necesario)
-          Evidence_File: file.buffer ? file.buffer : null, // Archivo de evidencia, // Guardar el archivo en formato BLOB
-          Evidence_Date: new Date(),
-        },
-        { transaction: t }
-      );
-  
-      await t.commit();
+        const newEvidence = await Evidence.create(
+            {
+                Internal_ID: data.Internal_ID,
+                Init_Code: data.Init_Code,
+                Evidence_Name: data.Evidence_Name || "Sin Documento",
+                Evidence_Document_Type: file.mimetype || null,
+                Evidence_URL: file.path || null,
+                Evidence_File: file.buffer ? file.buffer : null,
+                Evidence_Date: new Date(),
+            },
+            { transaction: t }
+        );
 
-      const internalId = internalUser || getUserId();
-      await AuditModel.registerAudit(
-        internalId, 
-        "INSERT",
-        "Initial_Consultations",
-        `El usuario interno ${internalId} creó una nueva consulta inicial ${newConsultation.Init_Code} para el usuario ${data.User_ID}`
-    );
-      return newEvidence;
+        const internalId = internalUser || getUserId();
+        await AuditModel.registerAudit(
+            internalId,
+            "INSERT",
+            "Initial_Consultations",
+            `El usuario interno ${internalId} creó una nueva consulta inicial ${newEvidence.Init_Code} para el usuario ${data.User_ID}`,
+            { transaction: t } // Si AuditModel.registerAudit lo permite, pásale la transacción
+        );
+
+        await t.commit();
+        return newEvidence;
     } catch (error) {
-      await t.rollback();
-      throw new Error(`Error al subir la evidencia: ${error.message}`);
+        if (!t.finished) await t.rollback();
+        throw new Error(`Error al subir la evidencia: ${error.message}`);
     }
-  }
+}
+
   
 
   static async getEvidenceById(id) {

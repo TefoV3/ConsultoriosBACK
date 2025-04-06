@@ -58,11 +58,18 @@ export class InitialConsultationsModel {
 
     static async getAll() {
         try {
-            return await InitialConsultations.findAll();
+            return await InitialConsultations.findAll(
+                {
+                    attributes: {
+                        exclude: ['Init_AttentionSheet']
+                    },
+                }
+            );
         } catch (error) {
             throw new Error(`Error retrieving initial consultations: ${error.message}`);
         }
     }
+
 
     static async getById(id) {
         try {
