@@ -1,4 +1,5 @@
 import { AssignmentModel } from "../models/AssignmentModel.js";
+import { InternalUser } from "../schemas/Internal_User.js";
 
 export class AssignmentController {
     static async getAssignments(req, res) {
@@ -49,9 +50,9 @@ export class AssignmentController {
     
     static async createAssignment(req, res) {
         try {
-           // const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
+           const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
 
-            const newAssignment = await AssignmentModel.create(req.body);
+            const newAssignment = await AssignmentModel.create(req.body, internalId);
             return res.status(201).json(newAssignment);
         } catch (error) {
             return res.status(500).json({ error: error.message });
@@ -71,9 +72,9 @@ export class AssignmentController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            //const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
+            const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
 
-            const updatedAssignment = await AssignmentModel.update(id, req.body);
+            const updatedAssignment = await AssignmentModel.update(id, req.body, internalId);
             if (!updatedAssignment) return res.status(404).json({ message: "Assignment not found" });
 
             return res.json(updatedAssignment);
@@ -85,9 +86,9 @@ export class AssignmentController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            //const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
+            const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
 
-            const deletedAssignment = await AssignmentModel.delete(id);
+            const deletedAssignment = await AssignmentModel.delete(id, internalId);
             if (!deletedAssignment) return res.status(404).json({ message: "Assignment not found" });
 
             return res.json({ message: "Assignment deleted", assignment: deletedAssignment });

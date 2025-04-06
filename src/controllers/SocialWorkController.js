@@ -48,12 +48,13 @@ export class SocialWorkController {
     static async create(req, res) {
         try {
             const { Init_Code } = req.body;
+            const internalId = req.headers["internal-id"]
 
             if (!Init_Code) {
                 return res.status(400).json({ error: "El campo 'Init_Code' es obligatorio." });
             }
 
-            const newSocialWork = await SocialWorkModel.create(req.body, req);
+            const newSocialWork = await SocialWorkModel.create(req.body, req, internalId);
 
             res.status(201).json({ message: "Registro de trabajo social creado con éxito", data: newSocialWork });
         } catch (error) {
@@ -66,8 +67,9 @@ export class SocialWorkController {
         try {
             const { id } = req.params;
             const { Internal_ID, ...data } = req.body;
+            const internalId = req.headers["internal-id"]
 
-            const updatedRecord = await SocialWorkModel.update(id, data);
+            const updatedRecord = await SocialWorkModel.update(id, data, internalId);
 
             if (!updatedRecord) return res.status(404).json({ message: "Social work record not found" });
 
@@ -82,8 +84,10 @@ export class SocialWorkController {
         try {
             const { id } = req.params;
             //const { Internal_ID } = req.body;
+            const internalId = req.headers["internal-id"]
 
-            const deletedRecord = await SocialWorkModel.delete(id);
+
+            const deletedRecord = await SocialWorkModel.delete(id, internalId);
             if (!deletedRecord) return res.status(404).json({ message: "Social work record not found" });
 
             res.json({ message: "Social work record deleted (soft delete)", record: deletedRecord });

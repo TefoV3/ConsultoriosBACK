@@ -60,10 +60,9 @@ export class ActivityController {
             console.log("📥 Recibiendo solicitud para crear actividad...");
             const { Init_Code } = req.body;
     
-            //const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+            const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
     
             console.log("🔍 Internal_ID obtenido:", internalId);
-            const internalId = getUserId(); // Obtener el Internal_ID desde la sesión
             // Verificar que el Internal_ID exista en la tabla internal_users
             const internalUser = await InternalUserModel.getById(internalId);
             if (!internalUser) {
@@ -72,7 +71,7 @@ export class ActivityController {
             }
     
             // Llamar al modelo y pasar `file` y `internalId`
-            const newActivity = await ActivityModel.create({ ...req.body }, req.file); // Pass req.file
+            const newActivity = await ActivityModel.create({ ...req.body }, req.file, internalId); // Pass req.file
     
             console.log("📝 Registrando auditoría...");
     
@@ -91,9 +90,8 @@ export class ActivityController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            //const internalId = req.headers["internal-id"];
+            const internalId = req.headers["internal-id"];
 
-            const internalId = getUserId(); // Obtener el Internal_ID desde la sesión
             // Check if the internal user exists
             const internalUser = await InternalUserModel.getById(internalId);
             if (!internalUser) {
@@ -107,7 +105,7 @@ export class ActivityController {
             const file = req.file;
 
             // Update the activity and document (if a file was uploaded)
-            const updatedActivity = await ActivityModel.update(id, activityData, file);
+            const updatedActivity = await ActivityModel.update(id, activityData, file, internalId); 
 
             if (!updatedActivity) {
                 return res.status(404).json({ message: "Activity not found" });

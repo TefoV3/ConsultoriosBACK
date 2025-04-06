@@ -53,10 +53,10 @@ export class SocialWorkModel {
     }
 
     // Crear una evaluación de trabajo social
-    static async create(data, req) {
+    static async create(data, req, internalUser) {
         try {
             // 🔹 Obtener `Internal_ID` desde el middleware
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
             
             
 
@@ -97,12 +97,12 @@ export class SocialWorkModel {
     }
 
     // Actualizar una evaluación de trabajo social
-    static async update(id, data) {
+    static async update(id, data, internalUser) {
         try {
             const record = await this.getById(id);
             if (!record) return null;
 
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
             const [rowsUpdated] = await SocialWork.update(data, { where: { SW_ProcessNumber: id } });
 
             if (rowsUpdated === 0) return null;
@@ -122,12 +122,12 @@ export class SocialWorkModel {
     }
 
     // Eliminar (borrado lógico) una evaluación de trabajo social
-    static async delete(id) {
+    static async delete(id, internalUser) {
         try {
             const record = await this.getById(id);
             if (!record) return null;
             
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
             await SocialWork.update({ SW_Status: false }, { where: { SW_ProcessNumber: id } });
 
             // 🔹 Registrar en auditoría la eliminación (borrado lógico)

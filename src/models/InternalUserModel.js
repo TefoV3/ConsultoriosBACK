@@ -119,9 +119,9 @@ export class InternalUserModel {
         }
     }
 
-    static async update(id, data) {
+    static async update(id, data, internalUserID) {
         try {
-            const internalId = getUserId(); // Obtener el ID del usuario activo desde la sesión
+            const internalId = internalUserID || getUserId(); // Obtener el ID del usuario activo desde la sesión
             const internalUser = await this.getById(id);
 
             if (!internalUser) return null;
@@ -144,9 +144,9 @@ export class InternalUserModel {
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalUserID) {
         try {
-            const internalId = getUserId();
+            const internalId = internalUserID || getUserId();
             const internalUser = await this.getById(id);
             
             if (!internalUser) return null;

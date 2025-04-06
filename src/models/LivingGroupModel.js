@@ -24,9 +24,9 @@ export class LivingGroupModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalUser) {
         try {
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
 
             const newRecord = await LivingGroup.create(data);
             await AuditModel.registerAudit(
@@ -41,12 +41,12 @@ export class LivingGroupModel {
         }
     }
 
-    static async update(id, data) {
+    static async update(id, data, internalUser) {
         try {
             const livingGroupRecord = await this.getById(id);
             if (!livingGroupRecord) return null;
 
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
 
             const [rowsUpdated] = await LivingGroup.update(data, {
                 where: { LG_LivingGroup_ID: id, Status: true }
@@ -68,12 +68,12 @@ export class LivingGroupModel {
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalUser) {
         try {
             const record = await this.getById(id);
                         if (!record) return null;
                         
-                        const internalId = getUserId();
+                        const internalId = internalUser || getUserId();
             
                         await SocialWork.update({ LG_Status: false }, { where: { LG_LivingGroup_ID: id } });
             

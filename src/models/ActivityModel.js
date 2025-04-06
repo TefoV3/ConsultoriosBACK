@@ -44,10 +44,10 @@ export class ActivityModel {
         }
     }
 
-    static async create(data, file) {
+    static async create(data, file, internalUser) {
         const t = await sequelize.transaction();
         try {
-            const internalId = getUserId();
+            const internalId = internalUser || getUserId();
             console.log("📥 Creando actividad con Internal_ID:", internalId);
             
 
@@ -88,7 +88,7 @@ export class ActivityModel {
         }
     }
 
-    static async update(id, activityData, file = null) {
+    static async update(id, activityData, file = null, internalUser) {
         const t = await sequelize.transaction();
         try {
             const existingActivity = await Activity.findOne({
@@ -113,12 +113,13 @@ export class ActivityModel {
                 }, { transaction: t });
             }
 
+            const internalId = internalUser || getUserId();
             // Register audit
             await AuditModel.registerAudit(
-                activityData.Internal_ID,
+                internalId,
                 "UPDATE",
                 "Activity",
-                `El usuario interno ${activityData.Internal_ID} actualizó la actividad con ID ${id}`,
+                `El usuario interno ${internalId} actualizó la actividad con ID ${id}`,
                 { transaction: t }
             );
 

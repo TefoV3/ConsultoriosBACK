@@ -37,7 +37,7 @@ export class ActivityRecordController {
     static async create(req, res) {
         try {
             console.log("📥 Received request to create activity record...");
-            //const internalId = req.headers["internal-id"];
+            const internalId = req.headers["internal-id"];
 
             // Verify internal user exists
             // const internalUser = await InternalUserModel.getById(internalId);
@@ -55,7 +55,7 @@ export class ActivityRecordController {
                 return res.status(400).json({ error: "Missing required fields" });
             }
 
-            const newRecord = await ActivityRecordModel.create(req.body);
+            const newRecord = await ActivityRecordModel.create(req.body, internalId);
             console.log("✅ Activity record created successfully.");
 
             res.status(201).json(newRecord);
@@ -68,9 +68,9 @@ export class ActivityRecordController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            //const internalId = req.headers["internal-id"];
+            const internalId = req.headers["internal-id"];
 
-            const updatedRecord = await ActivityRecordModel.update(id, req.body);
+            const updatedRecord = await ActivityRecordModel.update(id, req.body, internalId);
             if (!updatedRecord) return res.status(404).json({ message: "Activity record not found" });
 
             return res.json(updatedRecord);
@@ -82,9 +82,9 @@ export class ActivityRecordController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            //const internalId = req.headers["internal-id"];
+            const internalId = req.headers["internal-id"];
 
-            const deletedRecord = await ActivityRecordModel.delete(id);
+            const deletedRecord = await ActivityRecordModel.delete(id, internalId);
             if (!deletedRecord) return res.status(404).json({ message: "Activity record not found" });
 
             return res.json({ 
