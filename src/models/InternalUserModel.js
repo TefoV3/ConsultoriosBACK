@@ -3,7 +3,7 @@ import { ResetPassword } from '../schemas/Reset_Password.js';
 import { SECRET_JWT_KEY } from "../config.js";
 import { SALT_ROUNDS } from '../config.js';
 import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
-
+import { getUserId } from '../sessionData.js';
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -53,6 +53,22 @@ export class InternalUserModel {
         }
     }
 
+    static async getAllLawyers() {
+        try {
+            return await InternalUser.findAll({
+                where: {
+                    Internal_Type: 'Abogado',
+                    Internal_Status: 'Activo'
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error al obtener abogados activos: ${error.message}`);
+        }
+    }
+
+
+
+
     static async getStudentsByArea(area) {
         try {
             return await InternalUser.findAll({
@@ -85,16 +101,19 @@ export class InternalUserModel {
 
     //CREATE, UPDATE AND DELETE METHODS
 
-    static async create(data, internalId) {
+    static async create(data, internalIdFromSession) {
         try {
-            const newRecord = await InternalUser.create(data);
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "LivingGroup",
-                            `El usuario interno ${internalId} creó el registro de grupo de convivencia con ID ${newRecord.Internal_ID}`
-                        );
-                        return newRecord;
+            const newRecord = await InternalUser.create(data, internalIdFromSession);
+    
+            // Registrar la auditoría usando la cédula del usuario de la sesión activa
+            await AuditModel.registerAudit(
+                internalIdFromSession, // Usar la cédula del usuario activo
+                "INSERT",
+                "InternalUser",
+                `El usuario interno ${internalIdFromSession} creó el registro de usuario interno con ID ${newRecord.Internal_ID}`
+            );
+    
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating internal user: ${error.message}`);
         }
@@ -102,7 +121,9 @@ export class InternalUserModel {
 
     static async update(id, data) {
         try {
+            const internalId = getUserId(); // Obtener el ID del usuario activo desde la sesión
             const internalUser = await this.getById(id);
+
             if (!internalUser) return null;
 
             const [rowsUpdated] = await InternalUser.update(data, {
@@ -123,9 +144,11 @@ export class InternalUserModel {
         }
     }
 
-    static async delete(id, internalId) {
+    static async delete(id) {
         try {
+            const internalId = getUserId();
             const internalUser = await this.getById(id);
+            
             if (!internalUser) return null;
 
             await InternalUser.update(

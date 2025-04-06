@@ -53,7 +53,7 @@ export class AcademicInstructionModel {
 
             await Academic_Instruction.update(
                 { Academic_Instruction_Status: false },
-                { where: { AcademicInstruction_ID: id, Academic_Instruction_Status: true } }
+                { where: { Academic_Instruction_ID: id, Academic_Instruction_Status: true } }
             );
             return academic_InstructionRecord;
         } catch (error) {

@@ -30,6 +30,22 @@ export class AssignmentController {
             return res.status(500).json({ error: error.message });
         }
     }
+
+    static async getStudentByInitCode(req, res) {
+        const { initCode } = req.params;
+        try {
+            // Use the AssignmentModel to get the student ID
+            const studentId = await AssignmentModel.getStudentByInitCode(initCode);
+            if (studentId) {
+                res.json(studentId);
+            } else {
+                res.status(404).json({ message: "No se encontró asignación para el código de consulta inicial proporcionado." });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Error al buscar el estudiante por código de consulta inicial." });
+        }
+    }
     
     static async createAssignment(req, res) {
         try {

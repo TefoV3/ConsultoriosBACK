@@ -24,6 +24,12 @@ export class ZoneController {
 
     static async create(req, res) {
         try {
+            // Si el body es un array, usa bulkCreate
+            if (Array.isArray(req.body)) {
+                const createdZones = await ZoneModel.bulkCreate(req.body);
+                return res.status(201).json(createdZones);
+            }
+            // Si es un objeto, usa create normal
             const newZone = await ZoneModel.create(req.body);
             res.status(201).json(newZone);
         } catch (error) {

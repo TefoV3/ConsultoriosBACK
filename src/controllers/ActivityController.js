@@ -39,7 +39,7 @@ export class ActivityController {
         try {
             const documentResult = await ActivityModel.getDocumentById(id);
     
-            if (!documentResult || !documentResult.Documents) {
+            if (!documentResult || !documentResult.Activity_Document) {
                 return res.status(404).json({ message: "Document not found" });
             }
     
@@ -48,7 +48,7 @@ export class ActivityController {
             res.setHeader('Content-Disposition', 'inline; filename=documento.pdf');
     
             // Envía el documento como respuesta binaria
-            res.send(documentResult.Documents);
+            res.send(documentResult.Activity_Document);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -75,16 +75,8 @@ export class ActivityController {
                 return res.status(400).json({ error: `El Internal_ID ${internalId} no existe en la tabla internal_users` });
             }
     
-            let fileBuffer = null;
-            if (req.file) {
-                console.log("✅ Archivo recibido:", req.file.originalname);
-                fileBuffer = req.file.buffer;
-            } else {
-                console.log("⚠️ No se recibió archivo, se procederá sin documento.");
-            }
-    
-            // Llamar al modelo y pasar `fileBuffer` y `internalId`
-            const newActivity = await ActivityModel.create({ ...req.body, Internal_ID: internalId }, fileBuffer);
+            // Llamar al modelo y pasar `file` y `internalId`
+            const newActivity = await ActivityModel.create({ ...req.body, Internal_ID: internalId }, req.file); // Pass req.file
     
             console.log("📝 Registrando auditoría...");
     
@@ -103,18 +95,34 @@ export class ActivityController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-
-            const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+            const internalId = req.headers["internal-id"];
 
             if (!internalId) {
                 return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
             }
 
-            const updatedActivity = await ActivityModel.update(id, req.body, internalId);
-            if (!updatedActivity) return res.status(404).json({ message: "Activity not found" });
+            // Check if the internal user exists
+            const internalUser = await InternalUserModel.getById(internalId);
+            if (!internalUser) {
+                return res.status(400).json({ error: `El Internal_ID ${internalId} no existe en la tabla internal_users` });
+            }
 
-            return res.json(updatedActivity);
+            // Prepare the data for the update
+            const activityData = { ...req.body, Internal_ID: internalId }; // Include Internal_ID in the data
+
+            // Check if a file was uploaded
+            const file = req.file;
+
+            // Update the activity and document (if a file was uploaded)
+            const updatedActivity = await ActivityModel.update(id, activityData, file);
+
+            if (!updatedActivity) {
+                return res.status(404).json({ message: "Activity not found" });
+            }
+
+            return res.json({ message: "Activity updated successfully", data: updatedActivity });
         } catch (error) {
+            console.error("Error updating activity:", error);
             return res.status(500).json({ error: error.message });
         }
     }

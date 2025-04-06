@@ -24,7 +24,7 @@ export class SectorController {
 
     static async create(req, res) {
         try {
-            const newSector = await SectorModel.create(req.body);
+            const newSector = await SectorModel.bulkCreate(req.body);
             res.status(201).json(newSector);
         } catch (error) {
             res.status(500).json({ error: error.message });

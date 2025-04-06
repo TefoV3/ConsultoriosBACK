@@ -43,44 +43,34 @@ export const sequelize = new Sequelize(
     )
 */
 
-/*
-export const sequelize = new Sequelize(
-    'prueba', 
-    'root', 
-    '12345678', 
-    {
-        host: 'localhost',
-        dialect: 'mysql'
-    }
-);
-*/
 
-
-//TefoVirtual
-/*export const sequelize = new Sequelize(
-    'ConsultoriosJuridicosevi', 
-    'Cliente', 
-    '2444', 
-    {
-        host: '192.168.56.101', 
-        dialect: 'mysql'
-    }
-);*/
-
-// //Francis
 // export const sequelize = new Sequelize(
-//     'consultoriosjuridicos', 
-//     'fvelasco', 
-//     'ltic', 
+//     'prueba', 
+//     'root', 
+//     '12345678', 
 //     {
-//        host: '192.168.56.102',
-//        dialect: 'mysql'
+//         host: 'localhost',
+//         dialect: 'mysql'
 //     }
 // );
 
-// Francis
+
+
+//TefoVirtual
 // export const sequelize = new Sequelize(
-//     'consultoriosjuridicos2', 
+//     'ConsultoriosJuridicosevi', 
+//     'Cliente', 
+//     '2444', 
+//     {
+//         host: '192.168.56.101', 
+//         dialect: 'mysql'
+//     }
+// );
+
+
+// //Francis
+// export const sequelize = new Sequelize(
+//     'consultoriosjuridicos3', 
 //     'fvelasco', 
 //     'ltic', 
 //     {
