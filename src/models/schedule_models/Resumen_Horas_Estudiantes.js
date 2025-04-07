@@ -26,32 +26,31 @@ export class Resumen_Horas_EstudiantesModel {
     }
 
     /** 🔹 Crear un nuevo resumen */
-    static async create(data) {
-        try {
-            return await Resumen_Horas_Estudiantes.create(data);
-        } catch (error) {
-            console.log('Error:', error);
-            throw new Error(`Error al crear resumen de horas: ${error.message}`);
-        }
+/** 🔹 Crear un nuevo resumen */
+static async create(data, options = {}) {
+    try {
+        return await Resumen_Horas_Estudiantes.create(data, options);
+    } catch (error) {
+        console.log('Error:', error);
+        throw new Error(`Error al crear resumen de horas: ${error.message}`);
     }
+}
 
-    /** 🔹 Actualizar un resumen solo si no está eliminado (reutilizando getById) */
-    static async update(id, data) {
-        try {
-            const resumen = await this.getById(id); // ✅ Reutiliza getById
-
-            if (!resumen) return null; // 🔹 Si no existe o está eliminado
-
-            const [rowsUpdated] = await Resumen_Horas_Estudiantes.update(data, {
-                where: { Resumen_ID: id, Resumen_IsDeleted: false } // ✅ Aplica el filtro en la actualización
-            });
-
-            if (rowsUpdated === 0) return null; // 🔹 Si no se actualizó nada
-            return await this.getById(id); // ✅ Retorna el resumen actualizado
-        } catch (error) {
-            throw new Error(`Error al actualizar resumen de horas estudiantiles: ${error.message}`);
-        }
+   /** 🔹 Actualizar un resumen solo si no está eliminado */
+   static async update(id, data, options = {}) {
+    try {
+        const resumen = await this.getById(id, options);
+        if (!resumen) return null;
+        const [rowsUpdated] = await Resumen_Horas_Estudiantes.update(data, {
+            where: { Resumen_ID: id, Resumen_IsDeleted: false },
+            ...options
+        });
+        if (rowsUpdated === 0) return null;
+        return await this.getById(id, options);
+    } catch (error) {
+        throw new Error(`Error al actualizar resumen de horas estudiantiles: ${error.message}`);
     }
+}
 
     /** 🔹 Eliminar (marcar como eliminado) solo si no está eliminado (reutilizando getById) */
     static async delete(id) {
@@ -99,6 +98,31 @@ export class Resumen_Horas_EstudiantesModel {
             throw new Error(`Error al obtener todos los resúmenes: ${error.message}`);
         }
     }
+
+    static async getResumenConDatosByUser(id) {
+        try {
+            return await Resumen_Horas_Estudiantes.findOne({
+                where: { Internal_ID: id, Resumen_IsDeleted: false },
+                include: [
+                    {
+                        model: InternalUser,
+                        as: "usuarioResumen",
+                        attributes: [
+                            "Internal_ID",
+                            "Internal_Name",
+                            "Internal_LastName",
+                            "Internal_Area",
+                            "Internal_Email"
+                        ],
+                        where: { Internal_Status: "Activo" }
+                    }
+                ]
+            });
+        } catch (error) {
+            throw new Error(`Error al obtener el resumen con datos del usuario: ${error.message}`);
+        }
+    }
+
 
     /** 🔹 Obtener todos los resúmenes de un usuario */
     static async getResumen_Horas_EstudiantesByUser(id) {

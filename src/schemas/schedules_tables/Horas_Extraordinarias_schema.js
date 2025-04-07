@@ -22,7 +22,7 @@ export const Horas_Extraordinarias = sequelize.define('Horas_Extraordinarias', {
         autoIncrement: true
     },
     Internal_ID: { 
-        type: DataTypes.STRING(13),
+        type: DataTypes.CHAR(15),
         allowNull: false
     },
     Horas_Num: {

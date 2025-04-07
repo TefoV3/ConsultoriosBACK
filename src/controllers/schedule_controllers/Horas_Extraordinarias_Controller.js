@@ -30,6 +30,19 @@ export class HorasExtraordinariasController {
         }
     }
 
+    /**
+     * Crea un ajuste de horas extraordinarias y actualiza (o crea) el resumen de horas del estudiante.
+     * Se usa una transacción para asegurar que ambas operaciones se realicen de forma atómica.
+     */
+    static async createHorasExtraordinariasConResumen(req, res) {
+        try {
+            const newHoras = await Horas_ExtraordinariasModel.createWithResumen(req.body);
+            return res.status(201).json(newHoras);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+
     static async update(req, res) {
         try {
             const { id } = req.params;

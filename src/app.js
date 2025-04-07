@@ -58,6 +58,7 @@ import { Registro_Asistencias_Routes } from './routes/schedule_routes/Registro_A
 import { ResumenHorasRouter } from './routes/schedule_routes/Resumen_Horas_routes.js'
 import { Seguimiento_SemanalRouter } from './routes/schedule_routes/Seguimiento_Semanal_Routes.js'
 import { UsuarioXPeriodoRouter } from './routes/schedule_routes/UsuarioXPeriodo_Routes.js'
+import { Resumen_Horas_SemanalesRouter } from './routes/schedule_routes/Resumen_Horas_Semanales_Routes.js'
 
 
 
@@ -124,6 +125,8 @@ app.use(Registro_Asistencias_Routes)
 app.use(ResumenHorasRouter)
 app.use(Seguimiento_SemanalRouter)
 app.use(UsuarioXPeriodoRouter)
+app.use(Resumen_Horas_SemanalesRouter)
+
 
 
 

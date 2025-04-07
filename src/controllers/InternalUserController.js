@@ -6,6 +6,18 @@ import { EMAIL_USER, EMAIL_PASS } from "../config.js";
 import nodemailer from "nodemailer";
 import bcrypt from "bcrypt";
 
+//random password generator
+// Función para generar una contraseña aleatoria
+function generateRandomPassword(length = 8) {
+    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+    return password;
+  }
+
 export class InternalUserController {
 
     // GET METHODS
@@ -151,6 +163,7 @@ export class InternalUserController {
 
             return res.json(updatedInternalUser);
         } catch (error) {
+            console.error("Error al actualizar el usuario interno:", error);
             return res.status(500).json({ error: error.message });
         }
     }
@@ -398,6 +411,7 @@ export class InternalUserController {
                 // Manejo de la contraseña: si no se envía (o es cadena vacía), se genera una contraseña aleatoria.
                 // Conservamos la contraseña en texto plano para luego enviarla por correo.
                 let plainPassword = data.Internal_Password;
+                console.log("Contraseña recibida:", plainPassword);
                 if (!plainPassword || plainPassword.trim() === "") {
                   plainPassword = generateRandomPassword(8);
                 }
@@ -483,6 +497,8 @@ export class InternalUserController {
                 res.status(500).json(error);
             }
         }
+
+        
 
 
     

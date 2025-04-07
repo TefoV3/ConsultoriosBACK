@@ -25,6 +25,7 @@ export class InternalUserModel {
                 where: { Internal_ID: id }
             });
         } catch (error) {
+            console.log(error);
             throw new Error(`Error retrieving internal user: ${error.message}`);
         }
     }
@@ -81,6 +82,8 @@ export class InternalUserModel {
             throw new Error(`Error fetching user ID by name and last name: ${error.message}`);
         }
     }
+
+    
     
 
     //CREATE, UPDATE AND DELETE METHODS
@@ -102,6 +105,8 @@ export class InternalUserModel {
 
     static async update(id, data) {
         try {
+            console.log("ID:", id);
+            console.log("DATA:", data);
             const internalUser = await this.getById(id);
             if (!internalUser) return null;
 
@@ -111,14 +116,15 @@ export class InternalUserModel {
 
             if (rowsUpdated === 0) return null;
             // 🔹 Registrar en auditoría la actualización
-            await AuditModel.registerAudit(
+          /*  await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "LivingGroup",
                 `El usuario interno ${internalId} actualizó el registro de Usuario Interno con ID ${id}`
-            );
+            );*/
             return await this.getById(id);
         } catch (error) {
+            console.log(error);
             throw new Error(`Error updating internal user: ${error.message}`);
         }
     }
@@ -265,7 +271,8 @@ export class InternalUserModel {
     static async getUserByTypeEstudiante() {
         try {
             return await InternalUser.findAll({
-                where: { Internal_Type: 'Estudiante', Internal_Status: 'Activo' }
+                where: { Internal_Type: 'Estudiante', Internal_Status: 'Activo' },
+                attributes: ['Internal_ID', 'Internal_Name', 'Internal_LastName', 'Internal_Email', 'Internal_Phone', 'Internal_Area', 'Internal_Status', 'Internal_Type', 'Internal_Huella'],               
             });
         } catch (error) {
             throw new Error(`Error al obtener usuarios tipo estudiante: ${error.message}`);
