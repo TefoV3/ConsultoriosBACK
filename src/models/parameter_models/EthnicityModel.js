@@ -29,7 +29,13 @@ export class EthnicityModel {
             throw new Error(`Error creating ethnicity: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Ethnicity.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating ethnicities: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const ethnicityRecord = await this.getById(id);

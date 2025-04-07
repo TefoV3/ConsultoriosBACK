@@ -29,7 +29,13 @@ export class NumberOfAttemptsModel {
             throw new Error(`Error creating number of attempts: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Number_Of_Attempts.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Number Of Attempts: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const attemptsRecord = await this.getById(id);

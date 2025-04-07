@@ -24,6 +24,11 @@ export class CityController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdCity = await CityModel.bulkCreate(req.body);
+                return res.status(201).json(createdCity);
+            }
+            // Si es un objeto, usa create normal
             const newCity = await CityModel.create(req.body);
             res.status(201).json(newCity);
         } catch (error) {

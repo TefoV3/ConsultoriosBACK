@@ -34,7 +34,8 @@ export class LivingGroupController {
 
     static async create(req, res) {
         try {
-            const newLivingGroup = await LivingGroupModel.create(req.body);
+            const internalId = req.headers["internal-id"]
+            const newLivingGroup = await LivingGroupModel.create(req.body, internalId);
             res.status(201).json(newLivingGroup);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -44,7 +45,8 @@ export class LivingGroupController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const updatedLivingGroup = await LivingGroupModel.update(id, req.body);
+            const internalId = req.headers["internal-id"]
+            const updatedLivingGroup = await LivingGroupModel.update(id, req.body, internalId);
             if (!updatedLivingGroup) return res.status(404).json({ message: "Living group not found or no changes made" });
             res.status(200).json(updatedLivingGroup);
         } catch (error) {
@@ -55,7 +57,8 @@ export class LivingGroupController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const deletedLivingGroup = await LivingGroupModel.delete(id);
+            const internalId = req.headers["internal-id"]
+            const deletedLivingGroup = await LivingGroupModel.delete(id, internalId);
             if (!deletedLivingGroup) return res.status(404).json({ message: "Living group not found" });
             res.status(200).json(deletedLivingGroup);
         } catch (error) {

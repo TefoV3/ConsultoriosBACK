@@ -27,6 +27,11 @@ export class PensionerController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdPensioner = await PensionerModel.bulkCreate(req.body);
+                return res.status(201).json(createdPensioner);
+            }
+            // Si es un objeto, usa create normal
             const Pensioner = req.body;
             const newPensioner = await PensionerModel.create(Pensioner);
             res.status(201).json(newPensioner);

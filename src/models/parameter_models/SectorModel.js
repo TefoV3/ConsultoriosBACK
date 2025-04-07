@@ -38,7 +38,14 @@ export class SectorModel {
             throw new Error(`Error creating sector: ${error.message}`);
         }
     }
-
+    
+    static async bulkCreate(data) {
+        try {
+            return await Sector.bulkCreate(data);
+        } catch (error) {
+            throw new Error(`Error creating sectors: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const sectorRecord = await this.getById(id);

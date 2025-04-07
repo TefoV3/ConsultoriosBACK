@@ -12,6 +12,8 @@ import { AuditRouter } from './routes/audit_routes.js'
 import { corsMiddleware } from './middlewares/cors.js'
 import {SocialWorkRouter} from './routes/social_work_routes.js'
 import { LivingGroupRouter } from './routes/living_group_routes.js'
+import { ActivityRecordRouter } from "./routes/activity_record_routes.js";
+
 //Parameter Routes
 import { CaseStatusRouter } from './routes/parameter_routes/case_status_routes.js'
 import { CatastrophicIllnessRouter } from './routes/parameter_routes/catastrophic_illness_routes.js'
@@ -46,6 +48,7 @@ import {DocumentationBackupRouter} from './routes/parameter_routes/documentation
 import {PeriodTypeRouter} from './routes/parameter_routes/period_type_routes.js'
 import {NumberOfAttemptsRouter} from './routes/parameter_routes/number_of_attempts_routes.js'
 import {PracticalHoursRouter} from './routes/parameter_routes/practical_hours_routes.js'
+import { ClientTypeRouter } from './routes/parameter_routes/client_type_routes.js'
 
 
 //Schedules routes
@@ -79,6 +82,7 @@ app.use(UserRouter)
 app.use(AuditRouter)
 app.use(SocialWorkRouter);
 app.use(LivingGroupRouter)
+app.use(ActivityRecordRouter);
 
 //Parameter Routes
 app.use(CaseStatusRouter)
@@ -114,6 +118,7 @@ app.use(DocumentationBackupRouter)
 app.use(PeriodTypeRouter)
 app.use(NumberOfAttemptsRouter)
 app.use(PracticalHoursRouter)
+app.use(ClientTypeRouter)
 
 //Schedules routes
 app.use(AlertaRouter)
@@ -126,9 +131,6 @@ app.use(ResumenHorasRouter)
 app.use(Seguimiento_SemanalRouter)
 app.use(UsuarioXPeriodoRouter)
 app.use(Resumen_Horas_SemanalesRouter)
-
-
-
 
 
 

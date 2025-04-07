@@ -44,7 +44,7 @@ export const SocialWork = sequelize.define('SocialWork', {
         type: DataTypes.CHAR(50),
         allowNull: false,
     }
-});
+}, { timestamps: false });
 // Relación uno a uno
 SocialWork.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
 InitialConsultations.hasOne(SocialWork, { foreignKey: "Init_Code" });

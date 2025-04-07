@@ -1,11 +1,13 @@
 import { InternalUserController } from "../controllers/InternalUserController.js";
 import { Router } from "express";
+import { authMiddleware } from "../middlewares/auth.js";
 
 export const InternalUserRouter = Router();
 
 InternalUserRouter.get('/internal-user', InternalUserController.getInternalUsers);
 InternalUserRouter.get('/internal-user/:id', InternalUserController.getById);
 InternalUserRouter.get('/internal-user/email/:email', InternalUserController.getByEmail);
+InternalUserRouter.get('/internal-user/lawyers/list', InternalUserController.getAllLawyers);
 InternalUserRouter.get('/internal-user/lawyers/actives/:area', InternalUserController.getAllActiveLawyers);
 InternalUserRouter.post('/internal-user', InternalUserController.createInternalUser);
 InternalUserRouter.put('/internal-user/:id', InternalUserController.update);

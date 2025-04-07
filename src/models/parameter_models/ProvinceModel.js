@@ -1,5 +1,5 @@
 import { Province } from "../../schemas/parameter_tables/Province.js";
-import { City } from "../../schemas/parameter_tables/City.js"; // Importar City para incluir la relación
+import { Country } from "../../schemas/parameter_tables/Country.js"; // Importar City para incluir la relación
 
 export class ProvinceModel {
 
@@ -8,8 +8,8 @@ export class ProvinceModel {
             return await Province.findAll({
                 where: { Province_Status: true },
                 include: {
-                    model: City, // Incluir la información de la ciudad asociada
-                    attributes: ["City_Name"]
+                    model: Country, // Incluir la información de la ciudad asociada
+                    attributes: ["Country_Name"]
                 }
             });
         } catch (error) {
@@ -22,8 +22,8 @@ export class ProvinceModel {
             return await Province.findOne({
                 where: { Province_ID: id, Province_Status: true },
                 include: {
-                    model: City, // Incluir la información de la ciudad asociada
-                    attributes: ["City_Name"]
+                    model: Country, // Incluir la información de la ciudad asociada
+                    attributes: ["Country_Name"]
                 }
             });
         } catch (error) {
@@ -38,7 +38,13 @@ export class ProvinceModel {
             throw new Error(`Error creating province: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Province.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Province: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const provinceRecord = await this.getById(id);

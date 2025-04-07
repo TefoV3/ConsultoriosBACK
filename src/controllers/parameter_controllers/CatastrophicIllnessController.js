@@ -22,6 +22,11 @@ export class CatastrophicIllnessController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdCatastrophicIllness = await CatastrophicIllnessModel.bulkCreate(req.body);
+                return res.status(201).json(createdCatastrophicIllness);
+            }
+            // Si es un objeto, usa create normal
             const newCatastrophicIllness = await CatastrophicIllnessModel.create(req.body);
             res.status(201).json(newCatastrophicIllness);
         } catch (error) {

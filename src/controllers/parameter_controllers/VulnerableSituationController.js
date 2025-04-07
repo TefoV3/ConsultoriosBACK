@@ -22,6 +22,11 @@ export class VulnerableSituationController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdVulnerableSituation = await VulnerableSituationModel.bulkCreate(req.body);
+                return res.status(201).json(createdVulnerableSituation);
+            }
+            // Si es un objeto, usa create normal
             const data = await VulnerableSituationModel.create(req.body);
             res.status(201).json(data);
         } catch (error) {

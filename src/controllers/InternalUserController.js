@@ -3,6 +3,8 @@ import { z } from "zod";
 import { SALT_ROUNDS } from "../config.js";
 import { EMAIL_USER, EMAIL_PASS } from "../config.js";
 
+import { getUserId } from '../sessionData.js';
+
 import nodemailer from "nodemailer";
 import bcrypt from "bcrypt";
 
@@ -66,6 +68,15 @@ export class InternalUserController {
         }
     }
 
+    static async getAllLawyers (req, res) {
+        try {
+            const lawyers = await InternalUserModel.getAllLawyers();
+            res.json(lawyers);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
     static async getStudentsByArea(req, res) {
         const { area } = req.params;
         try {
@@ -101,6 +112,7 @@ export class InternalUserController {
 
     static async createInternalUser(req, res) {
         try {
+            
             // Definir el esquema de validación con Zod
             const internalUserSchema = z.object({
                 Internal_ID: z.string().min(1, { message: "El ID es obligatorio" }),
@@ -146,8 +158,13 @@ export class InternalUserController {
             const hashedPassword = await bcrypt.hash(data.Internal_Password, SALT_ROUNDS);
             data.Internal_Password = hashedPassword;
     
-            // Crear el usuario
-            const internalUser = await InternalUserModel.create(data);
+            // Crear el usuario pasando la cédula de la sesión activa
+            const userId = internalUser || getUserId();
+
+            const internalUser = await InternalUserModel.create(data, userId);
+
+
+
             return res.status(201).json(internalUser);
         } catch (error) {
             return res.status(500).json({ error: error.message });
@@ -158,7 +175,8 @@ export class InternalUserController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const updatedInternalUser = await InternalUserModel.update(id, req.body);
+            const internalId = req.headers["internal-id"]
+            const updatedInternalUser = await InternalUserModel.update(id, req.body, internalId);
             if (!updatedInternalUser) return res.status(404).json({ message: "Internal user not found" });
 
             return res.json(updatedInternalUser);
@@ -171,7 +189,8 @@ export class InternalUserController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const deletedInternalUser = await InternalUserModel.delete(id);
+            const internalId = req.headers["internal-id"]
+            const deletedInternalUser = await InternalUserModel.delete(id, internalId);
             if (!deletedInternalUser) return res.status(404).json({ message: "Internal user not found" });
 
             return res.json({ message: "Internal user deleted", internalUser: deletedInternalUser });

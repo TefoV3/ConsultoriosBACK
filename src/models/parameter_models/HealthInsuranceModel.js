@@ -28,7 +28,13 @@ export class HealthInsuranceModel {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Health_Insurance.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Health Insurance: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const caseStatusRecord = await this.getById(id);

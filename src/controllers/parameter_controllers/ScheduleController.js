@@ -23,6 +23,11 @@ export class ScheduleController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdschedule = await ScheduleModel.bulkCreate(req.body);
+                return res.status(201).json(createdschedule);
+            }
+            // Si es un objeto, usa create normal
             const schedule = await ScheduleModel.create(req.body);
             res.status(201).json(schedule);
         } catch (error) {

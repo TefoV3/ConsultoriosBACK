@@ -28,7 +28,13 @@ export class PensionerModel {
             throw new Error(`Error creating Pensioner: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Pensioner.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Pensioner: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const PensionerRecord = await this.getById(id);

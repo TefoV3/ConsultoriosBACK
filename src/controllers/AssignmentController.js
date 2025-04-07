@@ -1,4 +1,5 @@
 import { AssignmentModel } from "../models/AssignmentModel.js";
+import { InternalUser } from "../schemas/Internal_User.js";
 
 export class AssignmentController {
     static async getAssignments(req, res) {
@@ -30,14 +31,26 @@ export class AssignmentController {
             return res.status(500).json({ error: error.message });
         }
     }
+
+    static async getStudentByInitCode(req, res) {
+        const { initCode } = req.params;
+        try {
+            // Use the AssignmentModel to get the student ID
+            const studentId = await AssignmentModel.getStudentByInitCode(initCode);
+            if (studentId) {
+                res.json(studentId);
+            } else {
+                res.status(404).json({ message: "No se encontró asignación para el código de consulta inicial proporcionado." });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Error al buscar el estudiante por código de consulta inicial." });
+        }
+    }
     
     static async createAssignment(req, res) {
         try {
-            const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
-
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
+           const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
 
             const newAssignment = await AssignmentModel.create(req.body, internalId);
             return res.status(201).json(newAssignment);
@@ -61,10 +74,6 @@ export class AssignmentController {
             const { id } = req.params;
             const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
 
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-
             const updatedAssignment = await AssignmentModel.update(id, req.body, internalId);
             if (!updatedAssignment) return res.status(404).json({ message: "Assignment not found" });
 
@@ -78,10 +87,6 @@ export class AssignmentController {
         try {
             const { id } = req.params;
             const internalId = req.headers["internal-id"]; // ✅ Obtener el usuario interno desde los headers
-
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
 
             const deletedAssignment = await AssignmentModel.delete(id, internalId);
             if (!deletedAssignment) return res.status(404).json({ message: "Assignment not found" });

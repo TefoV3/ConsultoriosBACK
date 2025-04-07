@@ -16,12 +16,12 @@ export const Sector = sequelize.define('Sector', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
-    Zone_FK: { // Clave foránea de Zone
+    Zone_ID: { // Clave foránea de Zone
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
             model: Zone,
-            key: 'Zone_Sector_ID'
+            key: 'Zone_ID'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'

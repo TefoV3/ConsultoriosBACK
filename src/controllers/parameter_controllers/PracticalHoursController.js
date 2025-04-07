@@ -24,6 +24,11 @@ export class PracticalHoursController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdPracticalHours = await PracticalHoursModel.bulkCreate(req.body);
+                return res.status(201).json(createdPracticalHours);
+            }
+            // Si es un objeto, usa create normal
             const newPracticalHours = await PracticalHoursModel.create(req.body);
             res.status(201).json(newPracticalHours);
         } catch (error) {

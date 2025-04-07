@@ -29,7 +29,13 @@ export class CivilStatusModel {
             throw new Error(`Error creating civil status: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Civil_Status.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Civil Status: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const civilStatusRecord = await this.getById(id);

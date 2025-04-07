@@ -13,6 +13,11 @@ export class DisabilityController {
 
     static async getById(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createddisability = await DisabilityModel.bulkCreate(req.body);
+                return res.status(201).json(createddisability);
+            }
+            // Si es un objeto, usa create normal
             const id = req.params.id;
             const disability = await DisabilityModel.getById(id);
             if (!disability) {

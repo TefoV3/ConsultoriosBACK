@@ -29,6 +29,13 @@ export class AcademicInstructionModel {
             throw new Error(`Error creating academic instruction: ${error.message}`);
         }
     }
+    static async bulkCreate(data) {
+        try {
+            return await Academic_Instruction.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Academic Instruction: ${error.message}`);
+        }
+    }
 
     static async update(id, data) {
         try {
@@ -53,7 +60,7 @@ export class AcademicInstructionModel {
 
             await Academic_Instruction.update(
                 { Academic_Instruction_Status: false },
-                { where: { AcademicInstruction_ID: id, Academic_Instruction_Status: true } }
+                { where: { Academic_Instruction_ID: id, Academic_Instruction_Status: true } }
             );
             return academic_InstructionRecord;
         } catch (error) {

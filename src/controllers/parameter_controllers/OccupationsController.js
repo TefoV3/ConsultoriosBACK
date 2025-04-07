@@ -27,6 +27,11 @@ export class OccupationsController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdoccupation = await OccupationsModel.bulkCreate(req.body);
+                return res.status(201).json(createdoccupation);
+            }
+            // Si es un objeto, usa create normal
             const occupation = req.body;
             const newOccupation = await OccupationsModel.create(occupation);
             res.status(201).json(newOccupation);

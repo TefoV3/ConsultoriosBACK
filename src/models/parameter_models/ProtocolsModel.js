@@ -28,8 +28,13 @@ export class ProtocolsModel {
             throw new Error(`Error creating protocol: ${error.message}`);
         }
     }
-
-
+    static async bulkCreate(data) {
+        try {
+            return await Protocols.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Protocols: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const protocolRecord = await this.getById(id);

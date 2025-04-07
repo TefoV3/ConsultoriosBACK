@@ -24,6 +24,11 @@ export class TopicController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdTopic = await TopicModel.bulkCreate(req.body);
+                return res.status(201).json(createdTopic);
+            }
+            // Si es un objeto, usa create normal
             const newTopic = await TopicModel.create(req.body);
             res.status(201).json(newTopic);
         } catch (error) {
