@@ -7,7 +7,12 @@ export class ActivityModel {
 
     static async getAll() {
         try {
-            return await Activity.findAll();
+            return await Activity.findAll({
+                attributes: {
+                    exclude: ["Activity_Document"], // Exclude the BLOB field from the result
+                },
+                order: [['Activity_Start_Date', 'DESC']], // Order by Activity_Start_Date in descending order
+            });
         } catch (error) {
             throw new Error(`Error retrieving activities: ${error.message}`);
         }
@@ -26,7 +31,10 @@ export class ActivityModel {
     static async getAllByCodeCase(codeCase) {
         try {
             return await Activity.findAll({
-                where: { Init_Code: codeCase }
+                where: { Init_Code: codeCase },
+                attributes: {
+                    exclude: ["Activity_Document"], // Exclude the BLOB field from the result
+                },
             });
         } catch (error) {
             throw new Error(`Error retrieving activity: ${error.message}`);
