@@ -38,7 +38,13 @@ export class ProvinceModel {
             throw new Error(`Error creating province: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Province.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Province: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const provinceRecord = await this.getById(id);

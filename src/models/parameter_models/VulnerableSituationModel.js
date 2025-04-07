@@ -29,8 +29,13 @@ export class VulnerableSituationModel {
             throw new Error(`Error creating vulnerable situation: ${error.message}`);
         }
     }
-
-
+    static async bulkCreate(data) {
+        try {
+            return await Vulnerable_Situation.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Vulnerable Situation: ${error.message}`);
+        }
+    } 
     static async update(id, data) {
         try {
             const vulnerableSituationRecord = await this.getById(id);

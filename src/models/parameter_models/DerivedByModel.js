@@ -29,6 +29,13 @@ export class DerivedByModel {
             throw new Error(`Error creating derived by record: ${error.message}`);
         }
     }
+    static async bulkCreate(data) {
+        try {
+            return await Derived_By.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Derived By: ${error.message}`);
+        }
+    }
 
     static async update(id, data) {
         try {

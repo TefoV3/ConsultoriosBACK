@@ -13,6 +13,11 @@ export class DerivedByController {
 
     static async getById(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdDerivedby = await DerivedByModel.bulkCreate(req.body);
+                return res.status(201).json(createdDerivedby);
+            }
+            // Si es un objeto, usa create normal
             const { id } = req.params;
             const data = await DerivedByModel.getById(id);
             if (!data) return res.status(404).json({ message: "Derived by record not found" });

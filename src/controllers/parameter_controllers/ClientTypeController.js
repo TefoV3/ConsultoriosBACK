@@ -23,6 +23,11 @@ export class ClientTypeController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdClientType = await ClientTypeModel.bulkCreate(req.body);
+                return res.status(201).json(createdClientType);
+            }
+            // Si es un objeto, usa create normal
             const { Client_Type_Name } = req.body;
             if (!Client_Type_Name) return res.status(400).json({ message: 'Client Type Name is required' });
 

@@ -29,6 +29,13 @@ export class AcademicInstructionModel {
             throw new Error(`Error creating academic instruction: ${error.message}`);
         }
     }
+    static async bulkCreate(data) {
+        try {
+            return await Academic_Instruction.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Academic Instruction: ${error.message}`);
+        }
+    }
 
     static async update(id, data) {
         try {

@@ -28,7 +28,13 @@ export class DisabilityModel {
             throw new Error(`Error creating disability: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Disability.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Disability: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const disabilityRecord = await this.getById(id);

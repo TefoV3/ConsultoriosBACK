@@ -28,7 +28,13 @@ export class TypeOfAttentionModel {
             throw new Error(`Error creating type of attention: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Type_Of_Attention.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Type Of Attention: ${error.message}`);
+        }
+    }   
     static async update(id, data) {
         try {
             const typeOfAttentionRecord = await this.getById(id);

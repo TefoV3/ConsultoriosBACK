@@ -29,7 +29,13 @@ export class SexModel {
             throw new Error(`Error creating sex: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Sex.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Sex: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const sexRecord = await this.getById(id);

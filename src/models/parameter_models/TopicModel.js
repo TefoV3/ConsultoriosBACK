@@ -40,7 +40,13 @@ export class TopicModel {
             throw new Error(`Error creating topic: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Topic.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Topic: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const topicRecord = await this.getById(id);

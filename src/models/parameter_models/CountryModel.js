@@ -27,7 +27,13 @@ export class CountryModel {
             throw new Error(`Error creating country: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Country.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Country: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const countryRecord = await this.getById(id);

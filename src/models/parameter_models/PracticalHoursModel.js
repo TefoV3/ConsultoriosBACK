@@ -29,7 +29,13 @@ export class PracticalHoursModel {
             throw new Error(`Error creating practical hours: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Practical_Hours.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Practical Hours: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const hoursRecord = await this.getById(id);

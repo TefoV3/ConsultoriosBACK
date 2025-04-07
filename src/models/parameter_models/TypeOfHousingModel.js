@@ -28,7 +28,13 @@ export class TypeOfHousingModel {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Type_Of_Housing.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Type Of Housing: ${error.message}`);
+        }
+    }  
     static async update(id, data) {
         try {
             const Type_Of_HousingRecord = await this.getById(id);

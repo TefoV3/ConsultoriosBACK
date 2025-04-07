@@ -24,6 +24,11 @@ export class CivilStatusController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdCivilStatus = await CivilStatusModel.bulkCreate(req.body);
+                return res.status(201).json(createdCivilStatus);
+            }
+            // Si es un objeto, usa create normal
             const newCivilStatus = await CivilStatusModel.create(req.body);
             res.status(201).json(newCivilStatus);
         } catch (error) {

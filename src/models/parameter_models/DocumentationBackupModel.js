@@ -29,7 +29,13 @@ export class DocumentationBackupModel {
             throw new Error(`Error creating documentation backup: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Documentation_Backup.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Documentation Backup: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const documentationBackupRecord = await this.getById(id);
