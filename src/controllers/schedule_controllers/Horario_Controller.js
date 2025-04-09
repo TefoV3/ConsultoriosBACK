@@ -64,6 +64,44 @@ export class HorarioController {
     }
   }
 
+   // Nuevo método: Obtener horarios completos para extracción, sin filtrar por Horario_IsDeleted.
+  // Si area es null o vacía, se retornan los horarios de todas las áreas.
+  static async getHorariosCompletosExtraccion(req, res) {
+    try {
+      const { periodoId, area } = req.query;
+      // area puede venir como vacío o nulo, se gestiona en el modelo
+      const horarios = await HorarioModel.getHorariosCompletosExtraccion(periodoId, area);
+      res.status(200).json(horarios);
+    } catch (error) {
+      console.error("❌ Error en getHorariosCompletosExtraccion:", error.message);
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  static async getHorarioCompletoPorUsuarioXPeriodo(req, res) {
+    try {
+      const { usuarioXPeriodoId } = req.params;
+      const { modalidad } = req.query;
+  
+      if (!usuarioXPeriodoId) {
+        return res.status(400).json({ message: "Falta el parámetro usuarioXPeriodoId" });
+      }
+  
+      const horarios = await HorarioModel.getHorarioCompletoPorUsuarioXPeriodo(usuarioXPeriodoId, modalidad);
+  
+      if (!horarios || horarios.length === 0) {
+        return res.status(404).json({ message: "No hay horarios asignados al usuario con esa modalidad" });
+      }
+  
+      res.status(200).json(horarios);
+    } catch (error) {
+      console.error("❌ Error en getHorarioCompletoPorUsuarioXPeriodo:", error.message);
+      res.status(500).json({ message: "Error al obtener los horarios completos del usuario" });
+    }
+  }
+  
+
+
   // Cambio administrativo: se eliminan lógicamente TODOS los horarios activos para el usuario y se crean nuevos
   static async cambioAdministrativo(req, res) {
     try {

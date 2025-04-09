@@ -304,7 +304,7 @@ import { sequelize } from "../../database/database.js";
             //fecha quemada para pruebas 24 de marzo 2025
             //fecha = '2025-03-24';
 
-          fecha = '2025-03-24';
+          //fecha = '2025-03-24';
 
           // Asumimos que 'fecha' es una cadena "YYYY-MM-DD" en UTC
           const start = new Date(fecha);

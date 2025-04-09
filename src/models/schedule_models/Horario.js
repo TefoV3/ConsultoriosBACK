@@ -223,4 +223,156 @@ export class HorarioModel {
       throw new Error(`Error al obtener horarios completos: ${error.message}`);
     }
   }
+
+
+  static async getHorarioCompletoPorUsuarioXPeriodo(usuarioXPeriodoId, modalidad = null) {
+    try {
+      let query = `
+        SELECT 
+          h.Horario_ID,
+          h.UsuarioXPeriodo_ID,
+          h.Horario_Modalidad,
+          h.Horario_IsDeleted,
+          h.createdAt,
+          h.updatedAt,
+  
+          h.Horario_Dia_Lunes,
+          phL.Parametro_Horario_Hora_Entrada AS Lunes_Entrada,
+          phL.Parametro_Horario_Hora_Salida  AS Lunes_Salida,
+          phL.Parametro_Horario_Tipo        AS Lunes_Tipo,
+  
+          h.Horario_Dia_Martes,
+          phM.Parametro_Horario_Hora_Entrada AS Martes_Entrada,
+          phM.Parametro_Horario_Hora_Salida  AS Martes_Salida,
+          phM.Parametro_Horario_Tipo        AS Martes_Tipo,
+  
+          h.Horario_Dia_Miercoles,
+          phMi.Parametro_Horario_Hora_Entrada AS Miercoles_Entrada,
+          phMi.Parametro_Horario_Hora_Salida  AS Miercoles_Salida,
+          phMi.Parametro_Horario_Tipo        AS Miercoles_Tipo,
+  
+          h.Horario_Dia_Jueves,
+          phJ.Parametro_Horario_Hora_Entrada AS Jueves_Entrada,
+          phJ.Parametro_Horario_Hora_Salida  AS Jueves_Salida,
+          phJ.Parametro_Horario_Tipo        AS Jueves_Tipo,
+  
+          h.Horario_Dia_Viernes,
+          phV.Parametro_Horario_Hora_Entrada AS Viernes_Entrada,
+          phV.Parametro_Horario_Hora_Salida  AS Viernes_Salida,
+          phV.Parametro_Horario_Tipo        AS Viernes_Tipo
+        FROM Horarios h
+        LEFT JOIN Parametro_Horarios phL ON h.Horario_Dia_Lunes = phL.Parametro_Horario_ID AND phL.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phM ON h.Horario_Dia_Martes = phM.Parametro_Horario_ID AND phM.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phMi ON h.Horario_Dia_Miercoles = phMi.Parametro_Horario_ID AND phMi.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phJ ON h.Horario_Dia_Jueves = phJ.Parametro_Horario_ID AND phJ.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phV ON h.Horario_Dia_Viernes = phV.Parametro_Horario_ID AND phV.Parametro_Horario_IsDeleted = false
+        WHERE h.UsuarioXPeriodo_ID = :usuarioXPeriodoId
+      `;
+  
+      const replacements = { usuarioXPeriodoId };
+  
+      if (modalidad && modalidad.trim() !== '') {
+        query += ` AND h.Horario_Modalidad = :modalidad`;
+        replacements.modalidad = modalidad;
+      }
+  
+      query += ` ORDER BY h.Horario_ID;`;
+  
+      const horarios = await sequelize.query(query, {
+        replacements,
+        type: QueryTypes.SELECT
+      });
+  
+      return horarios;
+    } catch (error) {
+      console.error(error);
+      throw new Error(`Error al obtener horario completo por UsuarioXPeriodo: ${error.message}`);
+    }
+  }
+  
+  
+
+
+
+
+   // Obtener horarios completos para extracción (sin filtrar por Horario_IsDeleted)
+  // Si area es nula o vacía, se retornarán horarios de todas las áreas
+  static async getHorariosCompletosExtraccion(periodoId, area) {
+    try {
+      let query = `
+        SELECT 
+          h.Horario_ID,
+          h.UsuarioXPeriodo_ID,
+          h.Horario_Modalidad,
+          h.Horario_IsDeleted,
+          h.createdAt,
+          h.updatedAt,
+          
+          h.Horario_Dia_Lunes,
+          phL.Parametro_Horario_Hora_Entrada AS Lunes_Entrada,
+          phL.Parametro_Horario_Hora_Salida  AS Lunes_Salida,
+          phL.Parametro_Horario_Tipo        AS Lunes_Tipo,
+          
+          h.Horario_Dia_Martes,
+          phM.Parametro_Horario_Hora_Entrada AS Martes_Entrada,
+          phM.Parametro_Horario_Hora_Salida  AS Martes_Salida,
+          phM.Parametro_Horario_Tipo        AS Martes_Tipo,
+          
+          h.Horario_Dia_Miercoles,
+          phMi.Parametro_Horario_Hora_Entrada AS Miercoles_Entrada,
+          phMi.Parametro_Horario_Hora_Salida  AS Miercoles_Salida,
+          phMi.Parametro_Horario_Tipo        AS Miercoles_Tipo,
+          
+          h.Horario_Dia_Jueves,
+          phJ.Parametro_Horario_Hora_Entrada AS Jueves_Entrada,
+          phJ.Parametro_Horario_Hora_Salida  AS Jueves_Salida,
+          phJ.Parametro_Horario_Tipo        AS Jueves_Tipo,
+          
+          h.Horario_Dia_Viernes,
+          phV.Parametro_Horario_Hora_Entrada AS Viernes_Entrada,
+          phV.Parametro_Horario_Hora_Salida  AS Viernes_Salida,
+          phV.Parametro_Horario_Tipo        AS Viernes_Tipo,
+          
+          u.Internal_ID,
+          u.Internal_Name,
+          u.Internal_LastName,
+          u.Internal_Area
+        FROM Horarios h
+        INNER JOIN UsuarioXPeriodos ux ON h.UsuarioXPeriodo_ID = ux.UsuarioXPeriodo_ID
+        INNER JOIN Internal_Users u ON ux.Internal_ID = u.Internal_ID
+        LEFT JOIN Parametro_Horarios phL 
+          ON h.Horario_Dia_Lunes = phL.Parametro_Horario_ID AND phL.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phM 
+          ON h.Horario_Dia_Martes = phM.Parametro_Horario_ID AND phM.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phMi 
+          ON h.Horario_Dia_Miercoles = phMi.Parametro_Horario_ID AND phMi.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phJ 
+          ON h.Horario_Dia_Jueves = phJ.Parametro_Horario_ID AND phJ.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phV 
+          ON h.Horario_Dia_Viernes = phV.Parametro_Horario_ID AND phV.Parametro_Horario_IsDeleted = false
+        WHERE ux.Periodo_ID = :periodoId
+      `;
+  
+      const replacements = { periodoId };
+  
+      if (area && area.trim() !== '') {
+        query += ` AND u.Internal_Area = :area`;
+        replacements.area = area;
+      }
+  
+      query += ` ORDER BY h.Horario_ID;`;
+  
+      const horarios = await sequelize.query(query, {
+        replacements,
+        type: QueryTypes.SELECT
+      });
+  
+      return horarios;
+    } catch (error) {
+      console.error(error);
+      throw new Error(`Error al obtener horarios completos extracción: ${error.message}`);
+    }
+  }
+  
+  
 }

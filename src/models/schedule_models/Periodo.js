@@ -1,5 +1,7 @@
 import { Periodo } from "../../schemas/schedules_tables/Periodo_schema.js";
 import { Seguimiento_Semanal } from "../../schemas/schedules_tables/Seguimiento_Semanal_schema.js";
+import { Op } from "sequelize";
+
 export class PeriodoModel {
 
     /** 🔹 Obtener todos los períodos activos */
@@ -41,30 +43,75 @@ export class PeriodoModel {
           }
 
     /** 🔹 Crear un nuevo período */
-    //TODO: BULK CREATE
     static async create(data) {
         try {
-            console.log(data);
+            // Verificar que no se cruce con otros períodos existentes
+            const conflictos = await Periodo.findOne({
+                where: {
+                    Periodo_IsDeleted: false,
+                    [Op.or]: [
+                        {
+                            Periodo_Inicio: { [Op.between]: [data.Periodo_Inicio, data.Periodo_Fin] }
+                        },
+                        {
+                            Periodo_Fin: { [Op.between]: [data.Periodo_Inicio, data.Periodo_Fin] }
+                        },
+                        {
+                            Periodo_Inicio: { [Op.lte]: data.Periodo_Inicio },
+                            Periodo_Fin: { [Op.gte]: data.Periodo_Fin }
+                        }
+                    ]
+                }
+            });
+
+            console.log('Conflictos:', conflictos); // 🔹 Log para depuración
+    
+            if (conflictos) {
+                console.log('Conflictos:', conflictos); // 🔹 Log para depuración
+                throw new Error('Ya existe un período que se solapa con las fechas ingresadas.');
+            }
+    
             return await Periodo.create(data);
         } catch (error) {
-            console.log(error);
             throw new Error(`Error al crear período: ${error.message}`);
         }
     }
-
-    /** 🔹 Actualizar un período solo si no está eliminado (reutilizando getById) */
+    
     static async update(id, data) {
         try {
-            const periodo = await this.getById(id); // ✅ Reutiliza getById para verificar si el período existe
-
-            if (!periodo) return null; // 🔹 Si el período no existe o está eliminado
-
-            const [rowsUpdated] = await Periodo.update(data, {
-                where: { Periodo_ID: id, Periodo_IsDeleted: false } // ✅ Aplica el filtro en la actualización
+            const periodo = await this.getById(id);
+            if (!periodo) return null;
+    
+            // Verificar solapamiento con otros períodos, excluyendo el actual
+            const conflictos = await Periodo.findOne({
+                where: {
+                    Periodo_ID: { [Op.ne]: id }, // Excluir el mismo
+                    Periodo_IsDeleted: false,
+                    [Op.or]: [
+                        {
+                            Periodo_Inicio: { [Op.between]: [data.Periodo_Inicio, data.Periodo_Fin] }
+                        },
+                        {
+                            Periodo_Fin: { [Op.between]: [data.Periodo_Inicio, data.Periodo_Fin] }
+                        },
+                        {
+                            Periodo_Inicio: { [Op.lte]: data.Periodo_Inicio },
+                            Periodo_Fin: { [Op.gte]: data.Periodo_Fin }
+                        }
+                    ]
+                }
             });
-
-            if (rowsUpdated === 0) return null; // 🔹 Si no se actualizó nada
-            return await this.getById(id); // ✅ Retorna el período actualizado
+    
+            if (conflictos) {
+                throw new Error('Ya existe otro período que se cruza con las fechas ingresadas.');
+            }
+    
+            const [rowsUpdated] = await Periodo.update(data, {
+                where: { Periodo_ID: id, Periodo_IsDeleted: false }
+            });
+    
+            if (rowsUpdated === 0) return null;
+            return await this.getById(id);
         } catch (error) {
             throw new Error(`Error al actualizar período: ${error.message}`);
         }

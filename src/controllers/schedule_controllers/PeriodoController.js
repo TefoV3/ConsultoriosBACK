@@ -41,22 +41,33 @@ static async getPeriodoConSeguimientos (req, res) {
             const newPeriodo = await PeriodoModel.create(req.body);
             return res.status(201).json(newPeriodo);
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            console.error(`❌ Error al crear el período: ${error.message}`);
+            // Si el error es por fechas solapadas, lo manejamos como 400
+            if (error.message.includes("solapa")) {
+                return res.status(400).json({ error: error.message });
+            }
+            return res.status(500).json({ error: "Error interno al crear el período." });
         }
     }
+    
 
     static async update(req, res) {
         try {
             const { id } = req.params;
             const updatedPeriodo = await PeriodoModel.update(id, req.body);
-
+    
             if (!updatedPeriodo) return res.status(404).json({ message: "Periodo no encontrado" });
-
+    
             return res.json(updatedPeriodo);
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            // Si es por fechas solapadas, responder con 400
+            if (error.message.includes("solapa") || error.message.includes("cruza")) {
+                return res.status(400).json({ error: error.message });
+            }
+            return res.status(500).json({ error: "Error interno al actualizar el período." });
         }
     }
+    
 
     static async delete(req, res) {
         try {
