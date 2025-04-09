@@ -32,15 +32,15 @@ import dotenv from "dotenv";
 //USO LOCAL
 
 
-// export const sequelize = new Sequelize(
-//       'prueba', 
-//        'root', 
-//       '12345', 
-//       {
-//          host: 'localhost',
-//           dialect: 'mysql'
-//      }
-//     )
+export const sequelize = new Sequelize(
+      'prueba', 
+       'root', 
+      '12345', 
+      {
+         host: 'localhost',
+          dialect: 'mysql'
+     }
+    )
 
 //TefoVirtual
 // export const sequelize = new Sequelize(

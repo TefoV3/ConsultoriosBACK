@@ -32,9 +32,6 @@ export class ActivityModel {
         try {
             return await Activity.findAll({
                 where: { Init_Code: codeCase },
-                attributes: {
-                    exclude: ["Activity_Document"], // Exclude the BLOB field from the result
-                },
             });
         } catch (error) {
             throw new Error(`Error retrieving activity: ${error.message}`);
