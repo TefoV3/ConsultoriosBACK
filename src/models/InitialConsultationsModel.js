@@ -263,6 +263,7 @@ export class InitialConsultationsModel {
                 Init_Complexity: data.Init_Complexity,
                 Init_Status: data.Init_Status,
                 Init_SocialWork : data.Init_SocialWork,
+                Init_MandatorySW: data.Init_MandatorySW,
                 Init_Type: data.Init_Type,
                 Init_AlertNote: buildInitAlertNote({
                     prefix: "No cumple perfil socio económico:",
@@ -390,6 +391,7 @@ export class InitialConsultationsModel {
                 Init_Complexity: data.Init_Complexity,
                 Init_Status: data.Init_Status,
                 Init_SocialWork : data.Init_SocialWork,
+                Init_MandatorySW: data.Init_MandatorySW,
                 Init_Type: data.Init_Type,
                 Init_AlertNote: buildInitAlertNote({
                 prefix: "No cumple perfil socio económico:",

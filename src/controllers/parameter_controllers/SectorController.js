@@ -22,6 +22,17 @@ export class SectorController {
         }
     }
 
+    static async getSectorZone(req, res) {
+        try {
+            const { id } = req.params;
+            const data = await SectorModel.getSectorZone(id);
+            if (!data) return res.status(404).json({ message: "Sector not found" });
+            res.status(200).json(data);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
     static async create(req, res) {
         try {
             if (Array.isArray(req.body)) {

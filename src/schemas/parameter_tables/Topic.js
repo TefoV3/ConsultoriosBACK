@@ -9,7 +9,7 @@ export const Topic = sequelize.define('Topic', {
         autoIncrement: true
     },
     Topic_Name: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(210),
         allowNull: false
     },
     Subject_FK: {
