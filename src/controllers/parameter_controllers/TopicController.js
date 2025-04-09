@@ -36,6 +36,17 @@ export class TopicController {
         }
     }
 
+    static async getBySubjectId(req, res) {
+        try {
+            const { subjectId } = req.params;
+            const data = await TopicModel.getBySubjectId(subjectId);
+            if (!data) return res.status(404).json({ message: "No topics found for this subject" });
+            res.status(200).json(data);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
     static async update(req, res) {
         try {
             const { id } = req.params;

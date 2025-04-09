@@ -11,4 +11,6 @@ AssignmentRouter.get('/assignment/student/initcode/:initCode', AssignmentControl
 AssignmentRouter.post('/assignment', AssignmentController.createAssignment);
 AssignmentRouter.put('/assignment/:id', AssignmentController.update);
 AssignmentRouter.delete('/assignment/:id', AssignmentController.delete);
-AssignmentRouter.post('/assignment/equitativa', AssignmentController.assignCasesEquitably);
+AssignmentRouter.post('/assignment/assign-pending-by-area', AssignmentController.assignPendingByArea);
+
+AssignmentRouter.put('/assignment/initcode/:initCode', AssignmentController.updateByInitCode);

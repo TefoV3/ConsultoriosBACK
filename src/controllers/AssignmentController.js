@@ -1,5 +1,6 @@
 import { AssignmentModel } from "../models/AssignmentModel.js";
 import { InternalUser } from "../schemas/Internal_User.js";
+import { getUserId } from '../sessionData.js';
 
 export class AssignmentController {
     static async getAssignments(req, res) {
@@ -59,13 +60,37 @@ export class AssignmentController {
         }
     }
 
-    static async assignCasesEquitably(req, res) {
+    /**
+     * Endpoint para disparar la asignación equitativa de casos pendientes por área.
+     * Recibe el 'area' en el body y el 'internal-id' del asignador en los headers.
+     */
+    static async assignPendingByArea(req, res) {
         try {
-            // Llama al método para asignar casos balanceados
-            const result = await AssignmentModel.assignCasesEquitably();
-            return res.status(200).json(result);
+            const { area } = req.body; // Recibe el área desde el cuerpo de la solicitud
+            if (!area) {
+                return res.status(400).json({ message: "El parámetro 'area' es requerido en el body." });
+            }
+
+            // Obtener el ID del usuario que realiza la acción desde los headers
+            const assignerId = req.headers["internal-id"];
+            if (!assignerId) {
+                 return res.status(400).json({ message: "El header 'internal-id' es requerido." });
+                 // Considera 401 si la ausencia del header implica no autenticado
+                 // return res.status(401).json({ message: "No autorizado o header 'internal-id' ausente." });
+            }
+
+            const result = await AssignmentModel.assignPendingCasesByAreaEquitably(area, assignerId);
+
+            res.status(200).json(result); // Devuelve el mensaje y las asignaciones creadas
+
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            console.error("Controller Error - assignPendingByArea:", error);
+            // Si el error tiene un statusCode (como el 404 que pusimos en el modelo), úsalo
+            if (error.statusCode) {
+                return res.status(error.statusCode).json({ message: error.message });
+            }
+            // Error genérico del servidor para otros casos
+            res.status(500).json({ message: "Ocurrió un error al procesar la asignación de casos." });
         }
     }
 
@@ -80,6 +105,45 @@ export class AssignmentController {
             return res.json(updatedAssignment);
         } catch (error) {
             return res.status(500).json({ error: error.message });
+        }
+    }
+
+    static async updateByInitCode(req, res) {
+        try {
+            const { initCode } = req.params;
+            const internalId = req.headers["internal-id"]; // Obtener el usuario interno desde los headers
+            const dataToUpdate = req.body;
+
+            // Validación de parámetros necesarios
+            if (!internalId) {
+                return res.status(400).json({ message: "El header 'internal-id' es requerido." });
+            }
+            // Aunque la ruta lo requiere, una validación extra no está de más
+            if (!initCode) {
+                return res.status(400).json({ message: "El parámetro 'initCode' es requerido en la URL." });
+            }
+            // Verificar si hay datos para actualizar en el body
+            if (Object.keys(dataToUpdate).length === 0) {
+                return res.status(400).json({ message: "No se proporcionaron datos para actualizar en el body." });
+            }
+
+            // Llamar al método del modelo correspondiente
+            const updatedAssignment = await AssignmentModel.updateByInitCode(initCode, dataToUpdate, internalId);
+
+            // Verificar el resultado del modelo (que devuelve null si no encuentra o no actualiza)
+            if (!updatedAssignment) {
+                // Devolver 404 si no se encontró o no hubo cambios
+                return res.status(404).json({ message: `Assignment with Init_Code ${initCode} not found or no changes made.` });
+            }
+
+            // Devolver la asignación actualizada si todo fue bien
+            return res.json(updatedAssignment);
+
+        } catch (error) {
+            // Loggear el error específico del controlador
+            console.error("Controller Error - updateByInitCode:", error);
+            // Devolver un error 500 genérico
+            return res.status(500).json({ error: `Error updating assignment by Init_Code: ${error.message}` });
         }
     }
 

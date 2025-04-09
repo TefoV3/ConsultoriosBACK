@@ -22,6 +22,21 @@ export class CityController {
         }
     }
 
+    static async getByProvinceId(req, res) {
+        try {
+            const { provinceId } = req.params;
+            const data = await CityModel.getByProvinceId(provinceId);
+            if (!data) return res.status(404).json({ message: "City not found" });
+            res.status(200).json(data);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+
+
+
+
     static async create(req, res) {
         try {
             if (Array.isArray(req.body)) {

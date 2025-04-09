@@ -50,7 +50,7 @@ export const User = sequelize.define('User', {
     User_Phone: DataTypes.STRING(10),
     User_Email: DataTypes.STRING(70),
     User_Address: DataTypes.STRING(250),
-    User_Sector: DataTypes.STRING(10),
+    User_Sector: DataTypes.STRING(50),
     User_Zone: DataTypes.STRING(15),
     User_ReferenceRelationship : DataTypes.STRING(50),
     User_ReferenceName: DataTypes.STRING(50),
