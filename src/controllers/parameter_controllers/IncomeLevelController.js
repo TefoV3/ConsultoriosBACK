@@ -27,6 +27,11 @@ export class IncomeLevelController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdIncomeLevel = await IncomeLevelModel.bulkCreate(req.body);
+                return res.status(201).json(createdIncomeLevel);
+            }
+            // Si es un objeto, usa create normal
             const IncomeLevel = req.body;
             const newIncomeLevel = await IncomeLevelModel.create(IncomeLevel);
             res.status(201).json(newIncomeLevel);

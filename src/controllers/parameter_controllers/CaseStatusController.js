@@ -26,6 +26,12 @@ export class CaseStatusController {
 
     static async create(req, res) {
         try {
+            // Si el body es un array, usa bulkCreate
+                if (Array.isArray(req.body)) {
+                    const createdcaseStatus = await CaseStatusModel.bulkCreate(req.body);
+                    return res.status(201).json(createdcaseStatus);
+                }
+                // Si es un objeto, usa create normal
             const caseStatus = await CaseStatusModel.create(req.body);
             res.status(201).json(caseStatus);
         } catch (error) {

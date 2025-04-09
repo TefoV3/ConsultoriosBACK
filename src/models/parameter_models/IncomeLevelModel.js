@@ -28,7 +28,13 @@ export class IncomeLevelModel {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Income_Level.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Income_Level: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const Income_LevelRecord = await this.getById(id);

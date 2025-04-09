@@ -27,6 +27,11 @@ export class HealthInsuranceController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdHealthInsurance = await HealthInsuranceModel.bulkCreate(req.body);
+                return res.status(201).json(createdHealthInsurance);
+            }
+            // Si es un objeto, usa create normal
             const HealthInsurance = req.body;
             const newHealthInsurance = await HealthInsuranceModel.create(HealthInsurance);
             res.status(201).json(newHealthInsurance);

@@ -28,6 +28,15 @@ export class ZoneModel {
         }
     }
 
+        // EthnicityModel.js
+    static async bulkCreate(data) {
+        try {
+            return await Zone.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Zonas: ${error.message}`);
+        }
+    }
+
     static async update(id, data) {
         try {
             const zoneRecord = await this.getById(id);

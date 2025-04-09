@@ -6,6 +6,10 @@ import { Horas_Extraordinarias } from "./Horas_Extraordinarias_schema.js";
 import { Seguimiento_Semanal } from "./Seguimiento_Semanal_schema.js";
 import { Horarios } from "./Horario_schema.js";
 import { Registro_Asistencia } from "./Registro_Asistencia_Schema.js";
+import { Resumen_Horas_Semanales } from "./Resumen_Horas_Semanales_schema.js";
+
+
+
 /* 🔹 Relación N:M entre InternalUser y Periodo a través de UsuarioXPeriodo */
 InternalUser.belongsToMany(Periodo, { 
     through: UsuarioXPeriodo, 
@@ -100,6 +104,16 @@ Registro_Asistencia.belongsTo(UsuarioXPeriodo, {
     as: "usuarioXPeriodo",
     onDelete: 'RESTRICT',
     onUpdate: 'CASCADE'
+});
+
+// Relación 1:N entre Resumen_Horas_Estudiantes y Resumen_Horas_Semanales
+Resumen_Horas_Estudiantes.hasMany(Resumen_Horas_Semanales, { 
+    foreignKey: "ResumenGeneral_ID",
+    as: "resumenSemanal"
+});
+Resumen_Horas_Semanales.belongsTo(Resumen_Horas_Estudiantes, { 
+    foreignKey: "ResumenGeneral_ID",
+    as: "resumenGeneral"
 });
 
 console.log("📌 Relaciones de Sequelize con InternalUser establecidas correctamente.");

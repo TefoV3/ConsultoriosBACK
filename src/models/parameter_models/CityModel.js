@@ -31,6 +31,18 @@ export class CityModel {
         }
     }
 
+    static async getByProvinceId(provinceId) {
+        try {
+            return await City.findAll({
+                where: { Province_FK: provinceId, City_Status: true },
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving cities by province ID: ${error.message}`);
+        }
+    }
+
+
+
     static async create(data) {
         try {
             return await City.create(data);

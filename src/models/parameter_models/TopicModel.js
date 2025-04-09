@@ -40,6 +40,28 @@ export class TopicModel {
             throw new Error(`Error creating topic: ${error.message}`);
         }
     }
+    static async bulkCreate(data) {
+        try {
+            return await Topic.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Topic: ${error.message}`);
+        }
+    }
+
+    static async getBySubjectId(subjectId) {
+        try {
+            return await Topic.findAll({
+                where: { Subject_FK: subjectId, Topic_Status: true },
+            });
+        } catch (error) {
+            throw new Error(`Error retrieving topics by subject ID: ${error.message}`);
+        }
+    }
+
+
+
+
+
 
     static async update(id, data) {
         try {

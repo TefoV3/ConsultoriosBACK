@@ -27,7 +27,13 @@ export class CatastrophicIllnessModel {
                     throw new Error(`Error creating catastrophic illness: ${error.message}`);
                 }
             }
-        
+            static async bulkCreate(data) {
+                try {
+                    return await Catastrophic_Illness.bulkCreate(data); // Usa el bulkCreate de Sequelize
+                } catch (error) {
+                    throw new Error(`Error creating Catastrophic Illness: ${error.message}`);
+                }
+            }
             static async update(id, data) {
                 try {
                     const catastrophicIllnessRecord = await this.getById(id);

@@ -27,6 +27,11 @@ export class FamilyGroupController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdDocumentation = await FamilyGroupModel.bulkCreate(req.body);
+                return res.status(201).json(createdDocumentation);
+            }
+            // Si es un objeto, usa create normal
             const FamilyGroup = req.body;
             const newFamilyGroup = await FamilyGroupModel.create(FamilyGroup);
             res.status(201).json(newFamilyGroup);

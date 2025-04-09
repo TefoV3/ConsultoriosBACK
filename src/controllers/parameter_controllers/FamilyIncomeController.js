@@ -27,6 +27,11 @@ export class FamilyIncomeController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdFamilyIncome = await FamilyIncomeModel.bulkCreate(req.body);
+                return res.status(201).json(createdFamilyIncome);
+            }
+            // Si es un objeto, usa create normal
             const FamilyIncome = req.body;
             const newFamilyIncome = await FamilyIncomeModel.create(FamilyIncome);
             res.status(201).json(newFamilyIncome);

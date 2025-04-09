@@ -24,6 +24,11 @@ export class ComplexityController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdComplexity = await ComplexityModel.bulkCreate(req.body);
+                return res.status(201).json(createdComplexity);
+            }
+            // Si es un objeto, usa create normal
             const newComplexity = await ComplexityModel.create(req.body);
             res.status(201).json(newComplexity);
         } catch (error) {

@@ -29,7 +29,13 @@ export class PeriodTypeModel {
             throw new Error(`Error creating period type: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Period_Type.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Period Type: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const periodTypeRecord = await this.getById(id);

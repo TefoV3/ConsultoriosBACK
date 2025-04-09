@@ -28,7 +28,13 @@ export class FamilyIncomeModel {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Family_Income.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Family Income: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const Family_IncomeRecord = await this.getById(id);

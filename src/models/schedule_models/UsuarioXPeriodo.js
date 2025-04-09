@@ -32,12 +32,14 @@ export class UsuarioXPeriodoModel {
                     {
                         model: InternalUser,
                         as: "usuario",
-                        attributes: ["Internal_ID", "Internal_Name", "Internal_LastName", "Internal_Email", "Internal_Area", "Internal_Huella"]
+                        attributes: ["Internal_ID", "Internal_Name", "Internal_LastName", "Internal_Email", "Internal_Phone", "Internal_Area", "Internal_Status", "Internal_Type", "Internal_Huella"],
+                        where: { Internal_Status: "Activo" } // ✅ Filtro adicional
                     },
                     {
                         model: Periodo,
                         as: "periodo",
-                        attributes: ["Periodo_ID", "PeriodoNombre"]
+                        attributes: ["Periodo_ID", "PeriodoNombre"],
+                        where: { Periodo_IsDeleted: false } // ✅ Filtro adicional
                     }
                 ]
             });
@@ -80,7 +82,8 @@ export class UsuarioXPeriodoModel {
                     {
                         model: InternalUser,
                         as: "usuario",
-                        attributes: ["Internal_ID", "Internal_Name", "Internal_LastName", "Internal_Email", "Internal_Area"]
+                        attributes: ["Internal_ID", "Internal_Name", "Internal_LastName", "Internal_Email", "Internal_Area"],
+                        where: { Internal_Status: "Activo" } // ✅ Filtro adicional
                     },
                     {
                         model: Periodo,
@@ -129,6 +132,34 @@ export class UsuarioXPeriodoModel {
             throw new Error(`Error al obtener usuarios con períodos: ${error.message}`);
         }
     }
+
+    static async getByUsuarioXPeriodoId(usuarioXPeriodoId) {
+        try {
+          return await UsuarioXPeriodo.findOne({
+            where: { 
+              UsuarioXPeriodo_ID: usuarioXPeriodoId, 
+              UsuarioXPeriodo_IsDeleted: false 
+            },
+            include: [
+              {
+                model: InternalUser,
+                as: "usuario",
+                attributes: ["Internal_ID", "Internal_Name", "Internal_LastName", "Internal_Email"],
+                where: { Internal_Status: "Activo" } // ✅ Filtro adicional
+              },
+              {
+                model: Periodo,
+                as: "periodo",
+                attributes: ["Periodo_ID", "PeriodoNombre"],
+                where: { Periodo_IsDeleted: false } // ✅ Filtro adicional
+              }
+            ]
+          });
+        } catch (error) {
+          throw new Error(`Error al obtener usuarioXPeriodo por ID: ${error.message}`);
+        }
+      }
+      
 
     static async create(data) {
         try {

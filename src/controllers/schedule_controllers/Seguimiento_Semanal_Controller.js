@@ -91,4 +91,20 @@ export class Seguimiento_SemanalController {
             res.status(500).json({ error: error.message });
         }
     }
+
+    static async recalcularSemanas(req, res) {
+        try {
+          const periodoId = parseInt(req.params.periodoId);
+          const { nuevaFechaInicio, fechaFin } = req.body;
+          // Se asume que 'nuevaFechaInicio' y 'fechaFin' vienen en formato ISO
+          const resultado = await Seguimiento_SemanalModel.recalcularSemanas(
+            periodoId,
+            new Date(nuevaFechaInicio),
+            new Date(fechaFin)
+          );
+          res.status(200).json(resultado);
+        } catch (error) {
+          res.status(500).json({ message: error.message });
+        }
+      }
 }

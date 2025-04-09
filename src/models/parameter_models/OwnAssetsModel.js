@@ -28,7 +28,13 @@ export class OwnAssetsModel {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Own_Assets.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Own Assets: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const Own_AssetsRecord = await this.getById(id);

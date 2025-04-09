@@ -24,6 +24,11 @@ export class NumberOfAttemptsController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const creatednewNumberOfAttempts = await NumberOfAttemptsModel.bulkCreate(req.body);
+                return res.status(201).json(creatednewNumberOfAttempts);
+            }
+            // Si es un objeto, usa create normal
             const newNumberOfAttempts = await NumberOfAttemptsModel.create(req.body);
             res.status(201).json(newNumberOfAttempts);
         } catch (error) {

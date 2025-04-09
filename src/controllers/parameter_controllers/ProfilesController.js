@@ -23,6 +23,11 @@ export class ProfilesController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdprofile = await ProfilesModel.bulkCreate(req.body);
+                return res.status(201).json(createdprofile);
+            }
+            // Si es un objeto, usa create normal
             const profile = await ProfilesModel.create(req.body);
             return res.status(201).json(profile);
         } catch (error) {

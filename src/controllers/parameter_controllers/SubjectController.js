@@ -24,6 +24,11 @@ export class SubjectController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdSubject = await SubjectModel.bulkCreate(req.body);
+                return res.status(201).json(createdSubject);
+            }
+            // Si es un objeto, usa create normal
             const newSubject = await SubjectModel.create(req.body);
             res.status(201).json(newSubject);
         } catch (error) {

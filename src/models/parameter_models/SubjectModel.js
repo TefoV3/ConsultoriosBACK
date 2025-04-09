@@ -27,7 +27,13 @@ export class SubjectModel {
             throw new Error(`Error creating subject: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Subject.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Subject: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const subjectRecord = await this.getById(id);

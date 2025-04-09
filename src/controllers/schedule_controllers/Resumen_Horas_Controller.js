@@ -75,4 +75,17 @@ export class resumenHorasController {
         }
     }
 
+    static async getResumenConDatosByUser(req, res) {
+        const { id } = req.params; // id se refiere al Internal_ID del estudiante
+        try {
+            const resumen = await Resumen_Horas_EstudiantesModel.getResumenConDatosByUser(id);
+            if (!resumen) {
+                return res.status(404).json({ message: "Resumen de horas no encontrado para el usuario" });
+            }
+            return res.status(200).json(resumen);
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
+    }
+
 }

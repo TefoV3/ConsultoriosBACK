@@ -24,6 +24,11 @@ export class SexController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdSex = await SexModel.bulkCreate(req.body);
+                return res.status(201).json(createdSex);
+            }
+            // Si es un objeto, usa create normal
             const newSex = await SexModel.create(req.body);
             res.status(201).json(newSex);
         } catch (error) {

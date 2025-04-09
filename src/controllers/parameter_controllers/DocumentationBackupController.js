@@ -13,6 +13,11 @@ export class DocumentationBackupController {
 
     static async getById(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdDocumentation = await DocumentationBackupModel.bulkCreate(req.body);
+                return res.status(201).json(createdDocumentation);
+            }
+            // Si es un objeto, usa create normal
             const { id } = req.params;
             const data = await DocumentationBackupModel.getById(id);
             if (!data) return res.status(404).json({ message: "Documentation backup not found" });

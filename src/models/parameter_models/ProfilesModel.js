@@ -29,7 +29,13 @@ export class ProfilesModel {
             throw new Error(`Error creating profile: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Profiles.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Profiles: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const profileRecord = await this.getById(id);

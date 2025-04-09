@@ -24,6 +24,12 @@ export class AcademicInstructionController {
 
     static async create(req, res) {
         try {
+            // Si el body es un array, usa bulkCreate
+            if (Array.isArray(req.body)) {
+                const createdAcademicInstruction = await AcademicInstructionModel.bulkCreate(req.body);
+                return res.status(201).json(createdAcademicInstruction);
+            }
+            // Si es un objeto, usa create normal
             const newAcademicInstruction = await AcademicInstructionModel.create(req.body);
             res.status(201).json(newAcademicInstruction);
         } catch (error) {
