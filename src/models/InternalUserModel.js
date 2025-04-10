@@ -104,19 +104,11 @@ export class InternalUserModel {
 
     //CREATE, UPDATE AND DELETE METHODS
 
-    static async create(data, internalIdFromSession) {
+    static async create(data) {
         try {
-            const newRecord = await InternalUser.create(data, internalIdFromSession);
-    
-            // Registrar la auditoría usando la cédula del usuario de la sesión activa
-            await AuditModel.registerAudit(
-                internalIdFromSession, // Usar la cédula del usuario activo
-                "INSERT",
-                "InternalUser",
-                `El usuario interno ${internalIdFromSession} creó el registro de usuario interno con ID ${newRecord.Internal_ID}`
-            );
-    
+            const newRecord = await InternalUser.create(data);
             return newRecord;
+            
         } catch (error) {
             throw new Error(`Error creating internal user: ${error.message}`);
         }
