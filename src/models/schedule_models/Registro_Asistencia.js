@@ -268,23 +268,25 @@ import { sequelize } from "../../database/database.js";
         throw new Error("No se pudo determinar el período del estudiante.");
       }
 
-      // 5. Actualizar o crear el resumen general de horas para ese estudiante
-      const resumenExistente = await Resumen_Horas_EstudiantesModel.getResumen_Horas_EstudiantesByUser(studentId);
-      if (resumenExistente) {
-        const nuevoTotal = parseFloat(resumenExistente.Resumen_Horas_Totales) + diffHours;
-        await Resumen_Horas_EstudiantesModel.update(resumenExistente.Resumen_ID, {
-          Resumen_Horas_Totales: nuevoTotal
-        }, { transaction: t });
-      } else {
-        await Resumen_Horas_EstudiantesModel.create({
-          Internal_ID: studentId,
-          Resumen_Inicio: entrada,
-          Resumen_Horas_Totales: diffHours
-        }, { transaction: t });
-      }
+    // 5. Actualizar o crear el resumen general de horas para ese estudiante
+let resumenGeneral = await Resumen_Horas_EstudiantesModel.getResumen_Horas_EstudiantesByUser(studentId);
+if (resumenGeneral) {
+  const nuevoTotal = parseFloat(resumenGeneral.Resumen_Horas_Totales) + diffHours;
+  await Resumen_Horas_EstudiantesModel.update(resumenGeneral.Resumen_ID, {
+    Resumen_Horas_Totales: nuevoTotal
+  }, { transaction: t });
+  resumenGeneral.Resumen_Horas_Totales = nuevoTotal;
+} else {
+  resumenGeneral = await Resumen_Horas_EstudiantesModel.create({
+    Internal_ID: studentId,
+    Resumen_Inicio: entrada,
+    Resumen_Horas_Totales: diffHours
+  }, { transaction: t });
+}
 
-      // 6. Actualizar o crear el resumen semanal usando el helper
-      await this.updateWeeklySummary(periodoId, entrada, diffHours, t, resumenExistente ? resumenExistente.Resumen_ID : null);
+// ✅ Aseguramos que el ID del resumen exista antes de llamar a updateWeeklySummary
+await this.updateWeeklySummary(periodoId, entrada, diffHours, t, resumenGeneral.Resumen_ID);
+
 
       await t.commit();
       return await this.getById(registroId);

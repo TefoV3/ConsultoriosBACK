@@ -7,6 +7,7 @@ import { getUserId } from '../sessionData.js';
 
 import nodemailer from "nodemailer";
 import bcrypt from "bcrypt";
+import { parse } from "dotenv";
 
 //random password generator
 // Función para generar una contraseña aleatoria
@@ -129,6 +130,8 @@ export class InternalUserController {
     
             // Validar el request body
             const parseResult = internalUserSchema.safeParse(req.body);
+            console.log(parseResult);
+
             if (!parseResult.success) {
                 const errorMessages = parseResult.error.errors.map((err) => err.message).join(', ');
                 return res.status(400).json({ message: errorMessages });
@@ -142,26 +145,26 @@ export class InternalUserController {
                 data.Internal_Huella = null;
             }
     
-            // Verificar si ya existe un usuario con esa cédula
-            const existingID = await InternalUserModel.getById(data.Internal_ID);
-            if (existingID) {
-                return res.status(401).json({ message: "Ya existe un usuario con esa cédula" });
-            }
+            // // Verificar si ya existe un usuario con esa cédula
+            // const existingID = await InternalUserModel.getById(data.Internal_ID);
+            // if (existingID) {
+            //     return res.status(401).json({ message: "Ya existe un usuario con esa cédula" });
+            // }
     
-            // Verificar si ya existe un usuario con ese correo
-            const existingEmail = await InternalUserModel.getByEmail(data.Internal_Email);
-            if (existingEmail) {
-                return res.status(401).json({ message: "Ya existe un usuario con ese correo" });
-            }
+            // // Verificar si ya existe un usuario con ese correo
+            // const existingEmail = await InternalUserModel.getByEmail(data.Internal_Email);
+            // if (existingEmail) {
+            //     return res.status(401).json({ message: "Ya existe un usuario con ese correo" });
+            // }
     
             // Hashear la contraseña
             const hashedPassword = await bcrypt.hash(data.Internal_Password, SALT_ROUNDS);
             data.Internal_Password = hashedPassword;
     
             // Crear el usuario pasando la cédula de la sesión activa
-            const userId = internalUser || getUserId();
-
-            const internalUser = await InternalUserModel.create(data, userId);
+            // const userId = internalUser || getUserId();
+            console.log("Leegó antes de crear");
+            const internalUser = await InternalUserModel.create(data);
 
 
 
@@ -377,7 +380,7 @@ export class InternalUserController {
             }
         }
 
-        static async createInternalUsersBulk(req, res) {
+       static async createInternalUsersBulk(req, res) {
             try {
               // Normalizar: si no es un array, lo convertimos en array
               const records = Array.isArray(req.body) ? req.body : [req.body];
@@ -481,6 +484,106 @@ export class InternalUserController {
               return res.status(500).json({ error: error.message });
             }
           }
+
+           /* static async createInternalUsersBulk(req, res) {
+                try {
+                  const records = Array.isArray(req.body) ? req.body : [req.body];
+              
+                  const internalUserSchema = z.object({
+                    Internal_ID: z.string().min(1, { message: "El ID es obligatorio" }),
+                    Internal_Name: z.string().min(1, { message: "El nombre es obligatorio" }),
+                    Internal_LastName: z.string().min(1, { message: "El apellido es obligatorio" }),
+                    Internal_Email: z.string().optional(), // <- lo hacemos opcional
+                    Internal_Password: z.string().optional(),
+                    Internal_Type: z.string().min(1, { message: "El tipo es obligatorio" }),
+                    Internal_Area: z.string().min(1, { message: "El área es obligatoria" }),
+                    Internal_Phone: z.string().optional(),
+                    Internal_Status: z.string().min(1, { message: "El estado es obligatorio" }).default(""),
+                    Internal_Huella: z.any().optional().nullable()
+                  }).passthrough();
+              
+                  const transporter = nodemailer.createTransport({
+                    host: "smtp.gmail.com",
+                    port: 465,
+                    secure: true,
+                    auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+                  });
+              
+                  const results = [];
+              
+                  for (const record of records) {
+                    const parseResult = internalUserSchema.safeParse(record);
+                    if (!parseResult.success) {
+                      const errorMessages = parseResult.error.errors.map((err) => err.message).join(', ');
+                      results.push({ Internal_ID: record.Internal_ID || null, error: errorMessages });
+                      continue;
+                    }
+              
+                    const data = parseResult.data;
+              
+                    // Si no hay correo válido, se crea uno temporal único
+                    if (!data.Internal_Email || !data.Internal_Email.includes("@")) {
+                      data.Internal_Email = `${data.Internal_ID}@temporal.local`;
+                    }
+              
+                    const existingID = await InternalUserModel.getById(data.Internal_ID);
+                    const existingEmail = await InternalUserModel.getByEmail(data.Internal_Email);
+                    if (existingID || existingEmail) {
+                      results.push({ Internal_ID: data.Internal_ID, error: "Ya existe un usuario con esa cédula o correo" });
+                      continue;
+                    }
+              
+                    let plainPassword = data.Internal_Password;
+                    if (!plainPassword || plainPassword.trim() === "") {
+                      plainPassword = generateRandomPassword(8);
+                    }
+              
+                    const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
+                    data.Internal_Password = hashedPassword;
+              
+                    const internalUser = await InternalUserModel.create(data);
+              
+                    // No enviar correo si es temporal
+                    if (!data.Internal_Email.endsWith("@temporal.local")) {
+                      const mailOptions = {
+                        from: '"Support Balanza Web" <cjgpuce.system@gmail.com>',
+                        to: data.Internal_Email,
+                        subject: 'Tus credenciales de acceso',
+                        html: `
+                          <html>
+                            <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+                              <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                <h2 style="text-align: center; color: #4a90e2;">Bienvenido a Balanza Web</h2>
+                                <p>Estas son tus credenciales de acceso:</p>
+                                <p><strong>Correo:</strong> ${data.Internal_Email}</p>
+                                <p><strong>Contraseña:</strong> ${plainPassword}</p>
+                                <p>Por favor, ingresa con estas credenciales y cambia tu contraseña lo antes posible.</p>
+                                <p>Saludos,</p>
+                                <p>El equipo de Balanza Web</p>
+                              </div>
+                            </body>
+                          </html>
+                        `
+                      };
+              
+                      try {
+                        await transporter.sendMail(mailOptions);
+                        console.log(`Correo enviado a ${data.Internal_Email}`);
+                      } catch (errorEmail) {
+                        console.error(`Error al enviar email a ${data.Internal_Email}:`, errorEmail);
+                      }
+                    }
+              
+                    results.push({ Internal_ID: data.Internal_ID, result: "Creado", user: internalUser });
+                  }
+              
+                  return res.status(201).json({ message: "Proceso completado", results });
+                } catch (error) {
+                  console.error("Error al crear usuarios internos:", error);
+                  return res.status(500).json({ error: error.message });
+                }
+              }*/
+              
 
         
     

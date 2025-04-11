@@ -9,40 +9,71 @@ function calcularSemanas(periodoId, inicio, fin) {
   const endDate = new Date(fin);
   let weekNumber = 1;
 
-  // Función que obtiene el próximo viernes a partir de una fecha dada
-  function getFriday(date) {
-    const day = date.getDay(); // 0: domingo, 1: lunes, ..., 5: viernes, 6: sábado
-    let diff = 5 - day;
-    if (diff < 0) diff += 7;
-    const friday = new Date(date);
-    friday.setDate(date.getDate() + diff);
+  // Funciones auxiliares
+  function getDayName(date) {
+    return ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"][date.getDay()];
+  }
+
+  function getFriday(fromDate) {
+    const day = fromDate.getDay(); // 0: domingo, 1: lunes, ..., 6: sábado
+    const diff = 5 - day;
+    const friday = new Date(fromDate);
+    friday.setDate(fromDate.getDate() + diff);
     return friday;
   }
 
-  while (startDate <= endDate) {
-    const weekStart = new Date(startDate);
-    let weekEnd = getFriday(weekStart);
-    if (weekEnd > endDate) {
-      weekEnd = new Date(endDate);
-    }
+  function getNextMonday(date) {
+    const monday = new Date(date);
+    const day = monday.getDay();
+    const diff = (8 - day) % 7; // días hasta el siguiente lunes
+    monday.setDate(monday.getDate() + diff);
+    return monday;
+  }
+
+  // 🟡 Semana parcial si no es lunes
+  if (startDate.getDay() !== 1) {
+    let weekEnd = getFriday(startDate);
+    if (weekEnd > endDate) weekEnd = new Date(endDate);
+
     semanas.push({
       Periodo_ID: periodoId,
-      Semana_Numero: weekNumber,
-      Semana_Ini: weekStart.toISOString(),
+      Semana_Numero: weekNumber++,
+      Semana_Ini: startDate.toISOString(),
       Semana_Fin: weekEnd.toISOString(),
-      Semana_Horas: 0, // Al crear la semana, inicialmente no hay horas registradas
+      Semana_Horas: 0,
       Semana_Feriado: 0,
       Semana_Observacion: null,
       Semana_IsDeleted: false,
     });
-    weekNumber++;
-    // Para la siguiente semana: se asume que empieza el lunes siguiente al viernes actual (viernes +3 días)
-    const nextMonday = new Date(weekEnd);
-    nextMonday.setDate(nextMonday.getDate() + 3);
-    startDate = nextMonday;
+
+    // Avanzamos al próximo lunes
+    startDate = getNextMonday(startDate);
   }
+
+  // 🔵 Semanas completas de lunes a viernes
+  while (startDate <= endDate) {
+    const weekStart = new Date(startDate);
+    let weekEnd = getFriday(weekStart);
+    if (weekEnd > endDate) weekEnd = new Date(endDate);
+
+    semanas.push({
+      Periodo_ID: periodoId,
+      Semana_Numero: weekNumber++,
+      Semana_Ini: weekStart.toISOString(),
+      Semana_Fin: weekEnd.toISOString(),
+      Semana_Horas: 0,
+      Semana_Feriado: 0,
+      Semana_Observacion: null,
+      Semana_IsDeleted: false,
+    });
+
+    startDate.setDate(startDate.getDate() + 7); // siguiente lunes
+  }
+
   return semanas;
 }
+
+
 
 export class Seguimiento_SemanalModel {
   static async getSeguimientos() {
@@ -154,84 +185,79 @@ export class Seguimiento_SemanalModel {
    */
   static async recalcularSemanas(periodoId, nuevaFechaInicio, fechaFin) {
     try {
-      // 1. Obtener todas las semanas activas para el período
+      // Obtener semanas actuales activas ordenadas cronológicamente
       const semanasActuales = await Seguimiento_Semanal.findAll({
-        where: { Periodo_ID: periodoId, Semana_IsDeleted: false }
-      });
-
-      // 2. Identificar las semanas que se eliminarán (inicio < nuevaFechaInicio)
-      const semanasAEliminar = semanasActuales.filter(
-        (sem) => new Date(sem.Semana_Ini) < nuevaFechaInicio
-      );
-
-      // 3. Marcar como eliminadas las semanas identificadas
-      if (semanasAEliminar.length > 0) {
-        await Seguimiento_Semanal.update(
-          { Semana_IsDeleted: true },
-          { where: { Semana_ID: { [Op.in]: semanasAEliminar.map((s) => s.Semana_ID) } } }
-        );
-      }
-
-      // 4. Generar nuevas semanas para el segmento faltante al inicio
-      let nuevasSemanasInicio = [];
-      if (semanasAEliminar.length > 0) {
-        const minSemanaIni = new Date(
-          Math.min(...semanasAEliminar.map((s) => new Date(s.Semana_Ini).getTime()))
-        );
-        if (nuevaFechaInicio < minSemanaIni) {
-          nuevasSemanasInicio = calcularSemanas(periodoId, nuevaFechaInicio, minSemanaIni);
-        }
-      }
-      if (nuevasSemanasInicio.length > 0) {
-        await Seguimiento_Semanal.bulkCreate(nuevasSemanasInicio);
-      }
-
-      // 5. Si la nueva fecha de fin es mayor que el final de la última semana activa, crear semanas adicionales
-      const ultimaSemanaActiva = await Seguimiento_Semanal.findOne({
-        where: { Periodo_ID: periodoId, Semana_IsDeleted: false },
-        order: [["Semana_Fin", "DESC"]]
-      });
-      if (ultimaSemanaActiva) {
-        const lastWeekEnd = new Date(ultimaSemanaActiva.Semana_Fin);
-        if (fechaFin > lastWeekEnd) {
-          const nextDay = new Date(lastWeekEnd);
-          nextDay.setDate(nextDay.getDate() + 1);
-          const nuevasSemanasFin = calcularSemanas(periodoId, nextDay, fechaFin);
-          if (nuevasSemanasFin.length > 0) {
-            await Seguimiento_Semanal.bulkCreate(nuevasSemanasFin);
-          }
-        }
-      }
-
-      // 6. Renumerar todas las semanas activas en orden cronológico
-      let semanasVigentes = await Seguimiento_Semanal.findAll({
         where: { Periodo_ID: periodoId, Semana_IsDeleted: false },
         order: [["Semana_Ini", "ASC"]]
       });
-      let counter = 1;
-      for (const sem of semanasVigentes) {
-        sem.Semana_Numero = counter++;
-        await sem.save();
+  
+      // Calcular las nuevas semanas basadas en las fechas proporcionadas
+      const nuevasSemanas = calcularSemanas(periodoId, nuevaFechaInicio, fechaFin);
+  
+      // Recorrer cada una para actualizar o crear
+      for (let i = 0; i < nuevasSemanas.length; i++) {
+        const nueva = nuevasSemanas[i];
+  
+        if (i < semanasActuales.length) {
+          // Reutilizamos la semana existente y actualizamos fechas y número
+          await Seguimiento_Semanal.update(
+            {
+              Semana_Numero: i + 1,
+              Semana_Ini: nueva.Semana_Ini,
+              Semana_Fin: nueva.Semana_Fin
+              // Se mantienen horas, feriados y observaciones tal como están
+            },
+            {
+              where: { Semana_ID: semanasActuales[i].Semana_ID }
+            }
+          );
+        } else {
+          // Si hay más nuevas que actuales, las restantes se crean
+          nueva.Semana_Numero = i + 1;
+          await Seguimiento_Semanal.create(nueva);
+        }
       }
-
-      // 7. Recalcular el total de horas de las semanas activas y actualizar el período
-      semanasVigentes = await Seguimiento_Semanal.findAll({
-        where: { Periodo_ID: periodoId, Semana_IsDeleted: false }
+  
+      // Si había más semanas antes, las sobrantes se marcan como eliminadas
+      if (semanasActuales.length > nuevasSemanas.length) {
+        const semanasSobrantes = semanasActuales.slice(nuevasSemanas.length);
+        const ids = semanasSobrantes.map(s => s.Semana_ID);
+        await Seguimiento_Semanal.update(
+          { Semana_IsDeleted: true },
+          { where: { Semana_ID: { [Op.in]: ids } } }
+        );
+      }
+  
+      // Renumerar en orden (por si acaso algo quedó fuera de secuencia)
+      const semanasFinales = await Seguimiento_Semanal.findAll({
+        where: { Periodo_ID: periodoId, Semana_IsDeleted: false },
+        order: [["Semana_Ini", "ASC"]]
       });
-      const totalHorasVigentes = semanasVigentes.reduce(
-        (acc, sem) => acc + (parseFloat(sem.Semana_Horas) || 0),
+  
+      let contador = 1;
+      for (const semana of semanasFinales) {
+        semana.Semana_Numero = contador++;
+        await semana.save();
+      }
+  
+      // Recalcular horas totales
+      const totalHoras = semanasFinales.reduce(
+        (acc, s) => acc + (parseFloat(s.Semana_Horas) || 0),
         0
       );
       await Periodo.update(
-        { Periodo_Total_Horas: totalHorasVigentes },
+        { Periodo_Total_Horas: totalHoras },
         { where: { Periodo_ID: periodoId } }
       );
-
-      return { semanas: semanasVigentes, totalHoras: totalHorasVigentes };
+  
+      return { semanas: semanasFinales, totalHoras };
+  
     } catch (error) {
       throw new Error(`Error al recalcular semanas: ${error.message}`);
     }
   }
+  
+  
   
   static async delete(id) {
     try {
