@@ -19,9 +19,10 @@ export class SocialWorkController {
             if (record) return res.json(record);
             res.status(404).json({ message: "Social work record not found" });
         } catch (error) {
+            console.error("Error in getById controller:", error);
             res.status(500).json({ error: error.message });
         }
-    }
+    }   
 
     // Obtener User_ID desde SocialWork a través de Init_Code
     static async getUserIdBySocialWork(req, res) {
@@ -66,19 +67,37 @@ export class SocialWorkController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const { Internal_ID, ...data } = req.body;
+            const data  = req.body;
+            
+          console.log("ID from request params:", id);
 
-            if (!Internal_ID) {
-                return res.status(400).json({ error: "Internal_ID is required for auditing" });
-            }
-
-            const updatedRecord = await SocialWorkModel.update(id, data, Internal_ID);
+            const updatedRecord = await SocialWorkModel.update(id, data);
 
             if (!updatedRecord) return res.status(404).json({ message: "Social work record not found" });
 
             res.json({ message: "Social work record updated successfully", data: updatedRecord });
         } catch (error) {
             res.status(500).json({ error: error.message });
+        }
+    }
+    static async updateStatus(req, res) {
+        try {
+            const { id } = req.params; // Extract SocialWork_ID from the request parameters
+            const { status, observations } = req.body; // Extract the new status from the request body
+    
+            if (!status) {
+                return res.status(400).json({ error: "Status is required to update the social work record" });
+            }
+    
+            const isUpdated = await SocialWorkModel.updateStatus(id, status, observations);
+    
+            if (!isUpdated) {
+                return res.status(404).json({ message: "Social work record not found or not updated" });
+            }
+    
+            res.json({ message: "Social work status updated successfully" });
+        } catch (error) {
+            res.status(500).json({ error: `Error updating social work status: ${error.message}` });
         }
     }
 
