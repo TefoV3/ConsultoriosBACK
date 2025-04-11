@@ -26,6 +26,11 @@ export class TypeOfAttentionController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdtypeOfAttention = await TypeOfAttentionModel.bulkCreate(req.body);
+                return res.status(201).json(createdtypeOfAttention);
+            }
+            // Si es un objeto, usa create normal
             const typeOfAttention = await TypeOfAttentionModel.create(req.body);
             res.status(201).json(typeOfAttention);
         } catch (error) {

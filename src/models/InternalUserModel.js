@@ -3,7 +3,7 @@ import { ResetPassword } from '../schemas/Reset_Password.js';
 import { SECRET_JWT_KEY } from "../config.js";
 import { SALT_ROUNDS } from '../config.js';
 import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
-
+import { getUserId } from '../sessionData.js';
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -25,6 +25,7 @@ export class InternalUserModel {
                 where: { Internal_ID: id }
             });
         } catch (error) {
+            console.log(error);
             throw new Error(`Error retrieving internal user: ${error.message}`);
         }
     }
@@ -52,6 +53,22 @@ export class InternalUserModel {
             throw new Error(`Error al obtener abogados activos: ${error.message}`);
         }
     }
+
+    static async getAllLawyers() {
+        try {
+            return await InternalUser.findAll({
+                where: {
+                    Internal_Type: 'Abogado',
+                    Internal_Status: 'Activo'
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error al obtener abogados activos: ${error.message}`);
+        }
+    }
+
+
+
 
     static async getStudentsByArea(area) {
         try {
@@ -81,28 +98,28 @@ export class InternalUserModel {
             throw new Error(`Error fetching user ID by name and last name: ${error.message}`);
         }
     }
+
+    
     
 
     //CREATE, UPDATE AND DELETE METHODS
 
-    static async create(data, internalId) {
+    static async create(data) {
         try {
             const newRecord = await InternalUser.create(data);
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "LivingGroup",
-                            `El usuario interno ${internalId} creó el registro de grupo de convivencia con ID ${newRecord.Internal_ID}`
-                        );
-                        return newRecord;
+            return newRecord;
+            
         } catch (error) {
+            console.log(`Error creating internal user: ${error.message}`);
             throw new Error(`Error creating internal user: ${error.message}`);
         }
     }
 
-    static async update(id, data) {
+    static async update(id, data, internalUserID) {
         try {
+            const internalId = internalUserID || getUserId(); // Obtener el ID del usuario activo desde la sesión
             const internalUser = await this.getById(id);
+
             if (!internalUser) return null;
 
             const [rowsUpdated] = await InternalUser.update(data, {
@@ -111,21 +128,24 @@ export class InternalUserModel {
 
             if (rowsUpdated === 0) return null;
             // 🔹 Registrar en auditoría la actualización
-            await AuditModel.registerAudit(
+          /*  await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "LivingGroup",
                 `El usuario interno ${internalId} actualizó el registro de Usuario Interno con ID ${id}`
-            );
+            );*/
             return await this.getById(id);
         } catch (error) {
+            console.log(error);
             throw new Error(`Error updating internal user: ${error.message}`);
         }
     }
 
-    static async delete(id, internalId) {
+    static async delete(id, internalUserID) {
         try {
+            const internalId = internalUserID || getUserId();
             const internalUser = await this.getById(id);
+            
             if (!internalUser) return null;
 
             await InternalUser.update(
@@ -226,6 +246,53 @@ export class InternalUserModel {
             throw error;
         }
     }
+
+     /** 🔹 Actualizar la huella del usuario */
+     static async updateHuella(cedula, huellaBase64) {
+        try {
+            const usuario = await this.getById(cedula);
+            if (!usuario) return null; // 🔹 Usuario no encontrado
+
+            // 🔹 Convertir la huella de Base64 a Buffer (BLOB)
+            const huellaBuffer = Buffer.from(huellaBase64, "base64");
+
+            // 🔹 Actualizar la huella en la base de datos
+            const [rowsUpdated] = await InternalUser.update(
+                { Internal_Huella: huellaBuffer },
+                { where: { Internal_ID: cedula, Internal_Status: 'Activo' } }
+            );
+
+            if (rowsUpdated === 0) return null; // 🔹 Si no se actualizó nada
+            return await this.getById(cedula); // ✅ Retorna el usuario actualizado
+        } catch (error) {
+            throw new Error(`Error al actualizar huella: ${error.message}`);
+        }
+    }
+
+    /** 🔹 Obtener la huella de un usuario */
+    static async getHuella(cedula) {
+        try {
+            const usuario = await this.getById(cedula);
+            if (!usuario || !usuario.Internal_Huella) return null; // 🔹 Si no hay huella
+
+            // 🔹 Convertir la huella de Buffer a Base64 para enviarla al frontend
+            return usuario.Internal_Huella.toString("base64");
+        } catch (error) {
+            throw new Error(`Error al obtener la huella: ${error.message}`);
+        }
+    }
+
+    static async getUserByTypeEstudiante() {
+        try {
+            return await InternalUser.findAll({
+                where: { Internal_Type: 'Estudiante', Internal_Status: 'Activo' },
+                attributes: ['Internal_ID', 'Internal_Name', 'Internal_LastName', 'Internal_Email', 'Internal_Phone', 'Internal_Area', 'Internal_Status', 'Internal_Type', 'Internal_Huella'],               
+            });
+        } catch (error) {
+            throw new Error(`Error al obtener usuarios tipo estudiante: ${error.message}`);
+        }
+    }
+
 
     //deleteResetCode: Elimina un código de reseteo de la base de datos (Recibe el email)
     static async deleteResetCode(email) {

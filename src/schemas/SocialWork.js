@@ -136,6 +136,7 @@ export const SocialWork = sequelize.define('SocialWork', {
         type: DataTypes.DATE,
         allowNull: true
     }
+}, { timestamps: false });
 },
 { timestamps: false }); 
 // Relación uno a uno

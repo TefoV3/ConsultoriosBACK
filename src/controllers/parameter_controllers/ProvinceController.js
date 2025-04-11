@@ -24,6 +24,11 @@ export class ProvinceController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdProvince = await ProvinceModel.bulkCreate(req.body);
+                return res.status(201).json(createdProvince);
+            }
+            // Si es un objeto, usa create normal
             const newProvince = await ProvinceModel.create(req.body);
             res.status(201).json(newProvince);
         } catch (error) {

@@ -5,7 +5,7 @@ export class PracticalHoursModel {
     static async getAll() {
         try {
             return await Practical_Hours.findAll({
-                where: { Status: true }
+                where: { Practical_Hours_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving practical hours: ${error.message}`);
@@ -15,7 +15,7 @@ export class PracticalHoursModel {
     static async getById(id) {
         try {
             return await Practical_Hours.findOne({
-                where: { PracticalHours_ID: id, Status: true }
+                where: { Practical_Hours_ID: id, Practical_Hours_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving practical hours: ${error.message}`);
@@ -29,14 +29,20 @@ export class PracticalHoursModel {
             throw new Error(`Error creating practical hours: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Practical_Hours.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Practical Hours: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const hoursRecord = await this.getById(id);
             if (!hoursRecord) return null;
 
             const [rowsUpdated] = await Practical_Hours.update(data, {
-                where: { PracticalHours_ID: id, Status: true }
+                where: { Practical_Hours_ID: id, Practical_Hours_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -52,8 +58,8 @@ export class PracticalHoursModel {
             if (!hoursRecord) return null;
 
             await Practical_Hours.update(
-                { Status: false },
-                { where: { PracticalHours_ID: id, Status: true } }
+                { Practical_Hours_Status: false },
+                { where: { Practical_Hours_ID: id, Practical_Hours_Status: true } }
             );
             return hoursRecord;
         } catch (error) {

@@ -23,6 +23,11 @@ export class ProtocolsController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdprotocol = await ProtocolsModel.bulkCreate(req.body);
+                return res.status(201).json(createdprotocol);
+            }
+            // Si es un objeto, usa create normal
             const protocol = await ProtocolsModel.create(req.body);
             res.status(201).json(protocol);
         } catch (error) {

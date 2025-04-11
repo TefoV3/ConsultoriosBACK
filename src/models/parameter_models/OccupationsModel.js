@@ -13,7 +13,7 @@ export class OccupationsModel {
     static async getById(id) {
         try {
             return await Occupations.findOne({
-                where: { Occupations_Id: id, Occupations_Status: true }
+                where: { Occupation_Id: id, Occupation_Status: true }
             });
         }
         catch (error) {
@@ -28,7 +28,13 @@ export class OccupationsModel {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Occupations.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Occupations: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const OccupationsRecord = await this.getById(id);

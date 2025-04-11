@@ -5,7 +5,7 @@ export class NumberOfAttemptsModel {
     static async getAll() {
         try {
             return await Number_Of_Attempts.findAll({
-                where: { Status: true }
+                where: { Number_Of_Attempts_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving number of attempts: ${error.message}`);
@@ -15,7 +15,7 @@ export class NumberOfAttemptsModel {
     static async getById(id) {
         try {
             return await Number_Of_Attempts.findOne({
-                where: { NumberOfAttempts_ID: id, Status: true }
+                where: { NumberOfAttempts_ID: id, Number_Of_Attempts_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving number of attempts: ${error.message}`);
@@ -29,14 +29,20 @@ export class NumberOfAttemptsModel {
             throw new Error(`Error creating number of attempts: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Number_Of_Attempts.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Number Of Attempts: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const attemptsRecord = await this.getById(id);
             if (!attemptsRecord) return null;
 
             const [rowsUpdated] = await Number_Of_Attempts.update(data, {
-                where: { NumberOfAttempts_ID: id, Status: true }
+                where: { NumberOfAttempts_ID: id, Number_Of_Attempts_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -53,7 +59,7 @@ export class NumberOfAttemptsModel {
 
             await Number_Of_Attempts.update(
                 { Status: false },
-                { where: { NumberOfAttempts_ID: id, Status: true } }
+                { where: { NumberOfAttempts_ID: id, Number_Of_Attempts_Status: true } }
             );
             return attemptsRecord;
         } catch (error) {

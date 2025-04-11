@@ -49,13 +49,13 @@ export class SocialWorkController {
     static async create(req, res) {
         try {
             const { Init_Code } = req.body;
+            const internalId = req.headers["internal-id"]
 
             if (!Init_Code) {
                 return res.status(400).json({ error: "El campo 'Init_Code' es obligatorio." });
             }
 
-            // 🔹 Pasamos `req` para obtener el `Internal_ID` desde el token
-            const newSocialWork = await SocialWorkModel.create(req.body, req);
+            const newSocialWork = await SocialWorkModel.create(req.body, req, internalId);
 
             res.status(201).json({ message: "Registro de trabajo social creado con éxito", data: newSocialWork });
         } catch (error) {
@@ -67,11 +67,10 @@ export class SocialWorkController {
     static async update(req, res) {
         try {
             const { id } = req.params;
-            const data  = req.body;
-            
-          console.log("ID from request params:", id);
+            const { Internal_ID, ...data } = req.body;
+            const internalId = req.headers["internal-id"]
 
-            const updatedRecord = await SocialWorkModel.update(id, data);
+            const updatedRecord = await SocialWorkModel.update(id, data, internalId);
 
             if (!updatedRecord) return res.status(404).json({ message: "Social work record not found" });
 
@@ -105,13 +104,11 @@ export class SocialWorkController {
     static async delete(req, res) {
         try {
             const { id } = req.params;
-            const { Internal_ID } = req.body;
+            //const { Internal_ID } = req.body;
+            const internalId = req.headers["internal-id"]
 
-            if (!Internal_ID) {
-                return res.status(400).json({ error: "Internal_ID is required for auditing" });
-            }
 
-            const deletedRecord = await SocialWorkModel.delete(id, Internal_ID);
+            const deletedRecord = await SocialWorkModel.delete(id, internalId);
             if (!deletedRecord) return res.status(404).json({ message: "Social work record not found" });
 
             res.json({ message: "Social work record deleted (soft delete)", record: deletedRecord });

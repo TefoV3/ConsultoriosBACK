@@ -24,11 +24,12 @@ export const Assignment = sequelize.define('Assignments', {
         allowNull: false
     },
     Assignment_Date: DataTypes.DATE,
-    Internal_User_ID_Student: DataTypes.CHAR(10), // ID of the assigned student
+    Internal_User_ID_Student: DataTypes.CHAR(10), 
     Internal_User_ID: {
         type: DataTypes.CHAR(10),
         allowNull: false
-    }
+    },
+    Reassignment_Reason: DataTypes.STRING(255), 
 }, { timestamps: false });
 
 // Define associations

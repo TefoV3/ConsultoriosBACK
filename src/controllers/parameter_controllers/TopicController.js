@@ -24,8 +24,24 @@ export class TopicController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdTopic = await TopicModel.bulkCreate(req.body);
+                return res.status(201).json(createdTopic);
+            }
+            // Si es un objeto, usa create normal
             const newTopic = await TopicModel.create(req.body);
             res.status(201).json(newTopic);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    static async getBySubjectId(req, res) {
+        try {
+            const { subjectId } = req.params;
+            const data = await TopicModel.getBySubjectId(subjectId);
+            if (!data) return res.status(404).json({ message: "No topics found for this subject" });
+            res.status(200).json(data);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }

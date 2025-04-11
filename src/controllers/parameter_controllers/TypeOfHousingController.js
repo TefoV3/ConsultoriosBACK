@@ -27,6 +27,11 @@ export class TypeOfHousingController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdTypeOfHousing = await TypeOfHousingModel.bulkCreate(req.body);
+                return res.status(201).json(createdTypeOfHousing);
+            }
+            // Si es un objeto, usa create normal
             const TypeOfHousing = req.body;
             const newTypeOfHousing = await TypeOfHousingModel.create(TypeOfHousing);
             res.status(201).json(newTypeOfHousing);

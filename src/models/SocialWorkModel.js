@@ -2,8 +2,7 @@ import { SocialWork } from "../schemas/SocialWork.js";
 import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
 import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { User } from "../schemas/User.js";
-import { LivingGroup } from "../schemas/LivingGroup.js";
-import { sequelize } from "../database/database.js"; 
+import { getUserId } from '../sessionData.js';
 
 export class SocialWorkModel {
     // Obtener todas las evaluaciones de trabajo social
@@ -104,13 +103,12 @@ export class SocialWorkModel {
         }
     }
     // Crear una evaluación de trabajo social
-    static async create(data, req) {
+    static async create(data, req, internalUser) {
         try {
             // 🔹 Obtener `Internal_ID` desde el middleware
-            const internalId = req.user?.id;
-            if (!internalId) {
-                throw new Error("No se pudo recuperar el Internal_ID del token.");
-            }
+            const internalId = internalUser || getUserId();
+            
+            
 
             // 🔹 Verificar si el `Init_Code` existe en la tabla `InitialConsultations`
             const initialConsultation = await InitialConsultations.findOne({ 
@@ -149,16 +147,25 @@ export class SocialWorkModel {
     }
 
     // Actualizar una evaluación de trabajo social
-    static async update(id, data) {
+    static async update(id, data, internalUser) {
         try {
-          const record = await this.getById(id);
-          if (!record) return null;
-      
-          const [rowsUpdated] = await SocialWork.update(data, { where: { SW_ProcessNumber: id } });
-      
-          if (rowsUpdated === 0) return null;
-      
-          return await this.getById(id);
+            const record = await this.getById(id);
+            if (!record) return null;
+
+            const internalId = internalUser || getUserId();
+            const [rowsUpdated] = await SocialWork.update(data, { where: { SW_ProcessNumber: id } });
+
+            if (rowsUpdated === 0) return null;
+            
+            // 🔹 Registrar en auditoría la actualización
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "SocialWork",
+                `El usuario interno ${internalId} actualizó el registro de trabajo social con ID ${id}`
+            );
+
+            return await this.getById(id);
         } catch (error) {
           throw new Error(`Error updating social work record: ${error.message}`);
         }
@@ -191,11 +198,12 @@ export class SocialWorkModel {
     }
 
     // Eliminar (borrado lógico) una evaluación de trabajo social
-    static async delete(id, internalId) {
+    static async delete(id, internalUser) {
         try {
             const record = await this.getById(id);
             if (!record) return null;
-
+            
+            const internalId = internalUser || getUserId();
             await SocialWork.update({ SW_Status: false }, { where: { SW_ProcessNumber: id } });
 
             // 🔹 Registrar en auditoría la eliminación (borrado lógico)

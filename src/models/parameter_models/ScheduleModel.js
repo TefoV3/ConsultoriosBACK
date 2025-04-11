@@ -28,7 +28,13 @@ export class ScheduleModel {
             throw new Error(`Error creating schedule: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Schedule.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Schedule: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const scheduleRecord = await this.getById(id);

@@ -28,7 +28,13 @@ export class FamilyGroupModel {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-
+    static async bulkCreate(data) {
+        try {
+            return await Family_Group.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Family Group: ${error.message}`);
+        }
+    }
     static async update(id, data) {
         try {
             const Family_GroupRecord = await this.getById(id);

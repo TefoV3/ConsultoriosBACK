@@ -1,6 +1,7 @@
 import { ActivityModel } from "../models/ActivityModel.js";
 import { AuditModel } from "../models/AuditModel.js";
 import { InternalUserModel } from "../models/InternalUserModel.js";
+import { getUserId } from '../sessionData.js';
 
 export class ActivityController {
     static async getActivities(req, res) {
@@ -39,7 +40,7 @@ export class ActivityController {
         try {
             const documentResult = await ActivityModel.getDocumentById(id);
     
-            if (!documentResult || !documentResult.Documents) {
+            if (!documentResult || !documentResult.Activity_Document) {
                 return res.status(404).json({ message: "Document not found" });
             }
     
@@ -48,7 +49,7 @@ export class ActivityController {
             res.setHeader('Content-Disposition', 'inline; filename=documento.pdf');
     
             // Envía el documento como respuesta binaria
-            res.send(documentResult.Documents);
+            res.send(documentResult.Activity_Document);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -58,40 +59,27 @@ export class ActivityController {
         try {
             console.log("📥 Recibiendo solicitud para crear actividad...");
             const { Init_Code } = req.body;
-
+    
             const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
-
+    
             console.log("🔍 Internal_ID obtenido:", internalId);
-
-            if (!internalId) {
-                console.error("❌ Internal_ID no proporcionado.");
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-
             // Verificar que el Internal_ID exista en la tabla internal_users
             const internalUser = await InternalUserModel.getById(internalId);
             if (!internalUser) {
                 console.error(`❌ El Internal_ID ${internalId} no existe en la tabla internal_users.`);
                 return res.status(400).json({ error: `El Internal_ID ${internalId} no existe en la tabla internal_users` });
             }
-
-            if (!req.file) {
-                console.error("❌ No se recibió ningún archivo.");
-                return res.status(400).json({ error: "Debe adjuntar un archivo PDF." });
-            }
-
-            console.log("✅ Archivo recibido:", req.file.originalname);
-
-            // Llamar al modelo y pasar `req.file` y `internalId`
-            const newActivity = await ActivityModel.create({ ...req.body, Internal_ID: internalId }, req.file);
-
+    
+            // Llamar al modelo y pasar `file` y `internalId`
+            const newActivity = await ActivityModel.create({ ...req.body }, req.file, internalId); // Pass req.file
+    
             console.log("📝 Registrando auditoría...");
-
+    
             // Registrar en Audit
-            await AuditModel.registerAudit(internalId, "INSERT", "Activity", `El usuario interno ${internalId} creó la actividad con ID ${newActivity.Activity_Id}`);
-
+            //await AuditModel.registerAudit(internalId, "INSERT", "Activity", `El usuario interno ${internalId} creó la actividad con ID ${newActivity.Activity_Id}`);
+    
             console.log("✅ Actividad creada con éxito.");
-
+    
             res.status(201).json({ message: "Actividad creada con evidencia", data: newActivity });
         } catch (error) {
             console.error("❌ Error en la creación de actividad:", error.message);
@@ -102,37 +90,30 @@ export class ActivityController {
     static async update(req, res) {
         try {
             const { id } = req.params;
+            const internalId = req.headers["internal-id"];
 
-            const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
-
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            // Check if the internal user exists
+            const internalUser = await InternalUserModel.getById(internalId);
+            if (!internalUser) {
+                return res.status(400).json({ error: `El Internal_ID ${internalId} no existe en la tabla internal_users` });
             }
 
-            const updatedActivity = await ActivityModel.update(id, req.body, internalId);
-            if (!updatedActivity) return res.status(404).json({ message: "Activity not found" });
+            // Prepare the data for the update
+            const activityData = { ...req.body }; 
 
-            return res.json(updatedActivity);
-        } catch (error) {
-            return res.status(500).json({ error: error.message });
-        }
-    }
+            // Check if a file was uploaded
+            const file = req.file;
 
-    static async delete(req, res) {
-        try {
-            const { id } = req.params;
+            // Update the activity and document (if a file was uploaded)
+            const updatedActivity = await ActivityModel.update(id, activityData, file, internalId); 
 
-            const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
-
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            if (!updatedActivity) {
+                return res.status(404).json({ message: "Activity not found" });
             }
 
-            const deletedActivity = await ActivityModel.delete(id, internalId);
-            if (!deletedActivity) return res.status(404).json({ message: "Activity not found" });
-
-            return res.json({ message: "Activity deleted", activity: deletedActivity });
+            return res.json({ message: "Activity updated successfully", data: updatedActivity });
         } catch (error) {
+            console.error("Error updating activity:", error);
             return res.status(500).json({ error: error.message });
         }
     }

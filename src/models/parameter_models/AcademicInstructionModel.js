@@ -5,7 +5,7 @@ export class AcademicInstructionModel {
     static async getAll() {
         try {
             return await Academic_Instruction.findAll({
-                where: { AcademicInstruction_Status: true }
+                where: { Academic_Instruction_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving academic instructions: ${error.message}`);
@@ -15,7 +15,7 @@ export class AcademicInstructionModel {
     static async getById(id) {
         try {
             return await Academic_Instruction.findOne({
-                where: { AcademicInstruction_ID: id, AcademicInstruction_Status: true }
+                where: { Academic_Instruction_ID: id, Academic_Instruction_Status: true }
             });
         } catch (error) {
             throw new Error(`Error retrieving academic instruction: ${error.message}`);
@@ -29,14 +29,21 @@ export class AcademicInstructionModel {
             throw new Error(`Error creating academic instruction: ${error.message}`);
         }
     }
+    static async bulkCreate(data) {
+        try {
+            return await Academic_Instruction.bulkCreate(data); // Usa el bulkCreate de Sequelize
+        } catch (error) {
+            throw new Error(`Error creating Academic Instruction: ${error.message}`);
+        }
+    }
 
     static async update(id, data) {
         try {
-            const academicInstructionRecord = await this.getById(id);
-            if (!academicInstructionRecord) return null;
+            const academic_InstructionRecord = await this.getById(id);
+            if (!academic_InstructionRecord) return null;
 
             const [rowsUpdated] = await Academic_Instruction.update(data, {
-                where: { AcademicInstruction_ID: id, AcademicInstruction_Status: true }
+                where: { Academic_Instruction_ID: id, Academic_Instruction_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -48,14 +55,14 @@ export class AcademicInstructionModel {
 
     static async delete(id) {
         try {
-            const academicInstructionRecord = await this.getById(id);
-            if (!academicInstructionRecord) return null;
+            const academic_InstructionRecord = await this.getById(id);
+            if (!academic_InstructionRecord) return null;
 
             await Academic_Instruction.update(
-                { AcademicInstruction_Status: false },
-                { where: { AcademicInstruction_ID: id, AcademicInstruction_Status: true } }
+                { Academic_Instruction_Status: false },
+                { where: { Academic_Instruction_ID: id, Academic_Instruction_Status: true } }
             );
-            return academicInstructionRecord;
+            return academic_InstructionRecord;
         } catch (error) {
             throw new Error(`Error deleting academic instruction: ${error.message}`);
         }

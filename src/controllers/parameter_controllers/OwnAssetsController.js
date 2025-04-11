@@ -27,6 +27,11 @@ export class OwnAssetsController {
 
     static async create(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdOwnAssets = await OwnAssetsModel.bulkCreate(req.body);
+                return res.status(201).json(createdOwnAssets);
+            }
+            // Si es un objeto, usa create normal
             const OwnAssets = req.body;
             const newOwnAssets = await OwnAssetsModel.create(OwnAssets);
             res.status(201).json(newOwnAssets);

@@ -13,6 +13,11 @@ export class CountryController {
 
     static async getById(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createdCountry = await CountryModel.bulkCreate(req.body);
+                return res.status(201).json(createdCountry);
+            }
+            // Si es un objeto, usa create normal
             const { id } = req.params;
             const data = await CountryModel.getById(id);
             if (!data) return res.status(404).json({ message: "Country not found" });
