@@ -79,8 +79,6 @@ export class LivingGroupModel {
         }
     }
     
-    static async delete(id, internalId) {
-
     static async delete(id, internalUser) {
         try {
             const record = await this.getById(id);
