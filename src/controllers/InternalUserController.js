@@ -161,12 +161,8 @@ export class InternalUserController {
             const hashedPassword = await bcrypt.hash(data.Internal_Password, SALT_ROUNDS);
             data.Internal_Password = hashedPassword;
     
-            // Crear el usuario pasando la cédula de la sesión activa
-            // const userId = internalUser || getUserId();
-            console.log("Leegó antes de crear");
+
             const internalUser = await InternalUserModel.create(data);
-
-
 
             return res.status(201).json(internalUser);
         } catch (error) {
