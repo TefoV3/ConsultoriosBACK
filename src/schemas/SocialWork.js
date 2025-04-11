@@ -65,7 +65,7 @@ export const SocialWork = sequelize.define('SocialWork', {
         allowNull: true
     },
     SW_ReferencePhone: {
-        type: DataTypes.STRING(10), // Cambiar a 30
+        type: DataTypes.STRING(30),
         allowNull: true
     },
     SW_Income: {
@@ -97,7 +97,7 @@ export const SocialWork = sequelize.define('SocialWork', {
         allowNull: true
     },
     SW_CounterpartPhone: {
-        type: DataTypes.STRING(10), // Cambiar a 30
+        type: DataTypes.STRING(30),
         allowNull: true
     },
     SW_CounterpartID: {
