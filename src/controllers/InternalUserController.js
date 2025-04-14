@@ -8,6 +8,7 @@ import { getUserId } from '../sessionData.js';
 import nodemailer from "nodemailer";
 import bcrypt from "bcrypt";
 import { parse } from "dotenv";
+import e from "express";
 
 //random password generator
 // Función para generar una contraseña aleatoria
@@ -221,7 +222,11 @@ export class InternalUserController {
             if (!token) {
                 return res.status(401).json({ message: "Usuario o contraseña incorrectos" });
             }
-  
+            if (token.status === 'inactive') {
+              // Mensaje específico para usuario inactivo
+              return res.status(403).json({ message: "El usuario se encuentra inactivo." });
+          }
+
             return res
                 .cookie("access_token", token, {
                     httpOnly: true,

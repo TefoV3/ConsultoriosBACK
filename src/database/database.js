@@ -89,4 +89,3 @@ export const sequelize = new Sequelize(
         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
     }
 );
-

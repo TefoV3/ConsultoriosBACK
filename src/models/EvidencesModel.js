@@ -160,6 +160,7 @@ export class EvidenceModel {
         await evidence.update({
             Evidence_File: file.buffer,
             Evidence_Name: documentName,
+            Evidence_Document_Type: file.mimetype,
         });
         const internalId = internalUser || getUserId();
         await AuditModel.registerAudit(
