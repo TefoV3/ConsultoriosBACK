@@ -104,20 +104,43 @@ export class Registro_Asistencia_Controller {
         }
 
         static async getRegistroAbierto(req, res) {
-            try {
-              const usuarioXPeriodoId = req.query.usuarioxPeriodoId; // cambiar de req.params a req.query
-              const fecha = req.query.fecha; // idem
-              const registro = await Registro_AsistenciaModel.getRegistroAbierto(usuarioXPeriodoId, fecha);
-          
-              if (!registro) {
-                res.status(404).json({ message: "Registro de asistencia no encontrado" });
-              } else {
-                res.status(200).json(registro);
-              }
-            } catch (error) {
-              res.status(500).json({ message: error.message });
+          try {
+            // Se recoge la información desde los query params:
+            // usuarioxPeriodoId, fecha, y modalidad (opcional)
+            const usuarioXPeriodoId = req.query.usuarioxPeriodoId;
+            const fecha = req.query.fecha;
+            const modalidad = req.query.modalidad; // Puede ser "Presencial" o "Virtual" u otra
+        
+            // Se llama al método del modelo, pasando el parámetro extra modalidad
+            const registro = await Registro_AsistenciaModel.getRegistroAbierto(usuarioXPeriodoId, fecha, modalidad);
+        
+            if (!registro) {
+              res.status(404).json({ message: "Registro de asistencia no encontrado" });
+            } else {
+              res.status(200).json(registro);
             }
+          } catch (error) {
+            res.status(500).json({ message: error.message });
           }
+        }
+
+        static async getRegistroVirtualCompleto(req, res) {
+          try {
+            const usuarioXPeriodoId = req.query.usuarioxPeriodoId;
+            const fecha = req.query.fecha;      
+            // Se llama al método del modelo que filtra por modalidad "Virtual"
+            const registro = await Registro_AsistenciaModel.getRegistroVirtualCompleto(usuarioXPeriodoId, fecha);
+            
+            if (!registro) {
+              res.status(404).json({ message: "No se encontró un registro virtual completo para el día indicado" });
+            } else {
+              res.status(200).json(registro);
+            }
+          } catch (error) {
+            res.status(500).json({ message: error.message });
+          }
+        }
+        
 
           static async getRegistrosAbiertos(req, res) {
             try {

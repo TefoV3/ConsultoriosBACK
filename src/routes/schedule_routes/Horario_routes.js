@@ -6,36 +6,35 @@ export const HorarioRouter = Router();
 // 1. Obtener todos los horarios activos
 HorarioRouter.get('/horarioEstudiantes', HorarioController.getHorarios);
 
-// 2. Obtener la información completa para visualización (horarios unidos con datos de parámetros y usuario)
+// 2. Obtener la información completa para visualización
 HorarioRouter.get('/horarioEstudiantes/completo', HorarioController.getHorariosCompletos);
 
-// 3. Obtener la información completa para extracción (incluye horarios activos y eliminados)
-// Si el parámetro "area" viene vacío, se retornan los horarios de todas las áreas.
+// 3. Obtener información completa para extracción
 HorarioRouter.get('/horarioEstudiantes/completo-extraccion', HorarioController.getHorariosCompletosExtraccion);
 
-// 4. Obtener un horario específico por su ID
+// ✅ 4. NUEVA RUTA: Obtener horarios completos por estudiante autenticado (Internal_ID)
+HorarioRouter.get('/horarioEstudiantes/porEstudiante/:internalId', HorarioController.getHorariosCompletosPorEstudiante);
+
+// 5. Obtener un horario específico por su ID
 HorarioRouter.get('/horarioEstudiantes/:id', HorarioController.getById);
 
-// 5. Consultar la disponibilidad para un día concreto (requiere periodoId, area y día)
+// 6. Consultar la disponibilidad para un día concreto
 HorarioRouter.get('/horarioEstudiantes/disponibilidad/:periodoId/:area/:dia', HorarioController.getDisponibilidadHorario);
 
-// 6. Obtener todos los horarios asignados a un UsuarioXPeriodo (puede ser 1 o 2)
+// 7. Obtener todos los horarios de un UsuarioXPeriodo
 HorarioRouter.get('/horarioEstudiantes/usuarioxperiodo/:usuarioXPeriodoId', HorarioController.getHorariosByUsuarioXPeriodo);
 
-// 7.  Obtener horarios completos activos por UsuarioXPeriodo_ID y modalidad (opcional)
-HorarioRouter.get(
-    '/horarioEstudiantes/completo/usuarioxperiodo/:usuarioXPeriodoId',
-    HorarioController.getHorarioCompletoPorUsuarioXPeriodo
-  );
-  
-// 8. Cambio administrativo: se eliminan lógicamente los horarios actuales y se crean nuevos (uno o dos)
+// 8. Obtener horarios completos por UsuarioXPeriodo (opcional modalidad)
+HorarioRouter.get('/horarioEstudiantes/completo/usuarioxperiodo/:usuarioXPeriodoId', HorarioController.getHorarioCompletoPorUsuarioXPeriodo);
+
+// 9. Cambio administrativo
 HorarioRouter.post('/horarioEstudiantes/cambio-administrativo', HorarioController.cambioAdministrativo);
 
-// 9. Crear un nuevo horario (para asignación individual)
+// 10. Crear un nuevo horario
 HorarioRouter.post('/horarioEstudiantes', HorarioController.createHorario);
 
-// 10. Actualizar un único horario (modifica únicamente el horario que se cambió)
+// 11. Actualizar un horario
 HorarioRouter.put('/horarioEstudiantes/:id', HorarioController.update);
 
-// 11. Eliminar (marcar como eliminado) un horario
+// 12. Eliminar un horario
 HorarioRouter.delete('/horarioEstudiantes/:id', HorarioController.delete);
