@@ -35,7 +35,7 @@ console.log("Base de datos:", process.env.SUPABASE_DB_NAME);
 export const sequelize = new Sequelize(
       'prueba', 
        'root', 
-      '12345', 
+      '123456', 
       {
          host: 'localhost',
           dialect: 'mysql'
@@ -89,4 +89,3 @@ export const sequelize = new Sequelize(
         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
     }
 );
-

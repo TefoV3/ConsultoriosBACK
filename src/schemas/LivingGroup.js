@@ -30,7 +30,8 @@ export const LivingGroup = sequelize.define('LivingGroup', {
     },
 
     SW_ProcessNumber: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING(50),
+        allowNull: false,
         references: {
             model: SocialWork,
             key: 'SW_ProcessNumber'
@@ -38,10 +39,6 @@ export const LivingGroup = sequelize.define('LivingGroup', {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     },
-    LG_Status: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true
-    }
 }, { timestamps: false });
 
 // Establishing the relationship

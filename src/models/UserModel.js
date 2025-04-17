@@ -1,6 +1,9 @@
 import { User } from "../schemas/User.js"; // Nombre traducido del esquema
 import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { AuditModel } from "../models/AuditModel.js";
+import { sequelize } from "../database/database.js";
+import { InitialConsultationsModel } from "./InitialConsultationsModel.js";
+
 
 export class UserModel {
 
