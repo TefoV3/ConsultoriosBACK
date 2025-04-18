@@ -92,6 +92,9 @@ export class InitialConsultationsModel {
     try {
       return await InitialConsultations.findOne({
         where: { Init_Code: id },
+        attributes: {
+          exclude: ["Init_AttentionSheet"],
+        },
       });
     } catch (error) {
       throw new Error(
