@@ -10,6 +10,7 @@ InitialConsultationsRouter.get('/initial-consultations/user/:userId', FirstConsu
 InitialConsultationsRouter.get('/initial-consultations/status/:status', FirstConsultationsController.getByStatus);
 InitialConsultationsRouter.get('/initial-consultations/type/:initSubject/:initType/:initStatus', FirstConsultationsController.getByInitTypeAndSubjectAndStatus);
 InitialConsultationsRouter.get('/initial-consultations/review/:initType/:initStatus', FirstConsultationsController.getByTypeAndStatus);
+InitialConsultationsRouter.get('/initial-consultations/report/excel', FirstConsultationsController.generateExcelReport);
 
 
 InitialConsultationsRouter.post(
