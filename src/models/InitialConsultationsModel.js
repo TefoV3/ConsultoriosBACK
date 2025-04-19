@@ -780,6 +780,11 @@ if (newConsultation.Init_SocialWork === true) {
       const AptosBytes = fs.readFileSync("./src/docs/Aptos.ttf"); // Asegúrate de que la ruta sea correcta
       const AptosFont = await pdfDoc.embedFont(AptosBytes);
 
+      const userTimezone = 'America/Guayaquil'; 
+      const formattedInitDate = data.Init_Date
+        ? moment(data.Init_Date).tz(userTimezone).format('DD/MM/YYYY')
+        : "";
+
       // Obtener la primera página del PDF
       const pages = pdfDoc.getPages();
       const firstPage = pages[0];
@@ -804,9 +809,7 @@ if (newConsultation.Init_SocialWork === true) {
       );
 
       firstPage.drawText(
-        `${
-          data.Init_Date ? new Date(data.Init_Date).toLocaleDateString() : ""
-        }`,
+        formattedInitDate, // Use the formatted date string
         {
           x: 397,
           y: 655,
@@ -879,241 +882,7 @@ if (newConsultation.Init_SocialWork === true) {
     }
   }
 
-  // static async generateExcelReport(startDate, endDate) {
-  //   try {
-  //       const consultations = await InitialConsultations.findAll({
-  //           where: {
-  //               Init_Date: {
-  //                   [Op.between]: [startDate, endDate]
-  //               }
-  //           },
-  //           include: [{
-  //               model: User,
-  //               attributes: { exclude: ['User_HealthDocuments'] } // Excluye BLOB de Usuario
-  //           },
-  //           { // <-- Add this include block
-  //             model: InternalUser,
-  //             attributes: ['Internal_Name', 'Internal_LastName'] // Select only names
-  //         }
-  //       ],
-  //           attributes: { exclude: ['Init_AttentionSheet'] }, // Excluye BLOB de Consulta
-  //           order: [['Init_Date', 'ASC']] // Opcional: ordenar por fecha
-  //       });
 
-  //       const workbook = new ExcelJS.Workbook();
-  //       workbook.creator = 'Sistema Consultorios';
-  //       workbook.lastModifiedBy = 'Sistema Consultorios';
-  //       workbook.created = new Date();
-  //       workbook.modified = new Date();
-
-  //       const worksheet = workbook.addWorksheet('Reporte Consultas Iniciales');
-
-  //       // --- Definir Cabeceras ---
-  //       worksheet.columns = [
-  //           // Datos Personales
-  //           { header: 'Tipo ID', key: 'User_ID_Type', width: 15 },
-  //           { header: 'Número ID', key: 'User_ID', width: 15 },
-  //           { header: 'Nombres', key: 'User_FirstName', width: 25 },
-  //           { header: 'Apellidos', key: 'User_LastName', width: 25 },
-  //           { header: 'Edad', key: 'User_Age', width: 15 },
-  //           { header: 'Género', key: 'User_Gender', width: 15 },
-  //           { header: 'Fecha Nacimiento', key: 'User_BirthDate', width: 25, style: { numFmt: 'dd/mm/yyyy' } },
-  //           { header: 'Nacionalidad', key: 'User_Nationality', width: 25 },
-  //           { header: 'Etnia', key: 'User_Ethnicity', width: 15 },
-  //           { header: 'Provincia', key: 'User_Province', width: 15 },
-  //           { header: 'Ciudad', key: 'User_City', width: 30 },
-  //           // Contacto
-  //           { header: 'Teléfono', key: 'User_Phone', width: 15 },
-  //           { header: 'Correo Electrónico', key: 'User_Email', width: 30 },
-  //           { header: 'Dirección', key: 'User_Address', width: 40 },
-  //           { header: 'Sector', key: 'User_Sector', width: 25 },
-  //           { header: 'Zona', key: 'User_Zone', width: 10 },
-  //           { header: 'Relación de Referencia', key: 'User_ReferenceRelationship', width: 30 },
-  //           { header: 'Nombre de Referencia', key: 'User_ReferenceName', width: 25 },
-  //           { header: 'Teléfono de Referencia', key: 'User_ReferencePhone', width: 25 },
-  //           // Datos Demográficos y Socioeconómicos
-  //           { header: 'Recibe Bono', key: 'User_SocialBenefit', width: 20 },
-  //           { header: 'Dependiente Económico', key: 'User_EconomicDependence', width: 28 },
-  //           { header: 'Instrucción Académica', key: 'User_AcademicInstruction', width: 25 },
-  //           { header: 'Ocupación', key: 'User_Profession', width: 20 },
-  //           { header: 'Estado Civil', key: 'User_MaritalStatus', width: 20 },
-  //           { header: 'Dependientes', key: 'User_Dependents', width: 20 },
-  //           { header: 'Nivel Ingresos', key: 'User_IncomeLevel', width: 15 },
-  //           { header: 'Ingresos Familiares', key: 'User_FamilyIncome', width: 25 },
-  //           { header: 'Grupo Familiar', key: 'User_FamilyGroup', width: 30 }, // JSON
-  //           { header: 'Personas Econ. Activas', key: 'User_EconomicActivePeople', width: 25 },
-  //           { header: 'Bienes Propios', key: 'User_OwnAssets', width: 30 }, // JSON
-  //           { header: 'Tipo Vivienda', key: 'User_HousingType', width: 15 },
-  //           { header: 'Pensionista', key: 'User_Pensioner', width: 15 },
-  //           { header: 'Seguro de Salud', key: 'User_HealthInsurance', width: 20 },
-  //           { header: 'Situación de Vulnerabilidad', key: 'User_VulnerableSituation', width: 25 },
-  //           { header: 'Documentos Respaldo', key: 'User_SupportingDocuments', width: 25 },
-  //           // Salud
-  //           { header: 'Discapacidad', key: 'User_Disability', width: 15 },
-  //           { header: 'Porcentaje Discapacidad', key: 'User_DisabilityPercentage', width: 25 },
-  //           { header: 'Enfermedad Catastrófica', key: 'User_CatastrophicIllness', width: 25 },
-  //           { header: 'Nombre Doc. Salud', key: 'User_HealthDocumentsName', width: 30 },
-  //           // Datos Consulta Inicial
-  //           { header: 'Código Consulta', key: 'Init_Code', width: 15 },
-  //           { header: 'Consultorio', key: 'Init_Office', width: 25 },
-  //           { header: 'Creado Por', key: 'Internal_UserName', width: 15 },
-  //           { header: 'Tipo Cliente', key: 'Init_ClientType', width: 20 },
-  //           { header: 'Fecha Consulta', key: 'Init_Date', width: 15, style: { numFmt: 'dd/mm/yyyy' } },
-  //           { header: 'Fecha Fin', key: 'Init_EndDate', width: 15, style: { numFmt: 'dd/mm/yyyy' } },
-  //           { header: 'Servicio', key: 'Init_Service', width: 20 },
-  //           { header: 'Estado del Caso', key: 'Init_CaseStatus', width: 25 },
-  //           { header: 'Materia', key: 'Init_Subject', width: 30 },
-  //           { header: 'Tema', key: 'Init_Topic', width: 30 },
-  //           { header: 'Abogado Asignado', key: 'Init_Lawyer', width: 25 },
-  //           { header: 'Derivado Por', key: 'Init_Referral', width: 20 },
-  //           { header: 'Estado Interno', key: 'Init_Status', width: 25 },
-  //           { header: 'Complejidad', key: 'Init_Complexity', width: 20 },
-  //           { header: 'Observaciones', key: 'Init_Notes', width: 50 },
-  //           { header: 'Trabajo Social', key: 'Init_SocialWork', width: 20 },
-  //           { header: 'TS Obligatorio', key: 'Init_MandatorySW', width: 20 },
-  //           { header: 'Nota Alerta', key: 'Init_AlertNote', width: 50 },
-  //       ];
-
-  //       const formatValue = (value, key) => {
-  //         // Handle JSON Arrays specifically
-  //         if (key === 'User_FamilyGroup' || key === 'User_OwnAssets') {
-  //             try {
-  //                 if (value && typeof value === 'string') { // Ensure it's a string before parsing
-  //                     const parsedArray = JSON.parse(value);
-  //                     if (Array.isArray(parsedArray)) {
-  //                         const filtered = parsedArray.filter(item => item !== null && item !== '');
-  //                         return filtered.length > 0 ? filtered.join(', ') : 'Ninguno';
-  //                     }
-  //                 } else if (Array.isArray(value)) { // Handle if it's already an array
-  //                      const filtered = value.filter(item => item !== null && item !== '');
-  //                      return filtered.length > 0 ? filtered.join(', ') : 'Ninguno';
-  //                 }
-  //             } catch (e) {
-  //                 // If parsing fails or it's not a valid format, treat as regular value
-  //                 console.warn(`Could not parse JSON for key ${key}:`, value);
-  //             }
-  //         }
-
-  //         // Handle Booleans
-  //         if (typeof value === 'boolean') {
-  //             return value ? 'Si' : 'No';
-  //         }
-
-  //         // Handle Dates (keep them as Date objects for Excel formatting)
-  //         if (value instanceof Date) {
-  //             return value;
-  //         }
-
-  //         // Handle Null, Undefined, or Empty Strings
-  //         if (value === null || value === undefined || value === '') {
-  //             return 'Ninguno';
-  //         }
-
-  //         // Clean HTML tags from specific fields (if needed beyond initial cleaning)
-  //          if (key === 'Init_Notes' || key === 'Init_AlertNote') {
-  //              return String(value).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim() || 'Ninguno';
-  //          }
-  //                      // Handle Null/Undefined/Empty (except for the manually added Internal_UserName)
-  //                      if (key !== 'Internal_UserName' && (value === null || value === undefined || value === '')) { return 'Ninguno'; }
-  //                      // Handle the case where Internal_UserName might be null/empty if the lookup fails
-  //                      if (key === 'Internal_UserName' && (value === null || value === undefined || value === '')) { return 'Desconocido'; }
-
-
-  //         // Return other values as strings
-  //         return String(value);
-  //     };
-
-  //     const rowsToAdd = await Promise.all(consultations.map(async (consultation) => {
-  //       const user = consultation.User || {};
-  //       const initData = consultation.dataValues || {};
-  //       const userData = user.dataValues || {};
-
-  //       // 2. Fetch InternalUser name for *this specific* consultation
-  //       let internalUserName = 'Desconocido'; // Default value
-  //       if (initData.Internal_ID) { // Check if Internal_ID exists
-  //           try {
-  //               const internalUser = await InternalUser.findOne({
-  //                   where: { Internal_ID: initData.Internal_ID },
-  //                   attributes: ['Internal_Name', 'Internal_LastName']
-  //               });
-  //               if (internalUser) {
-  //                   internalUserName = `${internalUser.Internal_Name || ''} ${internalUser.Internal_LastName || ''}`.trim();
-  //                   if (!internalUserName) internalUserName = 'Desconocido'; // Handle empty names
-  //               }
-  //           } catch (lookupError) {
-  //               console.error(`Error looking up InternalUser for ID ${initData.Internal_ID}:`, lookupError);
-  //               // Keep internalUserName as 'Desconocido'
-  //           }
-  //       }
-
-  //       // Combine data for easier access
-  //       const combinedData = { ...userData, ...initData };
-
-  //       // Create the row object by formatting each value
-  //       const rowData = {};
-  //       worksheet.columns.forEach(column => {
-  //           const key = column.key;
-  //           let rawValue;
-
-  //           if (key === 'Internal_UserName') {
-  //               rawValue = internalUserName; // Use the fetched name
-  //           } else {
-  //               rawValue = combinedData[key];
-  //           }
-  //           rowData[key] = formatValue(rawValue, key); // Format the value
-  //       });
-  //       return rowData; // Return the processed row data
-  //   }));
-
-  //   // Add all processed rows to the worksheet
-  //   rowsToAdd.forEach(rowData => {
-  //       worksheet.addRow(rowData);
-  //   });
-
-  //       // --- Estilizar Cabecera ---
-  //       // ... (existing styling) ...
-  //       worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-  //       worksheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00388E' } };
-  //       worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
-
-
-  //       // --- Habilitar Filtros en TODA la Cabecera ---
-  //       // Helper function to get Excel column name (A, B, ..., Z, AA, AB, ...)
-  //       const getExcelColumnName = (colIndex) => {
-  //           let name = '';
-  //           let dividend = colIndex + 1; // 1-based index
-  //           while (dividend > 0) {
-  //               const modulo = (dividend - 1) % 26;
-  //               name = String.fromCharCode(65 + modulo) + name;
-  //               dividend = Math.floor((dividend - modulo) / 26);
-  //           }
-  //           return name;
-  //       };
-
-  //       // Calculate the name of the last column based on the number of columns defined
-  //       const lastColIndex = worksheet.columns.length - 1;
-  //       const lastColName = getExcelColumnName(lastColIndex);
-
-  //       // Apply autoFilter to the entire header row range (Row 1)
-  //       if (lastColName) { // Ensure we have a valid column name
-  //            worksheet.autoFilter = `A1:${lastColName}1`;
-  //       } else {
-  //            console.warn("Could not determine last column name for autoFilter.");
-  //            // Optionally apply to A1 only if calculation fails
-  //            // worksheet.autoFilter = 'A1';
-  //       }
-  //       // --- End Filter Logic ---
-
-
-  //       // --- Generar Buffer ---
-  //       const buffer = await workbook.xlsx.writeBuffer();
-  //       return buffer;
-
-  //   } catch (error) {
-  //       console.error("Error generando el reporte Excel:", error);
-  //       throw new Error(`Error generando el reporte Excel: ${error.message}`);
-  //   }
-  // }
   static async generateExcelReport(startDate, endDate) {
     // --- DEBUG LOG 1: Log received dates ---
     console.log('[Excel Report] Received Dates:', { startDate, endDate });
