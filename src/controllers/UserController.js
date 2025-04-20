@@ -106,44 +106,6 @@ export class UserController {
         }
     }
 
-    // static async uploadDocument(req, res) {
-    //     try {
-    //       const { id } = req.params;
-    //       const internalId = req.headers["internal-id"];  // Se obtiene el usuario interno desde los headers
-      
-    //       console.log("Contenido de req.files:", req.files);
-    //       console.log("Contenido de req.body:", req.body);
-      
-    //       // Extraer el archivo del campo "healthDocuments"
-    //       const files = req.files;
-    //       if (!files || !files.healthDocuments || files.healthDocuments.length === 0) {
-    //         console.error("No se proporcionó ningún archivo en el campo 'healthDocuments'.");
-    //         return res.status(400).json({ error: "No se proporcionó ningún archivo." });
-    //       }
-    //       const file = files.healthDocuments;
-      
-    //       if (!internalId) {
-    //         console.error("El internal-id no está presente en los headers.");
-    //         return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-    //       }
-      
-    //       // Extraer el nombre personalizado del archivo del body (si se envió)
-    //       const documentName = req.body.User_HealthDocumentsName || file.originalname;
-      
-    //       const updatedUser = await UserModel.uploadDocument(id, file, internalId, documentName);
-      
-    //       if (!updatedUser) {
-    //         console.error("Usuario no encontrado con id:", id);
-    //         return res.status(404).json({ message: "Usuario no encontrado" });
-    //       }
-      
-    //       console.log("Documento subido correctamente para el usuario:", id);
-    //       return res.json({ message: "Documento subido", usuario: updatedUser });
-    //     } catch (error) {
-    //       console.error("Error en el controlador uploadDocument:", error.message);
-    //       return res.status(500).json({ error: error.message });
-    //     }
-    //   }
       
     static async uploadDocument(req, res) {
         try {

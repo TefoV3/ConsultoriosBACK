@@ -205,7 +205,7 @@ export class InitialConsultationsModel {
             User_FirstName: data.User_FirstName,
             User_LastName: data.User_LastName,
             User_Gender: data.User_Gender,
-            User_BirthDate: data.User_BirthDate,
+            Init_EndDate: data.Init_EndDate,
             User_Nationality: data.User_Nationality,
             User_Ethnicity: data.User_Ethnicity,
             User_Province: data.User_Province,
@@ -274,11 +274,9 @@ export class InitialConsultationsModel {
       let saveInitDate = null;
       if (data.Init_Date && moment(data.Init_Date, 'YYYY-MM-DD', true).isValid()) {
           saveInitDate = moment.tz(data.Init_Date, 'YYYY-MM-DD', userTimezone).startOf('day').utc().toDate();
-          console.log(`[Create] Saving Init_Date as UTC: ${saveInitDate.toISOString()}`); // Log the UTC date being saved
+          console.log(`[Create New] Saving Init_Date as UTC: ${saveInitDate.toISOString()}`); // Log the UTC date being saved
       } else {
-          console.warn(`[Create] Invalid or missing Init_Date received: ${data.Init_Date}`);
-          // Decide how to handle invalid/missing date - throw error or allow null?
-          // For now, allowing null if input is invalid/missing
+          console.warn(`[Create New] Invalid or missing Init_Date received: ${data.Init_Date}`);
       }
 
       //CREACION DE CÓDIGO DE CONSULTA INICIAL
@@ -618,9 +616,11 @@ if (newConsultation.Init_SocialWork === true) {
 
   static async update(id, data, internalUser) {
     const t = await sequelize.transaction();
+    const userTimezone = 'America/Guayaquil'; // Define timezone
     try {
       const consultation = await InitialConsultations.findOne({
         where: { Init_Code: id },
+        exclude: ["Init_Date"],
         transaction: t,
       });
 
@@ -629,10 +629,33 @@ if (newConsultation.Init_SocialWork === true) {
         return null;
       }
 
+      // Asegurarse de que la fecha inicial no esté en los datos a actualizar
+      if (data.hasOwnProperty('Init_Date')) {
+        delete data.Init_Date;
+    }
+
+    // Si después de eliminar la fecha inicial, no quedan datos para actualizar, retornar la consulta sin cambios
+    if (Object.keys(data).length === 0) {
+        console.log("No hay datos para actualizar después de excluir la fecha inicial");
+        return internalUser; 
+    }
+
+    let consultationDataToUpdate = { ...data }; // Create a copy to modify
+    if (consultationDataToUpdate.hasOwnProperty('Init_EndDate')) { // Check if Init_EndDate is part of the update
+        if (consultationDataToUpdate.Init_EndDate && moment(consultationDataToUpdate.Init_EndDate, 'YYYY-MM-DD', true).isValid()) {
+            consultationDataToUpdate.Init_EndDate = moment.tz(consultationDataToUpdate.Init_EndDate, 'YYYY-MM-DD', userTimezone).startOf('day').utc().toDate();
+            console.log(`[User Update] Corrected Init_EndDate to UTC: ${consultationDataToUpdate.Init_EndDate.toISOString()}`);
+        } else {
+            console.warn(`[User Update] Invalid or null Init_EndDate received: ${consultationDataToUpdate.Init_EndDate}. Setting to null.`);
+            consultationDataToUpdate.Init_EndDate = null; // Set to null if invalid/null received
+        }
+    }
+
+
       const originalSocialWorkStatus = consultation.Init_SocialWork;
       const internalId = internalUser || getUserId();
 
-      const [rowsUpdated] = await InitialConsultations.update(data, {
+      const [rowsUpdated] = await InitialConsultations.update(consultationDataToUpdate, {
         where: { Init_Code: id },
         transaction: t,
       });
@@ -943,7 +966,7 @@ if (newConsultation.Init_SocialWork === true) {
              { header: 'Apellidos', key: 'User_LastName', width: 25 },
              { header: 'Edad', key: 'User_Age', width: 10 },
              { header: 'Género', key: 'User_Gender', width: 15 },
-             { header: 'Fecha Nacimiento', key: 'User_BirthDate', width: 18, style: { numFmt: 'dd/mm/yyyy' } },
+             { header: 'Fecha Nacimiento', key: 'Init_EndDate', width: 18, style: { numFmt: 'dd/mm/yyyy' } },
              { header: 'Nacionalidad', key: 'User_Nationality', width: 20 },
              { header: 'Etnia', key: 'User_Ethnicity', width: 15 },
              { header: 'Provincia', key: 'User_Province', width: 15 },
