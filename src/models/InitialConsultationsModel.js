@@ -205,7 +205,7 @@ export class InitialConsultationsModel {
             User_FirstName: data.User_FirstName,
             User_LastName: data.User_LastName,
             User_Gender: data.User_Gender,
-            Init_EndDate: data.Init_EndDate,
+            User_BirthDate: data.User_BirthDate,
             User_Nationality: data.User_Nationality,
             User_Ethnicity: data.User_Ethnicity,
             User_Province: data.User_Province,
