@@ -130,6 +130,9 @@ export class InitialConsultationsModel {
     try {
       return await InitialConsultations.findAll({
         where: { User_ID: userId },
+        attributes: {
+          exclude: ["Init_AttentionSheet"],
+        },
       });
     } catch (error) {
       throw new Error(`Error fetching consultations: ${error.message}`);
@@ -790,7 +793,7 @@ if (newConsultation.Init_SocialWork === true) {
         .trim();
 
       // Cargar la plantilla PDF
-      const templatePath = "./src/docs/FICHA DE ATENCION.pdf"; // Asegúrate de que la ruta sea correcta
+      const templatePath = "./src/docs/FICHA DE ATENCION.pdf"; //Ruta de la plantilla
       const templateBytes = fs.readFileSync(templatePath);
 
       // Crear un nuevo documento PDF basado en la plantilla
@@ -800,12 +803,12 @@ if (newConsultation.Init_SocialWork === true) {
       pdfDoc.registerFontkit(fontkit);
 
       // Cargar la fuente Aptos
-      const AptosBytes = fs.readFileSync("./src/docs/Aptos.ttf"); // Asegúrate de que la ruta sea correcta
+      const AptosBytes = fs.readFileSync("./src/docs/Aptos.ttf"); // Ruta de la fuente
       const AptosFont = await pdfDoc.embedFont(AptosBytes);
 
       const userTimezone = 'America/Guayaquil'; 
       const formattedInitDate = data.Init_Date
-        ? moment(data.Init_Date).tz(userTimezone).format('DD/MM/YYYY')
+        ? moment(data.Init_Date).tz(userTimezone).format('DD/MM/YYYY') 
         : "";
 
       // Obtener la primera página del PDF
