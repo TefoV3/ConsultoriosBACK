@@ -14,6 +14,49 @@ export class SocialWorkModel {
         }
     }
 
+    // New method to get all users with social work records
+    static async getAllUsersWithSocialWork() {
+        try {
+            // We're querying from User and including necessary relations
+            const users = await User.findAll({
+                include: [
+                    {
+                        model: InitialConsultations,
+                        required: true, // Only include users that have an initial consultation
+                        include: [
+                            {
+                                model: SocialWork,
+                                required: true // Only include initial consultations that have social work records
+                            }
+                        ]
+                    }
+                ]
+            });
+            
+            // Log the structure of the first user for debugging
+            if (users.length > 0) {
+                console.log("Sample user data structure:", JSON.stringify({
+                    userId: users[0].User_ID,
+                    firstName: users[0].User_FirstName,
+                    consultations: users[0].Initial_Consultations ? 
+                      users[0].Initial_Consultations.length : 'none',
+                    firstConsultationId: users[0].Initial_Consultations && 
+                      users[0].Initial_Consultations.length > 0 ? 
+                      users[0].Initial_Consultations[0].Init_Code : 'none',
+                    socialWorkId: users[0].Initial_Consultations && 
+                      users[0].Initial_Consultations.length > 0 && 
+                      users[0].Initial_Consultations[0].SocialWork ? 
+                      users[0].Initial_Consultations[0].SocialWork.SW_ProcessNumber : 'none'
+                }, null, 2));
+            }
+            
+            return users;
+        } catch (error) {
+            console.error("Error in getAllUsersWithSocialWork:", error);
+            throw new Error(`Error retrieving users with social work records: ${error.message}`);
+        }
+    }
+    
     // Obtener una evaluación de trabajo social por ID
     static async getById(id) {
         try {
@@ -170,7 +213,7 @@ export class SocialWorkModel {
           throw new Error(`Error updating social work record: ${error.message}`);
         }
       }
-    static async updateStatus(socialWorkId, status, status_observations) {
+      static async updateStatus(socialWorkId, status, status_observations) {
         try {
             // First check if the record exists
             const record = await this.getById(socialWorkId);

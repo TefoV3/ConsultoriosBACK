@@ -11,7 +11,18 @@ export class SocialWorkController {
         }
     }
 
-    // Obtener una evaluación por ID
+    // New endpoint for getting all users with social work records
+    static async getAllUsersWithSocialWork(req, res) {
+        try {
+            const records = await SocialWorkModel.getAllUsersWithSocialWork();
+            res.json(records);
+        } catch (error) {
+            console.error("Error fetching users with social work:", error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    // Existing methods...
     static async getById(req, res) {
         const { id } = req.params;
         try {
