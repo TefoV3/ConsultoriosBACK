@@ -36,11 +36,12 @@ export class SectorController {
     static async create(req, res) {
         try {
             if (Array.isArray(req.body)) {
-                const createdSector = await SectorModel.bulkCreate(req.body);
-                return res.status(201).json(createdSector);
+                // Si es un array, usa bulkCreate
+                const createdSectors = await SectorModel.bulkCreate(req.body);
+                return res.status(201).json(createdSectors);
             }
-            // Si es un objeto, usa create normal
-            const newSector = await SectorModel.bulkCreate(req.body);
+            // Si es un objeto, usa create (asumiendo que existe un método SectorModel.create)
+            const newSector = await SectorModel.create(req.body); // Cambiado de bulkCreate a create
             res.status(201).json(newSector);
         } catch (error) {
             res.status(500).json({ error: error.message });

@@ -77,7 +77,7 @@ import { Weekly_TrackingRouter } from './routes/schedule_routes/Weekly_Tracking_
 import { UserXPeriodRouter } from './routes/schedule_routes/UserXPeriod_Routes.js';
 import { Weekly_Hours_SummaryRouter } from './routes/schedule_routes/Weekly_Hours_Summary_Routes.js';
 
-
+import { authMiddleware } from './middlewares/auth.js'; // Middleware de autenticación
 
 const app = express()
 
@@ -85,8 +85,10 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser())
 app.use(corsMiddleware())
-app.use(authRoutes); //No se usa authMiddleware porque no se necesita autenticación para acceder al Login y Olvidé mi contraseña
+app.use(authRoutes); // Rutas públicas (Sin autenticación)
 
+// --- Global Authentication Middleware ---
+app.use(authMiddleware); // Lo que hace este middleware es aplicar la autenticación a todas URI protegidas
 app.use(ActivityRouter)
 app.use(AssignmentRouter)
 app.use(EvidenceRouter)

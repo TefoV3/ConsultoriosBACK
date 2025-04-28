@@ -222,7 +222,8 @@ export class InternalUserModel {
                     type: internalUser.Internal_Type,
                     area: internalUser.Internal_Area,
                     phone: internalUser.Internal_Phone,
-                    status: internalUser.Internal_Status
+                    status: internalUser.Internal_Status,
+                    picture: internalUser.Internal_Picture
                 },
                 SECRET_JWT_KEY,
                 { expiresIn: "6h" }
@@ -376,6 +377,20 @@ export class InternalUserModel {
             throw error;
         }
     }
+
+    static async updateProfilePicture(userId, imageUrl) {
+        try {
+
+            const [rowsUpdated] = await InternalUser.update(
+                { Internal_Picture: imageUrl },
+                { where: { Internal_ID: userId } }
+            );
+            return rowsUpdated > 0;
+        } catch (error) {
+            console.error(`Error updating profile picture URL: ${error.message}`);
+            throw new Error(`Error updating profile picture URL: ${error.message}`);
+        }
+    }  
 
 
 }

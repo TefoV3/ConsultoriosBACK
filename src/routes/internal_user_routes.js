@@ -1,6 +1,7 @@
 import { InternalUserController } from "../controllers/InternalUserController.js";
 import { Router } from "express";
-import { authMiddleware } from "../middlewares/auth.js";
+import upload from '../middlewares/multerImage.js';
+
 
 export const InternalUserRouter = Router();
 
@@ -20,15 +21,9 @@ InternalUserRouter.post('/usuariointernoBulk/:periodId', InternalUserController.
 InternalUserRouter.put('/usuarios/actualizar-huella', InternalUserController.actualizarHuella);
 InternalUserRouter.get('/usuarios/obtener-huella/:usuarioCedula', InternalUserController.obtenerHuella);
 
-
-
-
-
-//AUTH ROUTES
-InternalUserRouter.post('/register', InternalUserController.createInternalUser);
-InternalUserRouter.post('/login', InternalUserController.login);
-InternalUserRouter.post('/logout', InternalUserController.logout);
-InternalUserRouter.post('/forgot-password', InternalUserController.requestResetPassword);
-InternalUserRouter.post('/verify-code',InternalUserController.verifyCode);
-InternalUserRouter.post('/reset-password',InternalUserController.resetPassword);
-InternalUserRouter.post('/change-password',InternalUserController.changePassword);
+//IMAGE UPLOAD ROUTE
+InternalUserRouter.put(
+    '/internal-users/profile-picture',         
+    upload.single('profilePic'),      
+    InternalUserController.uploadProfilePicture 
+);

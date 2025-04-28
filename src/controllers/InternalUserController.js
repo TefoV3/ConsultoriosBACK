@@ -2,6 +2,7 @@ import { InternalUserModel } from "../models/InternalUserModel.js";
 import { z } from "zod";
 import { SALT_ROUNDS } from "../config.js";
 import { EMAIL_USER, EMAIL_PASS } from "../config.js";
+import { cloudinary } from "../cloudinary.js";
 import { UserXPeriodModel } from "../models/schedule_models/User_PeriodModel.js"; // Modelo de asignaciones a períodos
 import { sequelize } from "../database/database.js";
 
@@ -683,5 +684,125 @@ export class InternalUserController {
         }
     }
 
+    //PROFILE PICTURE MANAGEMENT
+
+
+    static async uploadProfilePicture(req, res) {
+          const internalId = req.headers["internal-id"] || getUserId(); 
+      // Or use: const userId = req.user.id; if authMiddleware sets req.user
+
+      try {
+          const userId = internalId; // Use the correct way to get userId
+
+          if (!userId) {
+              return res.status(401).json({ message: "Usuario no autenticado." });
+          }
+
+          if (!req.file) {
+              return res.status(400).json({ message: "No se ha subido ningún archivo." });
+          }
+
+          // --- 1. Get current user data to find the old picture URL ---
+          const currentUser = await InternalUserModel.getById(userId);
+          const oldPictureUrl = currentUser?.Internal_Picture;
+          let oldPublicId = null;
+
+          if (oldPictureUrl && oldPictureUrl.includes('res.cloudinary.com')) {
+              try {
+                  // Extract public_id (including folder) from the old URL
+                  const urlParts = oldPictureUrl.split('/');
+                  // Find the index of 'upload', the public_id parts start 2 indices after it
+                  const uploadIndex = urlParts.indexOf('upload');
+                  if (uploadIndex !== -1 && urlParts.length > uploadIndex + 2) {
+                       const publicIdWithFormat = urlParts.slice(uploadIndex + 2).join('/');
+                       oldPublicId = publicIdWithFormat.substring(0, publicIdWithFormat.lastIndexOf('.')) || publicIdWithFormat; // Remove extension if present
+                  }
+              } catch (e) {
+                  console.error("Could not parse old public_id from URL:", oldPictureUrl, e);
+                  // Continue without deleting if parsing fails
+              }
+          }
+          // --- End of Step 1 ---
+
+          // --- 2. Upload new image to Cloudinary ---
+          const result = await new Promise((resolve, reject) => {
+              const uploadStream = cloudinary.uploader.upload_stream(
+                  {
+                      folder: "profile_pics",
+                      // Optional: Overwrite based on public_id if you want to keep the same ID (less common for profile pics)
+                      // public_id: oldPublicId || undefined, // Use old ID if exists
+                      // invalidate: true // If overwriting, invalidate CDN cache
+                  },
+                  (error, uploadResult) => {
+                      if (error) return reject(error);
+                      resolve(uploadResult);
+                  }
+              );
+              uploadStream.end(req.file.buffer);
+          });
+
+          if (!result || !result.secure_url) {
+              throw new Error('Error al subir la imagen a Cloudinary');
+          }
+          const newPictureUrl = result.secure_url;
+          const newPublicId = result.public_id; 
+
+          // En caso de que el usuario tenga una foto de perfil se la actualiza
+          const updated = await InternalUserModel.updateProfilePicture(userId, newPictureUrl);
+
+
+          if (!updated) {
+              // If DB update fails, try to delete the *newly uploaded* image from Cloudinary
+              console.error("Database update failed. Attempting to delete newly uploaded image:", newPublicId);
+              try {
+                  await cloudinary.uploader.destroy(newPublicId);
+              } catch (cleanupError) {
+                  console.error("Failed to cleanup newly uploaded image after DB error:", cleanupError);
+              }
+              return res.status(500).json({ message: "No se pudo actualizar la URL en la base de datos." });
+          }
+
+          // Si la imagen se subió correctamente y se actualizó la base de datos, eliminamos la imagen anterior
+          if (oldPublicId && oldPublicId !== newPublicId) { 
+              console.log(`Database updated. Attempting to delete old image: ${oldPublicId}`);
+              try {
+                  await cloudinary.uploader.destroy(oldPublicId);
+                  console.log(`Successfully deleted old image: ${oldPublicId}`);
+              } catch (deleteError) {
+                  console.error("Failed to delete old profile picture from Cloudinary:", oldPublicId, deleteError);
+              }
+          }
+          return res.status(200).json({
+              message: "Foto de perfil actualizada.",
+              profilePictureUrl: newPictureUrl // Devuelvemos la nueva URL
+          });
+
+
+      } catch (error) {
+          console.error("Error uploading profile picture:", error);
+          return res.status(500).json({ message: "Error interno al subir la imagen.", error: error.message });
+      }
+  }
+
+    static async updateProfilePicture(req, res) {
+      try {
+          const { userId } = req.params; // Obtener el ID del usuario desde los parámetros de la URL
+          const { imageUrl } = req.body; // Obtener la URL de la imagen desde el cuerpo de la solicitud
+
+          if (!userId || !imageUrl) {
+              return res.status(400).json({ message: "User ID and image URL are required" });
+          }
+
+          const updated = await InternalUserModel.updateProfilePicture(userId, imageUrl);
+          if (!updated) {
+              return res.status(404).json({ message: "User not found or unable to update profile picture" });
+          }
+
+          return res.status(200).json({ message: "Profile picture updated successfully" });
+      } catch (error) {
+          console.error("Error updating profile picture:", error);
+          return res.status(500).json({ message: "Internal server error" });
+      }
+    }
 
 }
