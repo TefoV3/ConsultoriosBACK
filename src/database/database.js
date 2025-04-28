@@ -80,7 +80,7 @@ export const sequelize = new Sequelize(
 // );
 
 export const sequelize = new Sequelize(
-    'seguimiento_final3', 
+    'seguimiento_final6', 
     'user_control', 
     'ltic', 
     {

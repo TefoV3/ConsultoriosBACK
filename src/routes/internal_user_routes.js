@@ -16,7 +16,7 @@ InternalUserRouter.get('/internal-users/students/:area', InternalUserController.
 InternalUserRouter.get('/internal-user/id-by-name/:firstName/:lastName', InternalUserController.getIdByNameAndLastName);
 
 InternalUserRouter.get('/usuariointerno/estudiantes', InternalUserController.getInternalUserByTypeEstudiante);
-InternalUserRouter.post('/usuariointernoBulk', InternalUserController.createInternalUsersBulk);
+InternalUserRouter.post('/usuariointernoBulk/:periodId', InternalUserController.createInternalUsersBulk);
 InternalUserRouter.put('/usuarios/actualizar-huella', InternalUserController.actualizarHuella);
 InternalUserRouter.get('/usuarios/obtener-huella/:usuarioCedula', InternalUserController.obtenerHuella);
 
