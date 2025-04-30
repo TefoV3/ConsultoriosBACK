@@ -115,6 +115,23 @@ export class InternalUserModel {
         }
     }
 
+    static async bulkCreateUsers(data, options = {}) {
+        try {
+          const entries = Array.isArray(data) ? data : [data];
+          if (entries.length === 0) {
+            throw new Error("No hay usuarios para crear.");
+          }
+      
+          const createdUsers = await InternalUser.bulkCreate(entries, options);
+      
+          return createdUsers;
+        } catch (error) {
+          console.error(`Error en bulkCreateUsers: ${error.message}`);
+          throw new Error(`Error al crear usuarios internos en bloque: ${error.message}`);
+        }
+      }
+      
+
     static async update(id, data, internalUserID) {
         try {
             const internalId = internalUserID || getUserId(); // Obtener el ID del usuario activo desde la sesión
