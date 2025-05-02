@@ -3,25 +3,6 @@ import { sequelize } from "../database/database.js";
 import { InternalUser } from "./Internal_User.js";
 import { InitialConsultations } from "./Initial_Consultations.js";
 
-/*
-CREATE TABLE Activity (
-    Activity_ID INT PRIMARY KEY AUTO_INCREMENT,
-    Case_Code CHAR(50) NOT NULL,
-    Internal_User_ID CHAR(10) NOT NULL,
-    Last_Activity CHAR(250),
-    Activity_Date DATE,
-    Activity_Type CHAR(100),
-    Location CHAR(250),
-    Time TIME,
-    Duration TIME,
-    Counterparty CHAR(50),
-    Judge_Name CHAR(50),
-    Reference_File CHAR(25),
-    Status CHAR(50),
-    Documents CHAR(250)
-);
-*/
-
 export const Activity = sequelize.define('Activity', {
     Activity_ID: {
         type: DataTypes.INTEGER,
@@ -30,24 +11,45 @@ export const Activity = sequelize.define('Activity', {
     },
     Init_Code: {
         type: DataTypes.CHAR(50),
-        primaryKey: true
+        allowNull: false
     },
     Internal_ID: {
         type: DataTypes.CHAR(15),
         allowNull: false
     },
-
-    Activity_Name :DataTypes.STRING(250),
-    Activity_Start_Date: DataTypes.DATE,
-    Activity_Start_Time: DataTypes.TIME,
-    Activity_Location: DataTypes.STRING(250),
-    Activity_Duration: DataTypes.TIME,
-    Activity_Counterparty: DataTypes.STRING(50),
-    Activity_Judged: DataTypes.STRING(50),
-    Activity_Judge_Name: DataTypes.STRING(50),
-    Activity_Reference_File: DataTypes.STRING(25),
-    Activity_Status: DataTypes.STRING(50),
-    Activity_OnTime:DataTypes.BOOLEAN,
+    Activity_Type: {
+        type: DataTypes.STRING(100)
+    },
+    Activity_Description: {
+        type: DataTypes.STRING(250)
+    },
+    Activity_Location: {
+        type: DataTypes.STRING(250)
+    },
+    activityScheduledTime: {
+        type: DataTypes.TIME
+    },
+    Activity_Status: {
+        type: DataTypes.STRING(50)
+    },
+    Activity_JurisdictionType: {
+        type: DataTypes.STRING(50)
+    },
+    Activity_InternalReference: {
+        type: DataTypes.STRING(25)
+    },
+    Activity_CourtNumber: {
+        type: DataTypes.STRING(50)
+    },
+    Activity_lastCJGActivity: {
+        type: DataTypes.STRING(250)
+    },
+    Activity_lastCJGActivityDate: {
+        type: DataTypes.DATE
+    },
+    Activity_Observation: {
+        type: DataTypes.TEXT
+    },
     Activity_Document: {
         type: DataTypes.BLOB("long"),
         allowNull: true
