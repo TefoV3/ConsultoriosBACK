@@ -80,7 +80,6 @@ export const User = sequelize.define('User', {
     User_Pensioner: DataTypes.STRING(50),
     User_HealthInsurance: DataTypes.STRING(50),
     User_VulnerableSituation: DataTypes.STRING(50),
-    User_SupportingDocuments: DataTypes.STRING(150),
     User_Disability:DataTypes.STRING(150),
     User_DisabilityPercentage: DataTypes.INTEGER,
     User_CatastrophicIllness: DataTypes.STRING(300),

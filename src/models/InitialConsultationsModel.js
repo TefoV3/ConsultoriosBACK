@@ -89,6 +89,37 @@ export class InitialConsultationsModel {
     }
   }
 
+  static async getAllWithDetails() {
+    try {
+      return await InitialConsultations.findAll({
+        include: [
+          {
+            model: User,
+            attributes: [
+              "User_ID",
+              "User_FirstName",
+              "User_LastName"
+            ],
+          },
+          {
+            model: InternalUser,
+            attributes: ["Internal_ID", "Internal_Name", "Internal_LastName"],
+          },
+        ],
+        attributes: {
+          exclude: ["Init_AttentionSheet"],
+        },
+      });
+    } catch (error) {
+      throw new Error(
+        `Error retrieving initial consultations with details: ${error.message}`
+      );
+    }
+  }
+
+
+
+
   static async getById(id) {
     try {
       return await InitialConsultations.findOne({
@@ -238,7 +269,6 @@ export class InitialConsultationsModel {
             User_Pensioner: data.User_Pensioner,
             User_HealthInsurance: data.User_HealthInsurance,
             User_VulnerableSituation: data.User_VulnerableSituation,
-            User_SupportingDocuments: data.User_SupportingDocuments,
             User_Disability: data.User_Disability,
             User_DisabilityPercentage: data.User_DisabilityPercentage,
             User_CatastrophicIllness: data.User_CatastrophicIllness,
@@ -999,7 +1029,6 @@ if (newConsultation.Init_SocialWork === true) {
              { header: 'Pensionista', key: 'User_Pensioner', width: 15 },
              { header: 'Seguro Salud', key: 'User_HealthInsurance', width: 20 },
              { header: 'Sit. Vulnerabilidad', key: 'User_VulnerableSituation', width: 25 },
-             { header: 'Docs. Respaldo', key: 'User_SupportingDocuments', width: 25 },
              // Salud (Cols 36-39) -> AJ-AM
              { header: 'Discapacidad', key: 'User_Disability', width: 15 },
              { header: 'Porc. Discapacidad', key: 'User_DisabilityPercentage', width: 15 },
