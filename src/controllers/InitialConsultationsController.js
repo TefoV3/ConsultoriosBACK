@@ -3,11 +3,21 @@ import { AssignmentModel } from "../models/AssignmentModel.js";
 import { UserModel } from "../models/UserModel.js";
 import nodemailer from "nodemailer";
 import { EMAIL_USER, EMAIL_PASS } from "../config.js"; 
+import moment from 'moment-timezone'; // Import moment-timezone
 
 export class FirstConsultationsController {
     static async getFirstConsultations(req, res) {
         try {
             const consultations = await InitialConsultationsModel.getAll();
+            res.json(consultations);
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    }
+
+    static async getAllWithDetails(req, res) {
+        try {
+            const consultations = await InitialConsultationsModel.getAllWithDetails();
             res.json(consultations);
         } catch (error) {
             res.status(500).json(error);
@@ -287,6 +297,51 @@ export class FirstConsultationsController {
         } catch (error) {
             console.error("Error al enviar el correo:", error);
             return res.status(500).json({ message: `Error al enviar el correo: ${error.message}` });
+        }
+    }
+
+    static async generateExcelReport(req, res) {
+        try {
+            const { startDate, endDate } = req.query;
+            const userTimezone = 'America/Guayaquil'; // Or your specific GMT-5 timezone identifier
+
+            // Validate dates using moment's strict parsing
+            if (!startDate || !endDate || !moment(startDate, 'YYYY-MM-DD', true).isValid() || !moment(endDate, 'YYYY-MM-DD', true).isValid()) {
+                return res.status(400).json({ message: "Fechas de inicio y fin son requeridas en formato YYYY-MM-DD." });
+            }
+
+            // --- Timezone Correction ---
+            const queryStartDate = moment.tz(startDate, 'YYYY-MM-DD', userTimezone).startOf('day').utc().toDate();
+            const queryEndDate = moment.tz(endDate, 'YYYY-MM-DD', userTimezone).endOf('day').utc().toDate();
+
+
+            // Pass the UTC-adjusted dates to the model
+            const excelBuffer = await InitialConsultationsModel.generateExcelReport(queryStartDate, queryEndDate);
+
+            // Configurar headers para la descarga del archivo Excel
+            res.setHeader(
+                'Content-Type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            );
+            // Use original startDate and endDate strings for the filename
+            res.setHeader(
+                'Content-Disposition',
+                `attachment; filename="Reporte_Consultas_${startDate}_a_${endDate}.xlsx"`
+            );
+            res.setHeader(
+                'Access-Control-Expose-Headers',
+                'Content-Disposition'
+            );
+
+            // Enviar el buffer del archivo Excel
+            res.send(excelBuffer);
+
+        } catch (error) {
+            console.error("Error generando el reporte Excel:", error);
+            // Ensure error response is always JSON
+            if (!res.headersSent) {
+                 res.status(500).json({ message: "Error interno al generar el reporte Excel.", error: error.message });
+            }
         }
     }
 

@@ -115,6 +115,23 @@ export class InternalUserModel {
         }
     }
 
+    static async bulkCreateUsers(data, options = {}) {
+        try {
+          const entries = Array.isArray(data) ? data : [data];
+          if (entries.length === 0) {
+            throw new Error("No hay usuarios para crear.");
+          }
+      
+          const createdUsers = await InternalUser.bulkCreate(entries, options);
+      
+          return createdUsers;
+        } catch (error) {
+          console.error(`Error en bulkCreateUsers: ${error.message}`);
+          throw new Error(`Error al crear usuarios internos en bloque: ${error.message}`);
+        }
+      }
+      
+
     static async update(id, data, internalUserID) {
         try {
             const internalId = internalUserID || getUserId(); // Obtener el ID del usuario activo desde la sesión
@@ -205,7 +222,8 @@ export class InternalUserModel {
                     type: internalUser.Internal_Type,
                     area: internalUser.Internal_Area,
                     phone: internalUser.Internal_Phone,
-                    status: internalUser.Internal_Status
+                    status: internalUser.Internal_Status,
+                    picture: internalUser.Internal_Picture
                 },
                 SECRET_JWT_KEY,
                 { expiresIn: "6h" }
@@ -359,6 +377,20 @@ export class InternalUserModel {
             throw error;
         }
     }
+
+    static async updateProfilePicture(userId, imageUrl) {
+        try {
+
+            const [rowsUpdated] = await InternalUser.update(
+                { Internal_Picture: imageUrl },
+                { where: { Internal_ID: userId } }
+            );
+            return rowsUpdated > 0;
+        } catch (error) {
+            console.error(`Error updating profile picture URL: ${error.message}`);
+            throw new Error(`Error updating profile picture URL: ${error.message}`);
+        }
+    }  
 
 
 }

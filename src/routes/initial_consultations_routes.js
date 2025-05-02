@@ -7,9 +7,11 @@ export const InitialConsultationsRouter = Router();
 InitialConsultationsRouter.get('/initial-consultations', FirstConsultationsController.getFirstConsultations);
 InitialConsultationsRouter.get('/initial-consultations/:id', FirstConsultationsController.getById);
 InitialConsultationsRouter.get('/initial-consultations/user/:userId', FirstConsultationsController.getByUserId);
+InitialConsultationsRouter.get('/initial-consultations/cases/all', FirstConsultationsController.getAllWithDetails);
 InitialConsultationsRouter.get('/initial-consultations/status/:status', FirstConsultationsController.getByStatus);
 InitialConsultationsRouter.get('/initial-consultations/type/:initSubject/:initType/:initStatus', FirstConsultationsController.getByInitTypeAndSubjectAndStatus);
 InitialConsultationsRouter.get('/initial-consultations/review/:initType/:initStatus', FirstConsultationsController.getByTypeAndStatus);
+InitialConsultationsRouter.get('/initial-consultations/report/excel', FirstConsultationsController.generateExcelReport);
 
 
 InitialConsultationsRouter.post(

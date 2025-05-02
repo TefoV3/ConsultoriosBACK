@@ -9,9 +9,10 @@ import { getUserId } from "../sessionData.js";
 import { PDFDocument } from "pdf-lib";
 import { SocialWork } from "../schemas/SocialWork.js"; // Asegúrate de que la ruta sea correcta
 import { Op } from "sequelize";
-import moment from "moment";
-import fontkit from "@pdf-lib/fontkit"; // Importa fontkit correctamente
+import moment from 'moment-timezone'; // Use moment-timezone
+import fontkit from "@pdf-lib/fontkit"; 
 import fs from "fs";
+import ExcelJS from 'exceljs'; 
 
 function buildInitAlertNote({
   prefix = "",
@@ -88,10 +89,44 @@ export class InitialConsultationsModel {
     }
   }
 
+  static async getAllWithDetails() {
+    try {
+      return await InitialConsultations.findAll({
+        include: [
+          {
+            model: User,
+            attributes: [
+              "User_ID",
+              "User_FirstName",
+              "User_LastName"
+            ],
+          },
+          {
+            model: InternalUser,
+            attributes: ["Internal_ID", "Internal_Name", "Internal_LastName"],
+          },
+        ],
+        attributes: {
+          exclude: ["Init_AttentionSheet"],
+        },
+      });
+    } catch (error) {
+      throw new Error(
+        `Error retrieving initial consultations with details: ${error.message}`
+      );
+    }
+  }
+
+
+
+
   static async getById(id) {
     try {
       return await InitialConsultations.findOne({
         where: { Init_Code: id },
+        attributes: {
+          exclude: ["Init_AttentionSheet"],
+        },
       });
     } catch (error) {
       throw new Error(
@@ -126,6 +161,9 @@ export class InitialConsultationsModel {
     try {
       return await InitialConsultations.findAll({
         where: { User_ID: userId },
+        attributes: {
+          exclude: ["Init_AttentionSheet"],
+        },
       });
     } catch (error) {
       throw new Error(`Error fetching consultations: ${error.message}`);
@@ -179,7 +217,7 @@ export class InitialConsultationsModel {
 
   static async createInitialConsultation(data, files, internalUser) {
     const userId = internalUser || getUserId();
-
+    const userTimezone = 'America/Guayaquil'; // Define timezone
     const t = await sequelize.transaction();
     let userCreated = false;
 
@@ -231,7 +269,6 @@ export class InitialConsultationsModel {
             User_Pensioner: data.User_Pensioner,
             User_HealthInsurance: data.User_HealthInsurance,
             User_VulnerableSituation: data.User_VulnerableSituation,
-            User_SupportingDocuments: data.User_SupportingDocuments,
             User_Disability: data.User_Disability,
             User_DisabilityPercentage: data.User_DisabilityPercentage,
             User_CatastrophicIllness: data.User_CatastrophicIllness,
@@ -267,6 +304,14 @@ export class InitialConsultationsModel {
         throw new Error(`El usuario interno con ID ${userId} no existe.`);
       }
 
+      let saveInitDate = null;
+      if (data.Init_Date && moment(data.Init_Date, 'YYYY-MM-DD', true).isValid()) {
+          saveInitDate = moment.tz(data.Init_Date, 'YYYY-MM-DD', userTimezone).startOf('day').utc().toDate();
+          console.log(`[Create New] Saving Init_Date as UTC: ${saveInitDate.toISOString()}`); // Log the UTC date being saved
+      } else {
+          console.warn(`[Create New] Invalid or missing Init_Date received: ${data.Init_Date}`);
+      }
+
       //CREACION DE CÓDIGO DE CONSULTA INICIAL
       // Obtener el último Init_Code ordenado descendentemente
       const lastRecord = await InitialConsultations.findOne({
@@ -291,7 +336,7 @@ export class InitialConsultationsModel {
           Internal_ID: userId,
           User_ID: data.User_ID,
           Init_ClientType: data.Init_ClientType,
-          Init_Date: data.Init_Date,
+          Init_Date: saveInitDate,
           Init_EndDate: data.Init_EndDate,
           Init_Subject: data.Init_Subject,
           Init_Lawyer: data.Init_Lawyer,
@@ -443,6 +488,7 @@ if (newConsultation.Init_SocialWork === true) {
 
   static async createNewConsultation(data, internalUser) {
     const internalId = internalUser || getUserId(); // Obtener el ID del usuario interno desde la sesión o el argumento
+    const userTimezone = 'America/Guayaquil'; // Define timezone
     const t = await sequelize.transaction();
     try {
       let user = await User.findOne({
@@ -461,6 +507,16 @@ if (newConsultation.Init_SocialWork === true) {
       if (!internalUser) {
         throw new Error(`El usuario interno con ID ${internalId} no existe.`);
       }
+
+      let saveInitDate = null;
+      if (data.Init_Date && moment(data.Init_Date, 'YYYY-MM-DD', true).isValid()) {
+          saveInitDate = moment.tz(data.Init_Date, 'YYYY-MM-DD', userTimezone).startOf('day').utc().toDate();
+          console.log(`[Create New] Saving Init_Date as UTC: ${saveInitDate.toISOString()}`); // Log the UTC date being saved
+      } else {
+          console.warn(`[Create New] Invalid or missing Init_Date received: ${data.Init_Date}`);
+      }
+
+
 
       // Obtener el último Init_Code ordenado descendentemente
       const lastRecord = await InitialConsultations.findOne({
@@ -484,7 +540,7 @@ if (newConsultation.Init_SocialWork === true) {
           Internal_ID: internalId,
           User_ID: data.User_ID,
           Init_ClientType: data.Init_ClientType,
-          Init_Date: data.Init_Date,
+          Init_Date: saveInitDate,
           Init_EndDate: data.Init_EndDate,
           Init_Subject: data.Init_Subject,
           Init_Lawyer: data.Init_Lawyer,
@@ -593,9 +649,11 @@ if (newConsultation.Init_SocialWork === true) {
 
   static async update(id, data, internalUser) {
     const t = await sequelize.transaction();
+    const userTimezone = 'America/Guayaquil'; // Define timezone
     try {
       const consultation = await InitialConsultations.findOne({
         where: { Init_Code: id },
+        exclude: ["Init_Date"],
         transaction: t,
       });
 
@@ -604,10 +662,33 @@ if (newConsultation.Init_SocialWork === true) {
         return null;
       }
 
+      // Asegurarse de que la fecha inicial no esté en los datos a actualizar
+      if (data.hasOwnProperty('Init_Date')) {
+        delete data.Init_Date;
+    }
+
+    // Si después de eliminar la fecha inicial, no quedan datos para actualizar, retornar la consulta sin cambios
+    if (Object.keys(data).length === 0) {
+        console.log("No hay datos para actualizar después de excluir la fecha inicial");
+        return internalUser; 
+    }
+
+    let consultationDataToUpdate = { ...data }; // Create a copy to modify
+    if (consultationDataToUpdate.hasOwnProperty('Init_EndDate')) { // Check if Init_EndDate is part of the update
+        if (consultationDataToUpdate.Init_EndDate && moment(consultationDataToUpdate.Init_EndDate, 'YYYY-MM-DD', true).isValid()) {
+            consultationDataToUpdate.Init_EndDate = moment.tz(consultationDataToUpdate.Init_EndDate, 'YYYY-MM-DD', userTimezone).startOf('day').utc().toDate();
+            console.log(`[User Update] Corrected Init_EndDate to UTC: ${consultationDataToUpdate.Init_EndDate.toISOString()}`);
+        } else {
+            console.warn(`[User Update] Invalid or null Init_EndDate received: ${consultationDataToUpdate.Init_EndDate}. Setting to null.`);
+            consultationDataToUpdate.Init_EndDate = null; // Set to null if invalid/null received
+        }
+    }
+
+
       const originalSocialWorkStatus = consultation.Init_SocialWork;
       const internalId = internalUser || getUserId();
 
-      const [rowsUpdated] = await InitialConsultations.update(data, {
+      const [rowsUpdated] = await InitialConsultations.update(consultationDataToUpdate, {
         where: { Init_Code: id },
         transaction: t,
       });
@@ -742,7 +823,7 @@ if (newConsultation.Init_SocialWork === true) {
         .trim();
 
       // Cargar la plantilla PDF
-      const templatePath = "./src/docs/FICHA DE ATENCION.pdf"; // Asegúrate de que la ruta sea correcta
+      const templatePath = "./src/docs/FICHA DE ATENCION.pdf"; //Ruta de la plantilla
       const templateBytes = fs.readFileSync(templatePath);
 
       // Crear un nuevo documento PDF basado en la plantilla
@@ -752,8 +833,13 @@ if (newConsultation.Init_SocialWork === true) {
       pdfDoc.registerFontkit(fontkit);
 
       // Cargar la fuente Aptos
-      const AptosBytes = fs.readFileSync("./src/docs/Aptos.ttf"); // Asegúrate de que la ruta sea correcta
+      const AptosBytes = fs.readFileSync("./src/docs/Aptos.ttf"); // Ruta de la fuente
       const AptosFont = await pdfDoc.embedFont(AptosBytes);
+
+      const userTimezone = 'America/Guayaquil'; 
+      const formattedInitDate = data.Init_Date
+        ? moment(data.Init_Date).tz(userTimezone).format('DD/MM/YYYY') 
+        : "";
 
       // Obtener la primera página del PDF
       const pages = pdfDoc.getPages();
@@ -779,9 +865,7 @@ if (newConsultation.Init_SocialWork === true) {
       );
 
       firstPage.drawText(
-        `${
-          data.Init_Date ? new Date(data.Init_Date).toLocaleDateString() : ""
-        }`,
+        formattedInitDate, // Use the formatted date string
         {
           x: 397,
           y: 655,
@@ -853,4 +937,237 @@ if (newConsultation.Init_SocialWork === true) {
       throw error;
     }
   }
+
+
+  static async generateExcelReport(startDate, endDate) {
+    // --- DEBUG LOG 1: Log received dates ---
+    console.log('[Excel Report] Received Dates:', { startDate, endDate });
+    console.log('[Excel Report] Types:', { startType: typeof startDate, endType: typeof endDate });
+    // Check if they are Date objects
+    if (startDate instanceof Date && endDate instanceof Date) {
+        console.log('[Excel Report] UTC Dates for Query:', { utcStart: startDate.toISOString(), utcEnd: endDate.toISOString() });
+    } else {
+        console.error('[Excel Report] Error: Received dates are not Date objects!');
+        // Optionally throw an error or handle differently if dates aren't correct type
+    }
+    // --- End DEBUG LOG 1 ---
+
+    try {
+        const consultations = await InitialConsultations.findAll({
+            where: {
+                Init_Date: {
+                    [Op.between]: [startDate, endDate] // Use the received Date objects
+                }
+            },
+            include: [{
+                model: User,
+                attributes: { exclude: ['User_HealthDocuments'] }
+            }],
+            attributes: { exclude: ['Init_AttentionSheet'] },
+            order: [['Init_Date', 'ASC']]
+        });
+
+        // --- DEBUG LOG 2: Log query result ---
+        console.log(`[Excel Report] Found ${consultations.length} consultations for the date range.`);
+        // --- End DEBUG LOG 2 ---
+
+        // --- Handle Empty Results Gracefully ---
+        if (consultations.length === 0) {
+            console.log('[Excel Report] No consultations found. Generating empty report.');
+            // You might want to return an empty buffer or a specific message/error
+            // For now, we'll let it continue to generate an empty sheet
+        }
+        // --- End Handle Empty Results ---
+
+
+        const workbook = new ExcelJS.Workbook();
+        // ... (workbook setup) ...
+        workbook.creator = 'Sistema Consultorios';
+        workbook.lastModifiedBy = 'Sistema Consultorios';
+        workbook.created = new Date();
+        workbook.modified = new Date();
+
+        const worksheet = workbook.addWorksheet('Reporte Consultas Iniciales');
+
+        // --- Define Column Keys and Main Headers (Row 1) ---
+        const columnsDefinition = [
+            // ... (existing column definitions) ...
+             // Datos Personales (Cols 1-11) -> A-K
+             { header: 'Tipo ID', key: 'User_ID_Type', width: 15 },
+             { header: 'Número ID', key: 'User_ID', width: 15 },
+             { header: 'Nombres', key: 'User_FirstName', width: 25 },
+             { header: 'Apellidos', key: 'User_LastName', width: 25 },
+             { header: 'Edad', key: 'User_Age', width: 10 },
+             { header: 'Género', key: 'User_Gender', width: 15 },
+             { header: 'Fecha Nacimiento', key: 'Init_EndDate', width: 18, style: { numFmt: 'dd/mm/yyyy' } },
+             { header: 'Nacionalidad', key: 'User_Nationality', width: 20 },
+             { header: 'Etnia', key: 'User_Ethnicity', width: 15 },
+             { header: 'Provincia', key: 'User_Province', width: 15 },
+             { header: 'Ciudad', key: 'User_City', width: 20 },
+             // Contacto (Cols 12-19) -> L-S
+             { header: 'Teléfono', key: 'User_Phone', width: 15 },
+             { header: 'Correo Electrónico', key: 'User_Email', width: 30 },
+             { header: 'Dirección', key: 'User_Address', width: 40 },
+             { header: 'Sector', key: 'User_Sector', width: 20 },
+             { header: 'Zona', key: 'User_Zone', width: 12 },
+             { header: 'Relación Ref.', key: 'User_ReferenceRelationship', width: 20 },
+             { header: 'Nombre Ref.', key: 'User_ReferenceName', width: 25 },
+             { header: 'Teléfono Ref.', key: 'User_ReferencePhone', width: 18 },
+             // Datos Demográficos y Socioeconómicos (Cols 20-35) -> T-AI
+             { header: 'Recibe Bono', key: 'User_SocialBenefit', width: 12 },
+             { header: 'Dependiente Econ.', key: 'User_EconomicDependence', width: 15 },
+             { header: 'Instrucción', key: 'User_AcademicInstruction', width: 25 },
+             { header: 'Ocupación', key: 'User_Profession', width: 20 },
+             { header: 'Estado Civil', key: 'User_MaritalStatus', width: 15 },
+             { header: 'Dependientes', key: 'User_Dependents', width: 12 },
+             { header: 'Nivel Ingresos', key: 'User_IncomeLevel', width: 15 },
+             { header: 'Ingresos Fam.', key: 'User_FamilyIncome', width: 18 },
+             { header: 'Grupo Familiar', key: 'User_FamilyGroup', width: 30 },
+             { header: 'Pers. Econ. Activas', key: 'User_EconomicActivePeople', width: 15 },
+             { header: 'Bienes Propios', key: 'User_OwnAssets', width: 30 },
+             { header: 'Tipo Vivienda', key: 'User_HousingType', width: 15 },
+             { header: 'Pensionista', key: 'User_Pensioner', width: 15 },
+             { header: 'Seguro Salud', key: 'User_HealthInsurance', width: 20 },
+             { header: 'Sit. Vulnerabilidad', key: 'User_VulnerableSituation', width: 25 },
+             // Salud (Cols 36-39) -> AJ-AM
+             { header: 'Discapacidad', key: 'User_Disability', width: 15 },
+             { header: 'Porc. Discapacidad', key: 'User_DisabilityPercentage', width: 15 },
+             { header: 'Enf. Catastrófica', key: 'User_CatastrophicIllness', width: 25 },
+             { header: 'Nombre Doc. Salud', key: 'User_HealthDocumentsName', width: 30 },
+             // Datos Consulta Inicial (Cols 40-58) -> AN-BF
+             { header: 'Código Consulta', key: 'Init_Code', width: 18 },
+             { header: 'Consultorio', key: 'Init_Office', width: 25 },
+             { header: 'Creado Por', key: 'Internal_UserName', width: 30 },
+             { header: 'Tipo Cliente', key: 'Init_ClientType', width: 20 },
+             { header: 'Fecha Consulta', key: 'Init_Date', width: 18, style: { numFmt: 'dd/mm/yyyy' } },
+             { header: 'Fecha Fin', key: 'Init_EndDate', width: 18, style: { numFmt: 'dd/mm/yyyy' } },
+             { header: 'Servicio', key: 'Init_Service', width: 20 },
+             { header: 'Estado Caso', key: 'Init_CaseStatus', width: 18 },
+             { header: 'Materia', key: 'Init_Subject', width: 30 },
+             { header: 'Tema', key: 'Init_Topic', width: 30 },
+             { header: 'Abogado Asignado', key: 'Init_Lawyer', width: 25 },
+             { header: 'Derivado Por', key: 'Init_Referral', width: 20 },
+             { header: 'Estado Interno', key: 'Init_Status', width: 15 },
+             { header: 'Complejidad', key: 'Init_Complexity', width: 15 },
+             { header: 'Observaciones', key: 'Init_Notes', width: 50 },
+             { header: 'Trabajo Social', key: 'Init_SocialWork', width: 15 },
+             { header: 'TS Obligatorio', key: 'Init_MandatorySW', width: 15 },
+             { header: 'Nota Alerta', key: 'Init_AlertNote', width: 50 },
+        ];
+        worksheet.columns = columnsDefinition;
+
+        // --- Add Sub-Headers (Row 2) ---
+        // ... (existing sub-header logic) ...
+        worksheet.insertRow(2, []); // Insert a blank row at position 2
+        const mergeRanges = { personal: 'A2:K2', contacto: 'L2:S2', socioEco: 'T2:AI2', salud: 'AJ2:AM2', consulta: 'AN2:BF2' };
+        worksheet.mergeCells(mergeRanges.personal); worksheet.getCell('A2').value = 'DATOS PERSONALES DEL USUARIO';
+        worksheet.mergeCells(mergeRanges.contacto); worksheet.getCell('L2').value = 'CONTACTO';
+        worksheet.mergeCells(mergeRanges.socioEco); worksheet.getCell('T2').value = 'DATOS DEMOGRÁFICOS Y SOCIOECONÓMICOS';
+        worksheet.mergeCells(mergeRanges.salud); worksheet.getCell('AJ2').value = 'SALUD';
+        worksheet.mergeCells(mergeRanges.consulta); worksheet.getCell('AN2').value = 'DATOS CONSULTA INICIAL'; // Changed title back
+
+        // --- Styling ---
+        // ... (existing styling logic, including specific styles for consulta header/sub-header) ...
+        const headerStyle = { font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00388E' } }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true }, border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } } };
+        const subHeaderStyleDefault = { font: { bold: true, color: { argb: 'FF000000' }, size: 10 }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } }, alignment: { vertical: 'middle', horizontal: 'center' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } } };
+        const headerStyleConsulta = { ...headerStyle, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF646665' } } }; // Dark Grey for Row 1 Consulta headers
+        const subHeaderStyleConsulta = { ...subHeaderStyleDefault, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEAEAEA' } } }; // Lighter Gray for Row 2 Consulta sub-header
+
+        worksheet.getRow(1).eachCell({ includeEmpty: true }, cell => { cell.style = headerStyle; });
+        worksheet.getRow(1).height = 30;
+        worksheet.getRow(2).eachCell({ includeEmpty: true }, cell => { cell.style = subHeaderStyleDefault; });
+        worksheet.getRow(2).height = 20;
+
+        const consultaStartCol = 'AN'; const consultaEndCol = 'BF';
+        const consultaStartColNum = worksheet.getColumn(consultaStartCol).number;
+        const consultaEndColNum = worksheet.getColumn(consultaEndCol).number;
+        // Apply specific styles to Row 1 (Main Header) for Consulta section
+        for (let i = consultaStartColNum; i <= consultaEndColNum; i++) { worksheet.getCell(1, i).style = headerStyleConsulta; }
+        // Apply specific styles to Row 2 (Sub Header) for Consulta section
+        for (let i = consultaStartColNum; i <= consultaEndColNum; i++) { worksheet.getCell(2, i).style = subHeaderStyleConsulta; }
+        worksheet.getCell('AN2').style = subHeaderStyleConsulta; // Ensure merged cell style
+
+
+        // --- Helper Function for Data Formatting ---
+        // ... (existing formatValue function) ...
+        const formatValue = (value, key) => {
+            if (key === 'User_FamilyGroup' || key === 'User_OwnAssets') {
+                try {
+                    if (value && typeof value === 'string') { const parsedArray = JSON.parse(value); if (Array.isArray(parsedArray)) { const filtered = parsedArray.filter(item => item !== null && item !== ''); return filtered.length > 0 ? filtered.join(', ') : 'Ninguno'; } }
+                    else if (Array.isArray(value)) { const filtered = value.filter(item => item !== null && item !== ''); return filtered.length > 0 ? filtered.join(', ') : 'Ninguno'; }
+                } catch (e) { console.warn(`Could not parse JSON for key ${key}:`, value); }
+            }
+            if (typeof value === 'boolean') { return value ? 'Si' : 'No'; }
+            if (value instanceof Date) { return value; } // Keep as Date object for Excel
+            if (key !== 'Internal_UserName' && (value === null || value === undefined || value === '')) { return 'Ninguno'; }
+            if (key === 'Internal_UserName' && (value === null || value === undefined || value === '')) { return 'Desconocido'; }
+            if (key === 'Init_Notes' || key === 'Init_AlertNote') { const cleaned = String(value).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim(); return cleaned || 'Ninguno'; }
+            return String(value);
+        };
+
+
+        // --- Añadir Filas con Datos (using Promise.all and map) ---
+        const rowsToAdd = await Promise.all(consultations.map(async (consultation) => {
+            const user = consultation.User || {};
+            const initData = consultation.dataValues || {};
+            const userData = user.dataValues || {};
+
+            let internalUserName = 'Desconocido';
+            if (initData.Internal_ID) {
+                try {
+                    const internalUser = await InternalUser.findOne({
+                        where: { Internal_ID: initData.Internal_ID },
+                        attributes: ['Internal_Name', 'Internal_LastName']
+                    });
+                    if (internalUser) {
+                        internalUserName = `${internalUser.Internal_Name || ''} ${internalUser.Internal_LastName || ''}`.trim();
+                        if (!internalUserName) internalUserName = 'Desconocido';
+                    }
+                } catch (lookupError) { console.error(`[Excel Report] Error looking up InternalUser for ID ${initData.Internal_ID}:`, lookupError); }
+            }
+
+            const combinedData = { ...userData, ...initData };
+            const rowData = {};
+            columnsDefinition.forEach(column => {
+                const key = column.key;
+                let rawValue = (key === 'Internal_UserName') ? internalUserName : combinedData[key];
+                rowData[key] = formatValue(rawValue, key);
+            });
+            return rowData;
+        }));
+
+        // Add data rows starting from Row 3
+        rowsToAdd.forEach((rowData, index) => {
+            const row = worksheet.addRow(rowData);
+            if ((index + 3) % 2 === 0) {
+                 row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } };
+             }
+        });
+
+
+        // --- Habilitar Filtros en la Cabecera Principal (Row 1) ---
+        // ... (existing filter logic) ...
+        const getExcelColumnName = (colIndex) => { let name = ''; let dividend = colIndex + 1; while (dividend > 0) { const modulo = (dividend - 1) % 26; name = String.fromCharCode(65 + modulo) + name; dividend = Math.floor((dividend - modulo) / 26); } return name; };
+        const lastColIndex = columnsDefinition.length - 1;
+        const lastColName = getExcelColumnName(lastColIndex);
+        if (lastColName) { worksheet.autoFilter = `A1:${lastColName}1`; }
+        else { console.warn("[Excel Report] Could not determine last column name for autoFilter."); }
+
+
+        // --- Generar Buffer ---
+        console.log('[Excel Report] Generating buffer...'); // DEBUG LOG 3
+        const buffer = await workbook.xlsx.writeBuffer();
+        console.log('[Excel Report] Buffer generated successfully.'); // DEBUG LOG 4
+        return buffer;
+
+    } catch (error) {
+        // --- DEBUG LOG 5: Log any error during generation ---
+        console.error("[Excel Report] Error during generation:", error);
+        // --- End DEBUG LOG 5 ---
+        // Re-throw the error so the controller can catch it
+        throw new Error(`Error generando el reporte Excel: ${error.message}`);
+    }
+  }
+
+
 }
