@@ -11,6 +11,7 @@ InternalUserRouter.get('/internal-user/email/:email', InternalUserController.get
 InternalUserRouter.get('/internal-user/lawyers/list', InternalUserController.getAllLawyers);
 InternalUserRouter.get('/internal-user/lawyers/actives/:area', InternalUserController.getAllActiveLawyers);
 InternalUserRouter.post('/internal-user', InternalUserController.createInternalUser);
+InternalUserRouter.post('/internal-user/resend-credentials/:internalId', InternalUserController.resendCredentials); 
 InternalUserRouter.put('/internal-user/:id', InternalUserController.update);
 InternalUserRouter.delete('/internal-user/:id', InternalUserController.delete);
 InternalUserRouter.get('/internal-users/students/:area', InternalUserController.getStudentsByArea);

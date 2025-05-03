@@ -100,6 +100,21 @@ app.use(SocialWorkRouter);
 app.use(LivingGroupRouter)
 app.use(ActivityRecordRouter);
 
+
+// ✅ Updated Schedules routes with new router names
+app.use(AlertRouter); // /alerta
+app.use(ScheduleStudentsRouter); // /horarioEstudiantes
+app.use(ExtraHoursRouter); // /horasExtraordinarias
+app.use(Parameter_ScheduleRouter); // /parametroHorario
+app.use(PeriodRouter); // /periodos
+app.use(AttendanceRecordRouter); // /registros
+app.use(StudentHoursSummaryRouter); // /resumenGeneral
+app.use(Weekly_TrackingRouter); // /seguimientoSemanal
+app.use(UserXPeriodRouter); // /usuarioXPeriodo
+app.use(Weekly_Hours_SummaryRouter); // /resumenSemanal
+
+
+
 //Parameter Routes
 app.use(CaseStatusRouter)
 app.use(CatastrophicIllnessRouter)
@@ -150,17 +165,7 @@ app.use(UsuarioXPeriodoRouter)
 app.use(Resumen_Horas_SemanalesRouter)
  */
 
-// ✅ Updated Schedules routes with new router names
-app.use(AlertRouter); // /alerta
-app.use(ScheduleStudentsRouter); // /horarioEstudiantes
-app.use(ExtraHoursRouter); // /horasExtraordinarias
-app.use(Parameter_ScheduleRouter); // /parametroHorario
-app.use(PeriodRouter); // /periodos
-app.use(AttendanceRecordRouter); // /registros
-app.use(StudentHoursSummaryRouter); // /resumenGeneral
-app.use(Weekly_TrackingRouter); // /seguimientoSemanal
-app.use(UserXPeriodRouter); // /usuarioXPeriodo
-app.use(Weekly_Hours_SummaryRouter); // /resumenSemanal
+
 
 
 

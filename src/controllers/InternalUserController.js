@@ -618,6 +618,66 @@ export class InternalUserController {
           return res.status(500).json({ error: error.message });
         }
       }
+
+      static async resendCredentials(req, res) {
+        try {
+          const { internalId } = req.params;
+          const { newEmail } = req.body;
+
+          console.log("Resend credentials for ID:", internalId, "to email:", newEmail);
+      
+          if (!internalId || !newEmail) {
+            return res.status(400).json({ message: "Faltan datos: ID o email." });
+          }
+      
+          // Buscar usuario
+          const user = await InternalUserModel.getById(internalId);
+          if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado." });
+          }
+      
+          // Generar nueva contraseña
+          const newPassword = generateRandomPassword(8);
+          console.log("Generated password: ", newPassword);
+          const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+      
+        // Actualizar correo y contraseña
+        await InternalUserModel.updateResendCredentials(internalId, newEmail, newPassword);
+
+      
+          // Enviar correo con las nuevas credenciales
+          const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            auth: { user: EMAIL_USER, pass: EMAIL_PASS }
+          });
+      
+          const mailOptions = {
+            from: '"Soporte Balanza Web" <cjgpuce.system@gmail.com>',
+            to: newEmail,
+            subject: "Tus nuevas credenciales",
+            html: `
+              <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <h2>🎓 Tus credenciales han sido actualizadas</h2>
+                <p>Se ha actualizado tu correo electrónico. Estas son tus nuevas credenciales:</p>
+                <p><strong>Correo:</strong> ${newEmail}</p>
+                <p><strong>Contraseña:</strong> ${newPassword}</p>
+                <p>Por favor, ingresa al sistema y cambia tu contraseña cuanto antes.</p>
+                <p>Saludos,<br/>Equipo Balanza Web</p>
+              </div>
+            `
+          };
+      
+          await transporter.sendMail(mailOptions);
+          return res.status(200).json({ message: "Correo enviado con nuevas credenciales." });
+      
+        } catch (error) {
+          console.error("Error en resendCredentials:", error);
+          return res.status(500).json({ message: "Error al enviar credenciales", error: error.message });
+        }
+      }
+      
       
       
               

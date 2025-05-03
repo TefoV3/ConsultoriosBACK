@@ -23,7 +23,7 @@ export const Alert = sequelize.define('Alert', {
         type: DataTypes.STRING(10),
         allowNull: false
     },
-    Hours_IsDeleted: {
+    Alert_IsDeleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     }
