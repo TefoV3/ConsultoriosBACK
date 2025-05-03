@@ -2,13 +2,13 @@ import Sequelize from 'sequelize';
 import dotenv from "dotenv";
 
 // // Cargar las variables de entorno
-dotenv.config();
+// dotenv.config();
 
-console.log("🔹 Conectando a Supabase con:");
-console.log("Host:", process.env.SUPABASE_HOST);
-console.log("Puerto:", process.env.SUPABASE_PORT);
-console.log("Usuario:", process.env.SUPABASE_DB_USER);
-console.log("Base de datos:", process.env.SUPABASE_DB_NAME);
+// console.log("🔹 Conectando a Supabase con:");
+// console.log("Host:", process.env.SUPABASE_HOST);
+// console.log("Puerto:", process.env.SUPABASE_PORT);
+// console.log("Usuario:", process.env.SUPABASE_DB_USER);
+// console.log("Base de datos:", process.env.SUPABASE_DB_NAME);
 
 // Configurar Sequelize con Supabase
 /*export const sequelize = new Sequelize(
@@ -31,17 +31,17 @@ console.log("Base de datos:", process.env.SUPABASE_DB_NAME);
 
 //USO LOCAL
 
-/*
+
 export const sequelize = new Sequelize(
       'prueba', 
        'root', 
-      '123456', 
+      '12345', 
       {
          host: 'localhost',
           dialect: 'mysql'
      }
     )
-*/
+
 
 
 // export const sequelize = new Sequelize(
@@ -79,6 +79,18 @@ export const sequelize = new Sequelize(
 //     }
 // );
 
+<<<<<<< HEAD
+// export const sequelize = new Sequelize(
+//     'seguimiento_final3', 
+//     'user_control', 
+//     'ltic', 
+//     {
+//         host: 'localhost',
+//         dialect: 'mysql',
+//         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
+//     }
+// );
+=======
 export const sequelize = new Sequelize(
     'seguimiento_final6', 
     'user_control', 
@@ -89,3 +101,4 @@ export const sequelize = new Sequelize(
         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
     }
 );
+>>>>>>> 870a0d7d1b5ba404394c50003dd1b34f402dd099

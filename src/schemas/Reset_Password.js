@@ -19,7 +19,7 @@ export const ResetPassword = sequelize.define('ResetPassword', {
     primaryKey: true,
   },
   userId: {
-    type: DataTypes.CHAR(10),
+    type: DataTypes.CHAR(15),
     allowNull: false,
   },
   code: {

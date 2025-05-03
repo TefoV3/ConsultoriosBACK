@@ -49,6 +49,8 @@ import {PeriodTypeRouter} from './routes/parameter_routes/period_type_routes.js'
 import {NumberOfAttemptsRouter} from './routes/parameter_routes/number_of_attempts_routes.js'
 import {PracticalHoursRouter} from './routes/parameter_routes/practical_hours_routes.js'
 import { ClientTypeRouter } from './routes/parameter_routes/client_type_routes.js'
+import { TypeOfActivityRouter } from './routes/parameter_routes/type_of_activity_routes.js'
+import { FieldOfActivityRouter } from './routes/parameter_routes/field_of_activity_routes.js'
 
 
 //Schedules routes
@@ -150,6 +152,8 @@ app.use(PeriodTypeRouter)
 app.use(NumberOfAttemptsRouter)
 app.use(PracticalHoursRouter)
 app.use(ClientTypeRouter)
+app.use(TypeOfActivityRouter)
+app.use(FieldOfActivityRouter)
 
 //Schedules routes
 /*
