@@ -861,7 +861,6 @@ export class InternalUserController {
                     </div>
                   </body>
                 </html>
-<<<<<<< HEAD
               `
             };
       
@@ -966,57 +965,8 @@ export class InternalUserController {
                 res.status(500).json({ message: "Error interno del servidor." });
             }
         }
-=======
-              `,
-        };
->>>>>>> 95cbb7fd188ea01b04d123c0a1a68560b37f75fe
 
-        try {
-          await transporter.sendMail(mailOptions);
-          console.log(`Correo enviado exitosamente a ${emailInfo.to}`);
-        } catch (errorEmail) {
-          console.error(
-            `Error al enviar correo a ${emailInfo.to}:`,
-            errorEmail
-          );
-        }
-      }
-
-      return res
-        .status(201)
-        .json({
-          message: "Usuarios creados y correos enviados correctamente.",
-        });
-    } catch (error) {
-      console.error("Error en createInternalUsersBulk:", error);
-      await transaction.rollback();
-      return res.status(500).json({ error: error.message });
-    }
-  }
-
-  /** 🔹 Obtener la huella de un usuario */
-  static async obtenerHuella(req, res) {
-    try {
-      const { usuarioCedula } = req.params;
-      if (!usuarioCedula) {
-        return res.status(400).json({ message: "Cédula requerida." });
-      }
-
-      // 🔹 Llamamos al modelo para obtener la huella
-      const huellaBase64 = await InternalUserModel.getHuella(usuarioCedula);
-
-      if (!huellaBase64) {
-        return res
-          .status(404)
-          .json({ message: "No se encontró huella para este usuario." });
-      }
-
-      res.json({ message: "Huella encontrada.", huella: huellaBase64 });
-    } catch (error) {
-      console.error("Error al obtener huella:", error);
-      res.status(500).json({ message: "Error interno del servidor." });
-    }
-  }
+       
 
   static async getInternalUserByTypeEstudiante(req, res) {
     try {
