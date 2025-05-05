@@ -89,6 +89,37 @@ export class InitialConsultationsModel {
     }
   }
 
+  static async getAllWithDetails() {
+    try {
+      return await InitialConsultations.findAll({
+        include: [
+          {
+            model: User,
+            attributes: [
+              "User_ID",
+              "User_FirstName",
+              "User_LastName"
+            ],
+          },
+          {
+            model: InternalUser,
+            attributes: ["Internal_ID", "Internal_Name", "Internal_LastName"],
+          },
+        ],
+        attributes: {
+          exclude: ["Init_AttentionSheet"],
+        },
+      });
+    } catch (error) {
+      throw new Error(
+        `Error retrieving initial consultations with details: ${error.message}`
+      );
+    }
+  }
+
+
+
+
   static async getById(id) {
     try {
       return await InitialConsultations.findOne({
@@ -130,6 +161,9 @@ export class InitialConsultationsModel {
     try {
       return await InitialConsultations.findAll({
         where: { User_ID: userId },
+        attributes: {
+          exclude: ["Init_AttentionSheet"],
+        },
       });
     } catch (error) {
       throw new Error(`Error fetching consultations: ${error.message}`);
@@ -235,7 +269,6 @@ export class InitialConsultationsModel {
             User_Pensioner: data.User_Pensioner,
             User_HealthInsurance: data.User_HealthInsurance,
             User_VulnerableSituation: data.User_VulnerableSituation,
-            User_SupportingDocuments: data.User_SupportingDocuments,
             User_Disability: data.User_Disability,
             User_DisabilityPercentage: data.User_DisabilityPercentage,
             User_CatastrophicIllness: data.User_CatastrophicIllness,
@@ -274,11 +307,9 @@ export class InitialConsultationsModel {
       let saveInitDate = null;
       if (data.Init_Date && moment(data.Init_Date, 'YYYY-MM-DD', true).isValid()) {
           saveInitDate = moment.tz(data.Init_Date, 'YYYY-MM-DD', userTimezone).startOf('day').utc().toDate();
-          console.log(`[Create] Saving Init_Date as UTC: ${saveInitDate.toISOString()}`); // Log the UTC date being saved
+          console.log(`[Create New] Saving Init_Date as UTC: ${saveInitDate.toISOString()}`); // Log the UTC date being saved
       } else {
-          console.warn(`[Create] Invalid or missing Init_Date received: ${data.Init_Date}`);
-          // Decide how to handle invalid/missing date - throw error or allow null?
-          // For now, allowing null if input is invalid/missing
+          console.warn(`[Create New] Invalid or missing Init_Date received: ${data.Init_Date}`);
       }
 
       //CREACION DE CÓDIGO DE CONSULTA INICIAL
@@ -618,9 +649,11 @@ if (newConsultation.Init_SocialWork === true) {
 
   static async update(id, data, internalUser) {
     const t = await sequelize.transaction();
+    const userTimezone = 'America/Guayaquil'; // Define timezone
     try {
       const consultation = await InitialConsultations.findOne({
         where: { Init_Code: id },
+        exclude: ["Init_Date"],
         transaction: t,
       });
 
@@ -629,10 +662,33 @@ if (newConsultation.Init_SocialWork === true) {
         return null;
       }
 
+      // Asegurarse de que la fecha inicial no esté en los datos a actualizar
+      if (data.hasOwnProperty('Init_Date')) {
+        delete data.Init_Date;
+    }
+
+    // Si después de eliminar la fecha inicial, no quedan datos para actualizar, retornar la consulta sin cambios
+    if (Object.keys(data).length === 0) {
+        console.log("No hay datos para actualizar después de excluir la fecha inicial");
+        return internalUser; 
+    }
+
+    let consultationDataToUpdate = { ...data }; // Create a copy to modify
+    if (consultationDataToUpdate.hasOwnProperty('Init_EndDate')) { // Check if Init_EndDate is part of the update
+        if (consultationDataToUpdate.Init_EndDate && moment(consultationDataToUpdate.Init_EndDate, 'YYYY-MM-DD', true).isValid()) {
+            consultationDataToUpdate.Init_EndDate = moment.tz(consultationDataToUpdate.Init_EndDate, 'YYYY-MM-DD', userTimezone).startOf('day').utc().toDate();
+            console.log(`[User Update] Corrected Init_EndDate to UTC: ${consultationDataToUpdate.Init_EndDate.toISOString()}`);
+        } else {
+            console.warn(`[User Update] Invalid or null Init_EndDate received: ${consultationDataToUpdate.Init_EndDate}. Setting to null.`);
+            consultationDataToUpdate.Init_EndDate = null; // Set to null if invalid/null received
+        }
+    }
+
+
       const originalSocialWorkStatus = consultation.Init_SocialWork;
       const internalId = internalUser || getUserId();
 
-      const [rowsUpdated] = await InitialConsultations.update(data, {
+      const [rowsUpdated] = await InitialConsultations.update(consultationDataToUpdate, {
         where: { Init_Code: id },
         transaction: t,
       });
@@ -767,7 +823,7 @@ if (newConsultation.Init_SocialWork === true) {
         .trim();
 
       // Cargar la plantilla PDF
-      const templatePath = "./src/docs/FICHA DE ATENCION.pdf"; // Asegúrate de que la ruta sea correcta
+      const templatePath = "./src/docs/FICHA DE ATENCION.pdf"; //Ruta de la plantilla
       const templateBytes = fs.readFileSync(templatePath);
 
       // Crear un nuevo documento PDF basado en la plantilla
@@ -777,12 +833,12 @@ if (newConsultation.Init_SocialWork === true) {
       pdfDoc.registerFontkit(fontkit);
 
       // Cargar la fuente Aptos
-      const AptosBytes = fs.readFileSync("./src/docs/Aptos.ttf"); // Asegúrate de que la ruta sea correcta
+      const AptosBytes = fs.readFileSync("./src/docs/Aptos.ttf"); // Ruta de la fuente
       const AptosFont = await pdfDoc.embedFont(AptosBytes);
 
       const userTimezone = 'America/Guayaquil'; 
       const formattedInitDate = data.Init_Date
-        ? moment(data.Init_Date).tz(userTimezone).format('DD/MM/YYYY')
+        ? moment(data.Init_Date).tz(userTimezone).format('DD/MM/YYYY') 
         : "";
 
       // Obtener la primera página del PDF
@@ -943,7 +999,7 @@ if (newConsultation.Init_SocialWork === true) {
              { header: 'Apellidos', key: 'User_LastName', width: 25 },
              { header: 'Edad', key: 'User_Age', width: 10 },
              { header: 'Género', key: 'User_Gender', width: 15 },
-             { header: 'Fecha Nacimiento', key: 'User_BirthDate', width: 18, style: { numFmt: 'dd/mm/yyyy' } },
+             { header: 'Fecha Nacimiento', key: 'Init_EndDate', width: 18, style: { numFmt: 'dd/mm/yyyy' } },
              { header: 'Nacionalidad', key: 'User_Nationality', width: 20 },
              { header: 'Etnia', key: 'User_Ethnicity', width: 15 },
              { header: 'Provincia', key: 'User_Province', width: 15 },
@@ -973,7 +1029,6 @@ if (newConsultation.Init_SocialWork === true) {
              { header: 'Pensionista', key: 'User_Pensioner', width: 15 },
              { header: 'Seguro Salud', key: 'User_HealthInsurance', width: 20 },
              { header: 'Sit. Vulnerabilidad', key: 'User_VulnerableSituation', width: 25 },
-             { header: 'Docs. Respaldo', key: 'User_SupportingDocuments', width: 25 },
              // Salud (Cols 36-39) -> AJ-AM
              { header: 'Discapacidad', key: 'User_Disability', width: 15 },
              { header: 'Porc. Discapacidad', key: 'User_DisabilityPercentage', width: 15 },

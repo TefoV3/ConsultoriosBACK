@@ -115,6 +115,23 @@ export class InternalUserModel {
         }
     }
 
+    static async bulkCreateUsers(data, options = {}) {
+        try {
+          const entries = Array.isArray(data) ? data : [data];
+          if (entries.length === 0) {
+            throw new Error("No hay usuarios para crear.");
+          }
+      
+          const createdUsers = await InternalUser.bulkCreate(entries, options);
+      
+          return createdUsers;
+        } catch (error) {
+          console.error(`Error en bulkCreateUsers: ${error.message}`);
+          throw new Error(`Error al crear usuarios internos en bloque: ${error.message}`);
+        }
+      }
+      
+
     static async update(id, data, internalUserID) {
         try {
             const internalId = internalUserID || getUserId(); // Obtener el ID del usuario activo desde la sesión
@@ -152,6 +169,31 @@ export class InternalUserModel {
         }
     }
 
+    static async updateResendCredentials(id, newEmail, newPlainPassword) {
+        try {
+            const user = await this.getById(id);
+            if (!user) return null;
+    
+            const hashedPassword = await bcrypt.hash(newPlainPassword, SALT_ROUNDS);
+    
+            const [rowsUpdated] = await InternalUser.update(
+                {
+                    Internal_Email: newEmail,
+                    Internal_Password: hashedPassword
+                },
+                {
+                    where: { Internal_ID: id }
+                }
+            );
+    
+            return rowsUpdated > 0 ? await this.getById(id) : null;
+        } catch (error) {
+            console.error("Error en updateResendCredentials:", error);
+            throw new Error("Error actualizando correo y contraseña");
+        }
+    }
+    
+
     static async delete(id, internalUserID) {
         try {
             const internalId = internalUserID || getUserId();
@@ -179,7 +221,9 @@ export class InternalUserModel {
     
     static async authenticate(Internal_Email, Internal_Password) {
         try {
+            console.log("Datos de autenticación:", Internal_Email, Internal_Password);
             const internalUser = await this.getByEmail(Internal_Email);
+            console.log("Usuario interno encontrado:", internalUser);
             if (!internalUser) return null;
 
             // Si no es un administrador, se verifica que la contraseña en texto plano coincida con la encriptada en la base de datos
@@ -187,6 +231,7 @@ export class InternalUserModel {
             // estará en texto plano y no se podrá comparar con la contraseña encriptada
             if (internalUser.Internal_Type !== "SuperAdmin") { //El primer usuario que se registra debe tener el TIPO: SuperAdmin
                 const isPasswordValid = await bcrypt.compare(Internal_Password, internalUser.Internal_Password);
+                console.log("Contrasenias comparadas:", isPasswordValid);
                 if (!isPasswordValid) return null;
             }
             else {
@@ -205,7 +250,8 @@ export class InternalUserModel {
                     type: internalUser.Internal_Type,
                     area: internalUser.Internal_Area,
                     phone: internalUser.Internal_Phone,
-                    status: internalUser.Internal_Status
+                    status: internalUser.Internal_Status,
+                    picture: internalUser.Internal_Picture
                 },
                 SECRET_JWT_KEY,
                 { expiresIn: "6h" }
@@ -359,6 +405,20 @@ export class InternalUserModel {
             throw error;
         }
     }
+
+    static async updateProfilePicture(userId, imageUrl) {
+        try {
+
+            const [rowsUpdated] = await InternalUser.update(
+                { Internal_Picture: imageUrl },
+                { where: { Internal_ID: userId } }
+            );
+            return rowsUpdated > 0;
+        } catch (error) {
+            console.error(`Error updating profile picture URL: ${error.message}`);
+            throw new Error(`Error updating profile picture URL: ${error.message}`);
+        }
+    }  
 
 
 }

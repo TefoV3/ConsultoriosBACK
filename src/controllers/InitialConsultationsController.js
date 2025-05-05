@@ -15,6 +15,15 @@ export class FirstConsultationsController {
         }
     }
 
+    static async getAllWithDetails(req, res) {
+        try {
+            const consultations = await InitialConsultationsModel.getAllWithDetails();
+            res.json(consultations);
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    }
+
     static async getById(req, res) {
         const { id } = req.params;
         try {

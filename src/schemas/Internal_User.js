@@ -31,6 +31,10 @@ export const InternalUser = sequelize.define('Internal_User', {
     Internal_Huella:{
         type: DataTypes.BLOB('long')
     },
+    Internal_Picture: {
+        type: DataTypes.STRING(255), 
+        allowNull: true 
+    },
     Internal_Status: DataTypes.STRING(50), // Example: "Active", "Inactive", etc.
 }, { timestamps: false });
 

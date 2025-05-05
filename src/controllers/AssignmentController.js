@@ -12,6 +12,16 @@ export class AssignmentController {
         }
     }
 
+    static async getAllWithDetails(req, res) {
+        try {
+            const assignments = await AssignmentModel.getAllWithDetails();
+            res.json(assignments);
+        } catch (error) {
+            res.status(500).json(error);
+        }
+    }
+
+
     static async getById(req, res) {
         const { id } = req.params;
         try {

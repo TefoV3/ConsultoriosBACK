@@ -2,6 +2,8 @@ import { AuditModel } from "../models/AuditModel.js";
 import { Activity } from "../schemas/Activity.js";
 import { sequelize } from "../database/database.js";
 import { getUserId } from '../sessionData.js'; // Adjust the import path as necessary
+import { InitialConsultations } from "../schemas/Initial_Consultations.js";
+import { Assignment } from "../schemas/Assignment.js"; 
 
 export class ActivityModel {
 
@@ -30,13 +32,59 @@ export class ActivityModel {
 
     static async getAllByCodeCase(codeCase) {
         try {
-            return await Activity.findAll({
+            const activities = await Activity.findAll({
                 where: { Init_Code: codeCase },
+                include: [
+                    {
+                        model: InitialConsultations,
+                        as: 'Initial_Consultation', 
+                        attributes: ['Init_Code'],
+                        required: true,
+                        include: [
+                            {
+                                model: Assignment,
+                                as: 'Assignments',
+                                attributes: ['Internal_User_ID_Student'],
+                                required: false
+                            }
+                        ]
+                    }
+                ],
+                attributes: {
+                    exclude: ["Activity_Document"],
+                },
+                order: [['Activity_Start_Date', 'DESC']],
+                // raw: false, // Ensure raw is not true
             });
+
+            // Process results
+            return activities.map((activity, index) => {
+                const plainActivity = activity.toJSON();
+                // Access using the correct association aliases
+                const consultation = plainActivity.Initial_Consultation; // <--- Use expected alias
+                const assignments = consultation?.Assignments;          // <--- Use expected nested alias
+                const firstAssignment = assignments?.[0];
+                const studentId = firstAssignment?.Internal_User_ID_Student;
+
+                // Remove the nested structure using the correct alias
+                delete plainActivity.Initial_Consultation; 
+
+                // Add the student ID directly
+                plainActivity.Internal_User_ID_Student = studentId || null;
+
+                return plainActivity;
+            });
+
         } catch (error) {
-            throw new Error(`Error retrieving activity: ${error.message}`);
+            console.error(`Error retrieving activities by code case (${codeCase}): ${error.message}`);
+            // Log the full error for more details if needed
+            console.error(error);
+            throw new Error(`Error retrieving activities by code case: ${error.message}`);
         }
     }
+
+
+    
 
     static async getDocumentById(id) {
         try {
