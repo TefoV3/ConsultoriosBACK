@@ -137,5 +137,5 @@ export const Social_Work = sequelize.define('Social_Work', {
     }
 }, { timestamps: false });
 // Relación uno a uno
-SocialWork.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
-InitialConsultations.hasOne(SocialWork, { foreignKey: "Init_Code" });
+Social_Work.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
+InitialConsultations.hasOne(Social_Work, { foreignKey: "Init_Code" });

@@ -1,4 +1,4 @@
-import { IncomeLevelModel } from "../../models/parameter_models/IncomeLevelModel.js";
+import { IncomeLevelModel } from "../../models/parameter_models/Income_LevelModel.js";
 
 export class IncomeLevelController {
 

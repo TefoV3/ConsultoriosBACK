@@ -1,4 +1,4 @@
-import { OwnAssetsModel } from "../../models/parameter_models/OwnAssetsModel.js";
+import { OwnAssetsModel } from "../../models/parameter_models/Own_AssetsModel.js";
 
 export class OwnAssetsController {
 

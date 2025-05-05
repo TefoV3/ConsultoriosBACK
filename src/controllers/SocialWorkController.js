@@ -1,6 +1,6 @@
 import { Social_WorkModel } from "../models/Social_WorkModel.js";
 
-export class Social_WorkController {
+export class SocialWorkController {
     // Obtener todas las evaluaciones
     static async getAll(req, res) {
         try {

@@ -1,4 +1,4 @@
-import { FamilyGroupModel } from "../../models/parameter_models/FamilyGroupModel.js";
+import { FamilyGroupModel } from "../../models/parameter_models/Family_GroupModel.js";
 
 export class FamilyGroupController {
 

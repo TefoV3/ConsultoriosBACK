@@ -1,4 +1,4 @@
-import { NumberOfAttemptsModel } from "../../models/parameter_models/NumberOfAttemptsModel.js";
+import { NumberOfAttemptsModel } from "../../models/parameter_models/Number_Of_AttemptsModel.js";
 
 export class NumberOfAttemptsController {
 

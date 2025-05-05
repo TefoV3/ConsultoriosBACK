@@ -1,4 +1,4 @@
-import { TypeOfHousingModel } from "../../models/parameter_models/TypeOfHousingModel.js";
+import { TypeOfHousingModel } from "../../models/parameter_models/Type_Of_HousingModel.js";
 
 export class TypeOfHousingController {
 

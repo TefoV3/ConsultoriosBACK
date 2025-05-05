@@ -1,4 +1,4 @@
-import { CaseStatusModel } from "../../models/parameter_models/CaseStatusModel.js";
+import { CaseStatusModel } from "../../models/parameter_models/Case_StatusModel.js";
 
 export class CaseStatusController {
 

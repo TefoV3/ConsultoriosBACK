@@ -1,4 +1,4 @@
-import { LivingGroup } from "../schemas/LivingGroup.js";
+import { LivingGroup } from "../schemas/Living_Group.js";
 import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
 import { getUserId } from '../sessionData.js';
 

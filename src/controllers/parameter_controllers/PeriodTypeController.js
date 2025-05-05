@@ -1,4 +1,4 @@
-import { PeriodTypeModel } from "../../models/parameter_models/PeriodTypeModel.js";
+import { PeriodTypeModel } from "../../models/parameter_models/Period_TypeModel.js";
 
 export class PeriodTypeController {
 
