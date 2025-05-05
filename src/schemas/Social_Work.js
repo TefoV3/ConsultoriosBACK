@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import { InitialConsultations } from "./Initial_Consultations.js";
 import { sequelize } from "../database/database.js";
 
-export const SocialWork = sequelize.define('SocialWork', {
+export const Social_Work = sequelize.define('Social_Work', {
     SW_ProcessNumber: {
         type: DataTypes.STRING(50),
         primaryKey: true,
