@@ -70,7 +70,7 @@ import { Resumen_Horas_SemanalesRouter } from './routes/schedule_routes/Resumen_
 // ✅ Updated Schedules Routes Imports
 import { AlertRouter } from './routes/schedule_routes/Alert_Routes.js';
 import { ScheduleStudentsRouter } from './routes/schedule_routes/Schedule_Students_Routes.js';
-import { ExtraHoursRouter } from './routes/schedule_routes/extra_hours_routes.js';
+import { ExtraHoursRouter } from './routes/schedule_routes/Extra_Hours_Routes.js';
 import { Parameter_ScheduleRouter } from './routes/schedule_routes/Parameter_Schedules_Routes.js';
 import { PeriodRouter } from './routes/schedule_routes/Period_Routes.js';
 import { AttendanceRecordRouter } from './routes/schedule_routes/Attendance_Record_Routes.js';
@@ -78,6 +78,9 @@ import { StudentHoursSummaryRouter } from './routes/schedule_routes/Student_Hour
 import { Weekly_TrackingRouter } from './routes/schedule_routes/Weekly_Tracking_Routes.js';
 import { UserXPeriodRouter } from './routes/schedule_routes/UserXPeriod_Routes.js';
 import { Weekly_Hours_SummaryRouter } from './routes/schedule_routes/Weekly_Hours_Summary_Routes.js';
+import '../src/jobs/AttendanceAlerts.js';
+import '../src/jobs/TotalAbsenceAlerts.js';
+
 
 import { authMiddleware } from './middlewares/auth.js'; // Middleware de autenticación
 

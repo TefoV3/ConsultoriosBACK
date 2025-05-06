@@ -316,6 +316,7 @@ export class InternalUserModel {
 
             // 🔹 Convertir la huella de Base64 a Buffer (BLOB)
             const huellaBuffer = Buffer.from(huellaBase64, "base64");
+            console.log("➡️ Huella convertida a Buffer:", huellaBuffer);
 
             // 🔹 Actualizar la huella en la base de datos
             const [rowsUpdated] = await InternalUser.update(
@@ -336,8 +337,12 @@ export class InternalUserModel {
             const usuario = await this.getById(cedula);
             if (!usuario || !usuario.Internal_Huella) return null; // 🔹 Si no hay huella
 
+            const huellaBase64 = usuario.Internal_Huella.toString("base64");
             // 🔹 Convertir la huella de Buffer a Base64 para enviarla al frontend
-            return usuario.Internal_Huella.toString("base64");
+            console.log("➡️ Huella desde BD:", huellaBase64);
+            console.log("➡️ Longitud:", huellaBase64.length); // 🔥 aquí debe ser > 400 mínimo
+            return huellaBase64;
+            
         } catch (error) {
             throw new Error(`Error al obtener la huella: ${error.message}`);
         }

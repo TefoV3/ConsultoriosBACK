@@ -3,6 +3,9 @@ import { Router } from "express";
 
 export const AlertRouter = Router();
 
+// ✅ Obtener alertas por ID de usuario (antes que '/alerta/:id')
+AlertRouter.get('/alerta/usuario/:userId', AlertController.getByUserId);
+
 // Obtener todas las alertas activas
 AlertRouter.get('/alerta', AlertController.getAll);
 

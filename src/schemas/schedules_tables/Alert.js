@@ -15,6 +15,11 @@ export const Alert = sequelize.define('Alert', {
         type: DataTypes.STRING(300),
         allowNull: false
     },
+    Alert_Date: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+        allowNull: false
+    },
     Alert_Type: {
         type: DataTypes.STRING(60),
         allowNull: false

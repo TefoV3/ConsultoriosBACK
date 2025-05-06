@@ -359,6 +359,79 @@ static async getFullScheduleByUserXPeriod(userXPeriodId, mode = null) {
   }
 }
 
+static async getActiveSchedulesForToday(date) {
+  try {
+    const query = `
+      SELECT 
+        s.Schedule_Students_ID,
+        s.UserXPeriod_ID,
+        s.Schedule_Mode,
+        s.Schedule_IsDeleted,
+        s.createdAt,
+        s.updatedAt,
+
+        s.Schedule_Day_Monday,
+        psL.Parameter_Schedule_Start_Time AS Monday_Start,
+        psL.Parameter_Schedule_End_Time AS Monday_End,
+        psL.Parameter_Schedule_Type AS Monday_Type,
+
+        s.Schedule_Day_Tuesday,
+        psT.Parameter_Schedule_Start_Time AS Tuesday_Start,
+        psT.Parameter_Schedule_End_Time AS Tuesday_End,
+        psT.Parameter_Schedule_Type AS Tuesday_Type,
+
+        s.Schedule_Day_Wednesday,
+        psW.Parameter_Schedule_Start_Time AS Wednesday_Start,
+        psW.Parameter_Schedule_End_Time AS Wednesday_End,
+        psW.Parameter_Schedule_Type AS Wednesday_Type,
+
+        s.Schedule_Day_Thursday,
+        psTh.Parameter_Schedule_Start_Time AS Thursday_Start,
+        psTh.Parameter_Schedule_End_Time AS Thursday_End,
+        psTh.Parameter_Schedule_Type AS Thursday_Type,
+
+        s.Schedule_Day_Friday,
+        psF.Parameter_Schedule_Start_Time AS Friday_Start,
+        psF.Parameter_Schedule_End_Time AS Friday_End,
+        psF.Parameter_Schedule_Type AS Friday_Type,
+
+        u.Internal_ID,
+        u.Internal_Name,
+        u.Internal_LastName,
+        u.Internal_Area,
+
+        p.Period_ID,
+        p.Period_Name
+
+      FROM ScheduleStudents s
+      INNER JOIN UserXPeriods up ON s.UserXPeriod_ID = up.UserXPeriod_ID
+      INNER JOIN Internal_Users u ON up.Internal_ID = u.Internal_ID
+      INNER JOIN Periods p ON up.Period_ID = p.Period_ID
+
+      LEFT JOIN Parameter_Schedules psL ON s.Schedule_Day_Monday = psL.Parameter_Schedule_ID
+      LEFT JOIN Parameter_Schedules psT ON s.Schedule_Day_Tuesday = psT.Parameter_Schedule_ID
+      LEFT JOIN Parameter_Schedules psW ON s.Schedule_Day_Wednesday = psW.Parameter_Schedule_ID
+      LEFT JOIN Parameter_Schedules psTh ON s.Schedule_Day_Thursday = psTh.Parameter_Schedule_ID
+      LEFT JOIN Parameter_Schedules psF ON s.Schedule_Day_Friday = psF.Parameter_Schedule_ID
+
+      WHERE s.Schedule_IsDeleted = false
+        AND p.Period_IsDeleted = false
+        AND :date BETWEEN p.Period_Start AND p.Period_End
+      ORDER BY s.Schedule_Students_ID
+    `;
+
+    return await sequelize.query(query, {
+      replacements: { date },
+      type: QueryTypes.SELECT,
+    });
+  } catch (error) {
+    throw new Error(`Error fetching active schedules for today: ${error.message}`);
+  }
+}
+
+
+
+
 // 12. Get full schedule by student for export (ignore Schedule_IsDeleted)
 static async getFullSchedulesForExport(periodId, area) {
   try {

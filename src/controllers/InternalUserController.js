@@ -261,6 +261,8 @@ export class InternalUserController {
       const internalId = req.headers["internal-id"]; // User performing the action
       const updateData = req.body;
 
+      console.log("Update Data:", updateData); // Log the update data for debugging
+
       // 1. Get current user data to check for email change
       const currentUser = await InternalUserModel.getById(id);
       if (!currentUser) {

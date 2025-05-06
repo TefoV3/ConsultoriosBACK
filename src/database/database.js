@@ -80,7 +80,7 @@ import dotenv from "dotenv";
 // );
 
 export const sequelize = new Sequelize(
-    'seguimiento_final6', 
+    'seguimiento_final7', 
     'user_control', 
     'ltic', 
     {
