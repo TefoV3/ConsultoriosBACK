@@ -2,22 +2,22 @@ import app from "./app.js";
 import { sequelize } from "./database/database.js";
 import { PORT } from "./config.js";
 
-/*
-async function main(){
-   try {
-      await sequelize.sync({ alter: false });  // true si hay cambios en el schemas, false si no hay cambios
-      console.log("✅ Base de datos sincronizada correctamente en Supabase");
 
-      app.listen(PORT, () => {
-         console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
-      });
+// async function main(){
+//    try {
+//       await sequelize.sync({ alter: false });  // true si hay cambios en el schemas, false si no hay cambios
+//       console.log("✅ Base de datos sincronizada correctamente en Supabase");
 
-   } catch (error) {
-      console.error("❌ Error al iniciar el servidor:", error);
-   }
-}
- main();
-*/
+//       app.listen(PORT, () => {
+//          console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
+//       });
+
+//    } catch (error) {
+//       console.error("❌ Error al iniciar el servidor:", error);
+//    }
+// }
+//  main();
+
 //USO LOCAL
 
 import "./schemas/schedules_tables/associations.js";

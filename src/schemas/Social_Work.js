@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import { InitialConsultations } from "./Initial_Consultations.js";
 import { sequelize } from "../database/database.js";
 
-export const SocialWork = sequelize.define('SocialWork', {
+export const Social_Work = sequelize.define('Social_Work', {
     SW_ProcessNumber: {
         type: DataTypes.STRING(50),
         primaryKey: true,
@@ -137,5 +137,5 @@ export const SocialWork = sequelize.define('SocialWork', {
     }
 }, { timestamps: false });
 // Relación uno a uno
-SocialWork.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
-InitialConsultations.hasOne(SocialWork, { foreignKey: "Init_Code" });
+Social_Work.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
+InitialConsultations.hasOne(Social_Work, { foreignKey: "Init_Code" });

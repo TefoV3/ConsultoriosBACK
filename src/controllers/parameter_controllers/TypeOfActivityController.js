@@ -1,4 +1,4 @@
-import { TypeOfActivityModel } from '../../models/parameter_models/TypeOfActivityModel.js';
+import { TypeOfActivityModel } from '../../models/parameter_models/Type_Of_ActivityModel.js';
 
 export class TypeOfActivityController {
 

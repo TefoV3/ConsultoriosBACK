@@ -1,4 +1,4 @@
-import { LivingGroupModel } from "../models/LivingGroupModel.js";
+import { LivingGroupModel } from "../models/Living_GroupModel.js";
 
 export class LivingGroupController {
     static async getAll(req, res) {

@@ -1,14 +1,14 @@
-import { SocialWork } from "../schemas/SocialWork.js";
+import { Social_Work } from "../schemas/Social_Work.js";
 import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
 import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { User } from "../schemas/User.js";
 import { getUserId } from '../sessionData.js';
 
-export class SocialWorkModel {
+export class Social_WorkModel {
     // Obtener todas las evaluaciones de trabajo social
     static async getAll() {
         try {
-            return await SocialWork.findAll();
+            return await Social_Work.findAll();
         } catch (error) {
             throw new Error(`Error retrieving social work records: ${error.message}`);
         }
@@ -18,7 +18,7 @@ export class SocialWorkModel {
     static async getById(id) {
         try {
             // Retrieve the social work record with related data
-            const socialWorkRecord = await SocialWork.findOne({
+            const social_WorkRecord = await Social_Work.findOne({
                 where: { SW_ProcessNumber: id },
                 include: [
                     {
@@ -43,17 +43,17 @@ export class SocialWorkModel {
             });
     
             // Return the raw database record or null if not found
-            return socialWorkRecord || null;
+            return social_WorkRecord || null;
         } catch (error) {
             console.error("Error in getById:", error);
             throw new Error(`Error retrieving social work record: ${error.message}`);
         }
     }
 
-    // Obtener User_ID desde SocialWork a través de Init_Code
-    static async getUserIdBySocialWork(initCode) {
+    // Obtener User_ID desde Social_Work a través de Init_Code
+    static async getUserIdBySocial_Work(initCode) {
         try {
-            const socialWorkRecord = await SocialWork.findOne({
+            const social_WorkRecord = await Social_Work.findOne({
                 where: { Init_Code: initCode },
                 include: [
                     {
@@ -69,19 +69,19 @@ export class SocialWorkModel {
                 ]
             });
 
-            if (!socialWorkRecord || !socialWorkRecord.Initial_Consultation) {
+            if (!social_WorkRecord || !social_WorkRecord.Initial_Consultation) {
                 return null;
             }
 
-            return socialWorkRecord.Initial_Consultation.User;
+            return social_WorkRecord.Initial_Consultation.User;
         } catch (error) {
-            throw new Error(`Error retrieving User_ID from SocialWork using Init_Code ${initCode}: ${error.message}`);
+            throw new Error(`Error retrieving User_ID from Social_Work using Init_Code ${initCode}: ${error.message}`);
         }
     }
-    static async getSocialWorkById(socialWorkId) {
+    static async getSocial_WorkById(social_WorkId) {
         try {
-            const socialWork = await SocialWork.findOne({
-                where: { SW_ProcessNumber: socialWorkId },
+            const social_Work = await Social_Work.findOne({
+                where: { SW_ProcessNumber: social_WorkId },
                 include: [
                     {
                         model: InitialConsultations,
@@ -96,7 +96,7 @@ export class SocialWorkModel {
                 ]
             });
     
-            return socialWork; // Return the result or null if not found
+            return social_Work; // Return the result or null if not found
         } catch (error) {
             console.error("Error fetching social work by ID:", error);
             throw new Error("Database error when fetching social work");
@@ -119,8 +119,8 @@ export class SocialWorkModel {
                 throw new Error(`No existe una consulta inicial con Init_Code ${data.Init_Code}`);
             }
 
-            // 🔹 Crear el registro en `SocialWork`
-            const newRecord = await SocialWork.create({
+            // 🔹 Crear el registro en `Social_Work`
+            const newRecord = await Social_Work.create({
                 Init_Code: data.Init_Code,
                 SW_UserRequests: data.SW_UserRequests || null,
                 SW_ReferralAreaRequests: data.SW_ReferralAreaRequests || null,
@@ -136,7 +136,7 @@ export class SocialWorkModel {
             await AuditModel.registerAudit(
                 internalId,
                 "INSERT",
-                "SocialWork",
+                "Social_Work",
                 `El usuario interno ${internalId} creó el registro de trabajo social con ID ${newRecord.SW_ProcessNumber}`
             );
 
@@ -153,7 +153,7 @@ export class SocialWorkModel {
             if (!record) return null;
 
             const internalId = internalUser || getUserId();
-            const [rowsUpdated] = await SocialWork.update(data, { where: { SW_ProcessNumber: id } });
+            const [rowsUpdated] = await Social_Work.update(data, { where: { SW_ProcessNumber: id } });
 
             if (rowsUpdated === 0) return null;
             
@@ -161,7 +161,7 @@ export class SocialWorkModel {
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
-                "SocialWork",
+                "Social_Work",
                 `El usuario interno ${internalId} actualizó el registro de trabajo social con ID ${id}`
             );
 
@@ -170,23 +170,23 @@ export class SocialWorkModel {
           throw new Error(`Error updating social work record: ${error.message}`);
         }
       }
-    static async updateStatus(socialWorkId, status, status_observations) {
+    static async updateStatus(social_WorkId, status, status_observations) {
         try {
             // First check if the record exists
-            const record = await this.getById(socialWorkId);
+            const record = await this.getById(social_WorkId);
             
             if (!record) {
                 return false;
             }
             
             // Fix: Corrected parameter name from status_obvervations to status_observations
-            const [rowsUpdated] = await SocialWork.update(
+            const [rowsUpdated] = await Social_Work.update(
                 {
                     SW_Status: status,
                     SW_Status_Observations: status_observations
                 },
                 {
-                    where: { SW_ProcessNumber: socialWorkId }
+                    where: { SW_ProcessNumber: social_WorkId }
                 }
             );
     
@@ -204,13 +204,13 @@ export class SocialWorkModel {
             if (!record) return null;
             
             const internalId = internalUser || getUserId();
-            await SocialWork.update({ SW_Status: false }, { where: { SW_ProcessNumber: id } });
+            await Social_Work.update({ SW_Status: false }, { where: { SW_ProcessNumber: id } });
 
             // 🔹 Registrar en auditoría la eliminación (borrado lógico)
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
-                "SocialWork",
+                "Social_Work",
                 `El usuario interno ${internalId} eliminó lógicamente el registro de trabajo social con ID ${id}`
             );
 

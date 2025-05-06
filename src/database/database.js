@@ -10,24 +10,24 @@ import dotenv from "dotenv";
 // console.log("Usuario:", process.env.SUPABASE_DB_USER);
 // console.log("Base de datos:", process.env.SUPABASE_DB_NAME);
 
-// Configurar Sequelize con Supabase
-/*export const sequelize = new Sequelize(
-    process.env.SUPABASE_DB_NAME,
-    process.env.SUPABASE_DB_USER,
-    process.env.SUPABASE_DB_PASSWORD,
-    {
-        host: process.env.SUPABASE_HOST,
-        port: process.env.SUPABASE_PORT,
-        dialect: "postgres",
-        logging: false,
-        dialectOptions: {
-            ssl: {
-                require: true,
-                rejectUnauthorized: false,
-            },
-        },
-    }
-);*/
+// // Configurar Sequelize con Supabase
+// export const sequelize = new Sequelize(
+//     process.env.SUPABASE_DB_NAME,
+//     process.env.SUPABASE_DB_USER,
+//     process.env.SUPABASE_DB_PASSWORD,
+//     {
+//         host: process.env.SUPABASE_HOST,
+//         port: process.env.SUPABASE_PORT,
+//         dialect: "postgres",
+//         logging: false,
+//         dialectOptions: {
+//             ssl: {
+//                 require: true,
+//                 rejectUnauthorized: false,
+//             },
+//         },
+//     }
+// );
 
 //USO LOCAL
 
@@ -44,15 +44,15 @@ import dotenv from "dotenv";
 
 
 
-// export const sequelize = new Sequelize(
-//     'prueba', 
-//     'root', 
-//     '12345678', 
-//     {
-//         host: 'localhost',
-//         dialect: 'mysql'
-//     }
-// );
+export const sequelize = new Sequelize(
+    'prueba', 
+    'root', 
+    '12345678', 
+    {
+        host: 'localhost',
+        dialect: 'mysql'
+    }
+);
 
 
 
@@ -79,13 +79,13 @@ import dotenv from "dotenv";
 //     }
 // );
 
-export const sequelize = new Sequelize(
-    'seguimiento_final7', 
-    'user_control', 
-    'ltic', 
-    {
-        host: 'localhost',
-        dialect: 'mysql',
-        timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
-    }
-);
+// export const sequelize = new Sequelize(
+//     'seguimiento_final3', 
+//     'user_control', 
+//     'ltic', 
+//     {
+//         host: 'localhost',
+//         dialect: 'mysql',
+//         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
+//     }
+// );

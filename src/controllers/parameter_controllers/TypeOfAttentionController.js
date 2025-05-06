@@ -1,4 +1,4 @@
-import { TypeOfAttentionModel } from "../../models/parameter_models/TypeOfAttentionModel.js";
+import { TypeOfAttentionModel } from "../../models/parameter_models/Type_Of_AttentionModel.js";
 
 export class TypeOfAttentionController {
 

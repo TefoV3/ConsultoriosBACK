@@ -1,4 +1,4 @@
-import { Field_Of_Activity_Model } from '../../models/parameter_models/FieldOfActivityModel.js';
+import { Field_Of_Activity_Model } from '../../models/parameter_models/Field_Of_ActivityModel.js';
 // Opcional: Importar un schema de validación si usas librerías como Zod o Joi
 // import { fieldOfActivitySchema, fieldOfActivityUpdateSchema } from '../../schemas/validation/fieldOfActivityValidation.js';
 
