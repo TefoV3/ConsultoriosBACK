@@ -2,6 +2,7 @@ import { ActivityModel } from "../models/ActivityModel.js";
 import { AuditModel } from "../models/AuditModel.js";
 import { InternalUserModel } from "../models/InternalUserModel.js";
 import { getUserId } from '../sessionData.js';
+import moment from "moment-timezone";
 
 export class ActivityController {
     static async getActivities(req, res) {
@@ -117,4 +118,63 @@ export class ActivityController {
             return res.status(500).json({ error: error.message });
         }
     }
+
+    static async generateExcelReport(req, res) {
+        try {
+          const { startDate, endDate } = req.query;
+          const userTimezone = "America/Guayaquil"; // Zona horaria específica
+    
+          // Validar fechas usando moment con formato estricto
+          if (
+            !startDate ||
+            !endDate ||
+            !moment(startDate, "YYYY-MM-DD", true).isValid() ||
+            !moment(endDate, "YYYY-MM-DD", true).isValid()
+          ) {
+            return res
+              .status(400)
+              .json({ message: "Fechas de inicio y fin son requeridas en formato YYYY-MM-DD." });
+          }
+    
+          // --- Corrección de zona horaria ---
+          const queryStartDate = moment
+            .tz(startDate, "YYYY-MM-DD", userTimezone)
+            .startOf("day")
+            .utc()
+            .toDate();
+          const queryEndDate = moment
+            .tz(endDate, "YYYY-MM-DD", userTimezone)
+            .endOf("day")
+            .utc()
+            .toDate();
+    
+          // Llamar al modelo para generar el buffer del Excel
+          const excelBuffer = await ActivityModel.generateExcelReportForActivities(
+            queryStartDate,
+            queryEndDate
+          );
+    
+          // Configurar headers para la descarga del archivo Excel
+          res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          );
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="Reporte_Actividades_${startDate}_a_${endDate}.xlsx"`
+          );
+          res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+    
+          // Enviar el buffer del archivo Excel
+          res.send(excelBuffer);
+        } catch (error) {
+          console.error("Error generando el reporte Excel:", error);
+          // Asegurar que la respuesta de error sea siempre JSON
+          if (!res.headersSent) {
+            res
+              .status(500)
+              .json({ message: "Error interno al generar el reporte Excel.", error: error.message });
+          }
+        }
+      }
 }

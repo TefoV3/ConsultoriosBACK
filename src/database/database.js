@@ -79,9 +79,10 @@ export const sequelize = new Sequelize(
 //     }
 // );
 
-<<<<<<< HEAD
+
+// =======
 // export const sequelize = new Sequelize(
-//     'seguimiento_final3', 
+//     'seguimiento_final6', 
 //     'user_control', 
 //     'ltic', 
 //     {
@@ -90,15 +91,4 @@ export const sequelize = new Sequelize(
 //         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
 //     }
 // );
-=======
-export const sequelize = new Sequelize(
-    'seguimiento_final6', 
-    'user_control', 
-    'ltic', 
-    {
-        host: 'localhost',
-        dialect: 'mysql',
-        timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
-    }
-);
->>>>>>> 870a0d7d1b5ba404394c50003dd1b34f402dd099
+// >>>>>>> 870a0d7d1b5ba404394c50003dd1b34f402dd099

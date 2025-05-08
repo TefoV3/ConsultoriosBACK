@@ -26,6 +26,12 @@ export const Activity = sequelize.define('Activity', {
     Activity_Location: {
         type: DataTypes.STRING(250)
     },
+    Activity_Date: {
+        type: DataTypes.DATE
+    },
+    Activity_StartTime: {
+        type: DataTypes.TIME
+    },
     activityScheduledTime: {
         type: DataTypes.TIME
     },
