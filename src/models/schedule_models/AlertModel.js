@@ -62,4 +62,15 @@ export class AlertModel {
       throw new Error(`Error deleting alert: ${error.message}`);
     }
   }
+
+  //get Alerts by Internal_ID
+  static async getByInternalId(internalId) {
+    try {
+      return await Alert.findAll({
+        where: { Internal_ID: internalId, Alert_IsDeleted: false }
+      });
+    } catch (error) {
+      throw new Error(`Error fetching alerts by Internal_ID: ${error.message}`);
+    }
+  }
 }

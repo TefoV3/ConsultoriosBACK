@@ -169,6 +169,31 @@ export class InternalUserModel {
         }
     }
 
+    static async updateResendCredentials(id, newEmail, newPlainPassword) {
+        try {
+            const user = await this.getById(id);
+            if (!user) return null;
+    
+            const hashedPassword = await bcrypt.hash(newPlainPassword, SALT_ROUNDS);
+    
+            const [rowsUpdated] = await InternalUser.update(
+                {
+                    Internal_Email: newEmail,
+                    Internal_Password: hashedPassword
+                },
+                {
+                    where: { Internal_ID: id }
+                }
+            );
+    
+            return rowsUpdated > 0 ? await this.getById(id) : null;
+        } catch (error) {
+            console.error("Error en updateResendCredentials:", error);
+            throw new Error("Error actualizando correo y contraseña");
+        }
+    }
+    
+
     static async delete(id, internalUserID) {
         try {
             const internalId = internalUserID || getUserId();
@@ -196,7 +221,9 @@ export class InternalUserModel {
     
     static async authenticate(Internal_Email, Internal_Password) {
         try {
+            console.log("Datos de autenticación:", Internal_Email, Internal_Password);
             const internalUser = await this.getByEmail(Internal_Email);
+            console.log("Usuario interno encontrado:", internalUser);
             if (!internalUser) return null;
 
             // Si no es un administrador, se verifica que la contraseña en texto plano coincida con la encriptada en la base de datos
@@ -204,6 +231,7 @@ export class InternalUserModel {
             // estará en texto plano y no se podrá comparar con la contraseña encriptada
             if (internalUser.Internal_Type !== "SuperAdmin") { //El primer usuario que se registra debe tener el TIPO: SuperAdmin
                 const isPasswordValid = await bcrypt.compare(Internal_Password, internalUser.Internal_Password);
+                console.log("Contrasenias comparadas:", isPasswordValid);
                 if (!isPasswordValid) return null;
             }
             else {
@@ -288,6 +316,7 @@ export class InternalUserModel {
 
             // 🔹 Convertir la huella de Base64 a Buffer (BLOB)
             const huellaBuffer = Buffer.from(huellaBase64, "base64");
+            console.log("➡️ Huella convertida a Buffer:", huellaBuffer);
 
             // 🔹 Actualizar la huella en la base de datos
             const [rowsUpdated] = await InternalUser.update(
@@ -308,8 +337,12 @@ export class InternalUserModel {
             const usuario = await this.getById(cedula);
             if (!usuario || !usuario.Internal_Huella) return null; // 🔹 Si no hay huella
 
+            const huellaBase64 = usuario.Internal_Huella.toString("base64");
             // 🔹 Convertir la huella de Buffer a Base64 para enviarla al frontend
-            return usuario.Internal_Huella.toString("base64");
+            console.log("➡️ Huella desde BD:", huellaBase64);
+            console.log("➡️ Longitud:", huellaBase64.length); // 🔥 aquí debe ser > 400 mínimo
+            return huellaBase64;
+            
         } catch (error) {
             throw new Error(`Error al obtener la huella: ${error.message}`);
         }

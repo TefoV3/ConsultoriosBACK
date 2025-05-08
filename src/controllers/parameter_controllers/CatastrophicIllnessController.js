@@ -1,4 +1,4 @@
-import { CatastrophicIllnessModel } from '../../models/parameter_models/CatastrophicIllnessModel.js';
+import { CatastrophicIllnessModel } from '../../models/parameter_models/Catastrophic_IllnessModel.js';
 
 export class CatastrophicIllnessController {
 

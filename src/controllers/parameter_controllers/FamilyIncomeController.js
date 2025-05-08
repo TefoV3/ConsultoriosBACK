@@ -1,4 +1,4 @@
-import { FamilyIncomeModel } from "../../models/parameter_models/FamilyIncomeModel.js";
+import { FamilyIncomeModel } from "../../models/parameter_models/Family_IncomeModel.js";
 
 export class FamilyIncomeController {
 

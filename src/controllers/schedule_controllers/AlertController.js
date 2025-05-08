@@ -56,4 +56,18 @@ export class AlertController {
       return res.status(500).json({ error: error.message });
     }
   }
+
+  // Get alert by user ID
+  static async getByUserId(req, res) {
+    const { userId } = req.params;
+    try {
+      const alerts = await AlertModel.getByInternalId(userId);
+      if (alerts.length > 0) return res.json(alerts);
+      res.status(404).json({ message: "No alerts found for this user" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+
 }

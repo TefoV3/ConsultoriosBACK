@@ -7,7 +7,7 @@ import { UserModel } from "../models/UserModel.js";
 import { Evidence } from "../schemas/Evidences.js";
 import { getUserId } from "../sessionData.js";
 import { PDFDocument } from "pdf-lib";
-import { SocialWork } from "../schemas/SocialWork.js"; // Asegúrate de que la ruta sea correcta
+import { Social_Work } from "../schemas/Social_Work.js"; // Asegúrate de que la ruta sea correcta
 import { Op } from "sequelize";
 import moment from 'moment-timezone'; // Use moment-timezone
 import fontkit from "@pdf-lib/fontkit"; 
@@ -409,10 +409,10 @@ export class InitialConsultationsModel {
         `El usuario interno ${userId} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
       );
 
-// --- Lógica para crear el registro en SocialWork si corresponde ---
+// --- Lógica para crear el registro en Social_Work si corresponde ---
 if (newConsultation.Init_SocialWork === true) {
-    // Verificar si ya existe un registro en SocialWork para esta consulta
-    const existingSocialWork = await SocialWork.findOne({
+    // Verificar si ya existe un registro en Social_Work para esta consulta
+    const existingSocialWork = await Social_Work.findOne({
         where: { Init_Code: newConsultation.Init_Code },
         transaction: t
     });
@@ -421,7 +421,7 @@ if (newConsultation.Init_SocialWork === true) {
         const todayStart = moment(currentDate).startOf("day").toDate();
         const todayEnd = moment(currentDate).endOf("day").toDate();
         // Contar los registros de hoy usando SW_EntryDate
-        const countResult = await SocialWork.findAndCountAll({
+        const countResult = await Social_Work.findAndCountAll({
             where: {
                 SW_EntryDate: {
                     [Op.gte]: todayStart,
@@ -433,7 +433,7 @@ if (newConsultation.Init_SocialWork === true) {
         });
         const count = countResult.count + 1;
         const swProcessNumber = `TS${currentDate.replace(/-/g, "")}-${String(count).padStart(5, "0")}`;
-        await SocialWork.create(
+        await Social_Work.create(
             {
                 SW_ProcessNumber: swProcessNumber,
                 SW_EntryDate: new Date(),
@@ -443,20 +443,20 @@ if (newConsultation.Init_SocialWork === true) {
             { transaction: t }
         );
         console.log(
-            `✅ Se insertó un registro en SocialWork con SW_ProcessNumber: ${swProcessNumber} porque Init_SocialWork es true.`
+            `✅ Se insertó un registro en Social_Work con SW_ProcessNumber: ${swProcessNumber} porque Init_SocialWork es true.`
         );
         await AuditModel.registerAudit(
             userId,
             "INSERT",
-            "SocialWork",
+            "Social_Work",
             `El usuario interno ${userId} creó el registro de trabajo social ${swProcessNumber} para la consulta ${newConsultation.Init_Code}`,
             { transaction: t }
         );
     } else {
-        console.log(`ℹ️ Ya existe un registro en SocialWork para la consulta ${newConsultation.Init_Code}. No se creó uno nuevo.`);
+        console.log(`ℹ️ Ya existe un registro en Social_Work para la consulta ${newConsultation.Init_Code}. No se creó uno nuevo.`);
     }
 }
-// --- Fin de la lógica de SocialWork ---
+// --- Fin de la lógica de Social_Work ---
 
 
 
@@ -579,10 +579,10 @@ if (newConsultation.Init_SocialWork === true) {
         { transaction: t }
       );
 
-      // --- Lógica para crear el registro en SocialWork si corresponde ---
+      // --- Lógica para crear el registro en Social_Work si corresponde ---
       if (newConsultation.Init_SocialWork === true) {
-        // Verificar si ya existe un registro en SocialWork para esta consulta
-        const existingSocialWork = await SocialWork.findOne({
+        // Verificar si ya existe un registro en Social_Work para esta consulta
+        const existingSocialWork = await Social_Work.findOne({
           where: { Init_Code: newConsultation.Init_Code },
           transaction: t,
         });
@@ -593,7 +593,7 @@ if (newConsultation.Init_SocialWork === true) {
           const todayEnd = moment(currentDate).endOf("day").toDate();
 
           // Contar los registros de hoy usando la columna SW_EntryDate
-          const countResult = await SocialWork.findAndCountAll({
+          const countResult = await Social_Work.findAndCountAll({
             where: {
               SW_EntryDate: {
                 [Op.gte]: todayStart,
@@ -609,7 +609,7 @@ if (newConsultation.Init_SocialWork === true) {
             count
           ).padStart(5, "0")}`;
 
-          await SocialWork.create(
+          await Social_Work.create(
             {
               SW_ProcessNumber: swProcessNumber,
               SW_EntryDate: new Date(),
@@ -620,22 +620,22 @@ if (newConsultation.Init_SocialWork === true) {
           );
 
           console.log(
-            `✅ Se insertó un registro en SocialWork con SW_ProcessNumber: ${swProcessNumber} porque Init_SocialWork es true.`
+            `✅ Se insertó un registro en Social_Work con SW_ProcessNumber: ${swProcessNumber} porque Init_SocialWork es true.`
           );
           await AuditModel.registerAudit(
             internalId,
             "INSERT",
-            "SocialWork",
+            "Social_Work",
             `El usuario interno ${internalId} creó el registro de trabajo social ${swProcessNumber} para la consulta ${newConsultation.Init_Code}`,
             { transaction: t }
           );
         } else {
           console.log(
-            `ℹ️ Ya existe un registro en SocialWork para la consulta ${newConsultation.Init_Code}. No se creó uno nuevo.`
+            `ℹ️ Ya existe un registro en Social_Work para la consulta ${newConsultation.Init_Code}. No se creó uno nuevo.`
           );
         }
       }
-      // --- Fin de la lógica de SocialWork ---
+      // --- Fin de la lógica de Social_Work ---
 
       await t.commit();
 
@@ -710,7 +710,7 @@ if (newConsultation.Init_SocialWork === true) {
       );
 
       if (data.Init_SocialWork === true && !originalSocialWorkStatus) {
-        const existingSocialWork = await SocialWork.findOne({
+        const existingSocialWork = await Social_Work.findOne({
           where: { Init_Code: id },
           transaction: t,
         });
@@ -721,7 +721,7 @@ if (newConsultation.Init_SocialWork === true) {
           const todayEnd = moment(currentDate).endOf("day").toDate();
 
           // --- Cambio aquí: Usar SW_EntryDate para contar ---
-          const countResult = await SocialWork.findAndCountAll({
+          const countResult = await Social_Work.findAndCountAll({
             where: {
               SW_EntryDate: {
                 // <--- Usar SW_EntryDate
@@ -739,7 +739,7 @@ if (newConsultation.Init_SocialWork === true) {
           ).padStart(5, "0")}`;
 
           // --- Cambio aquí: Añadir SW_EntryDate al crear ---
-          await SocialWork.create(
+          await Social_Work.create(
             {
               SW_ProcessNumber: swProcessNumber,
               SW_EntryDate: new Date(),
@@ -750,18 +750,18 @@ if (newConsultation.Init_SocialWork === true) {
           );
 
           console.log(
-            `✅ Se insertó un registro en SocialWork con SW_ProcessNumber: ${swProcessNumber} porque Init_SocialWork cambió a true.`
+            `✅ Se insertó un registro en Social_Work con SW_ProcessNumber: ${swProcessNumber} porque Init_SocialWork cambió a true.`
           );
           await AuditModel.registerAudit(
             internalId,
             "INSERT",
-            "SocialWork",
+            "Social_Work",
             `El usuario interno ${internalId} creó el registro de trabajo social ${swProcessNumber} para la consulta ${id}`,
             { transaction: t }
           );
         } else {
           console.log(
-            `ℹ️ Ya existe un registro en SocialWork para la consulta ${id}. No se creó uno nuevo.`
+            `ℹ️ Ya existe un registro en Social_Work para la consulta ${id}. No se creó uno nuevo.`
           );
         }
       }

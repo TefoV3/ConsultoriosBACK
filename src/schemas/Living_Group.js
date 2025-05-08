@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
-import { SocialWork } from "./SocialWork.js";
+import { Social_Work } from "./Social_Work.js";
 
 export const LivingGroup = sequelize.define('LivingGroup', {
     LG_LivingGroup_ID: {
@@ -33,7 +33,7 @@ export const LivingGroup = sequelize.define('LivingGroup', {
         type: DataTypes.STRING(50),
         allowNull: false,
         references: {
-            model: SocialWork,
+            model: Social_Work,
             key: 'SW_ProcessNumber'
         },
         onUpdate: 'CASCADE',
@@ -42,9 +42,9 @@ export const LivingGroup = sequelize.define('LivingGroup', {
 }, { timestamps: false });
 
 // Establishing the relationship
-SocialWork.hasMany(LivingGroup, {
+Social_Work.hasMany(LivingGroup, {
     foreignKey: 'SW_ProcessNumber',
 });
-LivingGroup.belongsTo(SocialWork, {
+LivingGroup.belongsTo(Social_Work, {
     foreignKey: 'SW_ProcessNumber',
 });

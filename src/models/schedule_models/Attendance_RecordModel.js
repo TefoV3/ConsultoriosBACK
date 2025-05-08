@@ -242,13 +242,19 @@ static async updateClosedWithSummary(recordId, newData) {
   }
 }
 
-static async getOpenRecordsWithUser() {
+static async getOpenRecordsWithUser({ entryRange = null } = {}) {
   try {
+    const where = {
+      Attendance_IsDeleted: false,
+      Attendance_Exit: null
+    };
+
+    if (entryRange) {
+      where.Attendance_Entry = { [Op.between]: entryRange };
+    }
+
     return await Attendance_Record.findAll({
-      where: {
-        Attendance_IsDeleted: false,
-        Attendance_Exit: null
-      },
+      where,
       include: [
         {
           model: UserXPeriod,
@@ -259,13 +265,7 @@ static async getOpenRecordsWithUser() {
             {
               model: InternalUser,
               as: 'user',
-              attributes: [
-                "Internal_ID", 
-                "Internal_Name", 
-                "Internal_LastName", 
-                "Internal_Email", 
-                "Internal_Area"
-              ],
+              attributes: ["Internal_ID", "Internal_Name", "Internal_LastName", "Internal_Email", "Internal_Area"],
               where: { Internal_Status: 'Activo' }
             }
           ]
@@ -276,6 +276,7 @@ static async getOpenRecordsWithUser() {
     throw new Error(`Error retrieving open records with user info: ${error.message}`);
   }
 }
+
 
 static async deleteWithAdjustment(recordId) {
   const t = await sequelize.transaction();

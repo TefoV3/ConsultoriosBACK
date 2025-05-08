@@ -10,49 +10,49 @@ import dotenv from "dotenv";
 // console.log("Usuario:", process.env.SUPABASE_DB_USER);
 // console.log("Base de datos:", process.env.SUPABASE_DB_NAME);
 
-// Configurar Sequelize con Supabase
-/*export const sequelize = new Sequelize(
-    process.env.SUPABASE_DB_NAME,
-    process.env.SUPABASE_DB_USER,
-    process.env.SUPABASE_DB_PASSWORD,
-    {
-        host: process.env.SUPABASE_HOST,
-        port: process.env.SUPABASE_PORT,
-        dialect: "postgres",
-        logging: false,
-        dialectOptions: {
-            ssl: {
-                require: true,
-                rejectUnauthorized: false,
-            },
-        },
-    }
-);*/
+// // Configurar Sequelize con Supabase
+// export const sequelize = new Sequelize(
+//     process.env.SUPABASE_DB_NAME,
+//     process.env.SUPABASE_DB_USER,
+//     process.env.SUPABASE_DB_PASSWORD,
+//     {
+//         host: process.env.SUPABASE_HOST,
+//         port: process.env.SUPABASE_PORT,
+//         dialect: "postgres",
+//         logging: false,
+//         dialectOptions: {
+//             ssl: {
+//                 require: true,
+//                 rejectUnauthorized: false,
+//             },
+//         },
+//     }
+// );
 
 //USO LOCAL
 
 
-export const sequelize = new Sequelize(
-      'prueba', 
-       'root', 
-      '12345', 
-      {
-         host: 'localhost',
-          dialect: 'mysql'
-     }
-    )
-
-
-
 // export const sequelize = new Sequelize(
-//     'prueba', 
-//     'root', 
-//     '12345678', 
-//     {
-//         host: 'localhost',
-//         dialect: 'mysql'
-//     }
-// );
+//       'prueba', 
+//        'root', 
+//       '12345', 
+//       {
+//          host: 'localhost',
+//           dialect: 'mysql'
+//      }
+//     )
+
+
+
+export const sequelize = new Sequelize(
+    'prueba', 
+    'root', 
+    '12345678', 
+    {
+        host: 'localhost',
+        dialect: 'mysql'
+    }
+);
 
 
 
@@ -79,8 +79,6 @@ export const sequelize = new Sequelize(
 //     }
 // );
 
-
-// =======
 // export const sequelize = new Sequelize(
 //     'seguimiento_final6', 
 //     'user_control', 
@@ -91,4 +89,3 @@ export const sequelize = new Sequelize(
 //         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
 //     }
 // );
-// >>>>>>> 870a0d7d1b5ba404394c50003dd1b34f402dd099
