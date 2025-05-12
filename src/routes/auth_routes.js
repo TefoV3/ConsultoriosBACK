@@ -2,6 +2,7 @@ import express from 'express';
 import { authMiddleware } from '../middlewares/auth.js';
 import { InternalUserModel } from '../models/InternalUserModel.js'; // Import the model
 import { InternalUserController } from '../controllers/InternalUserController.js';
+import { NumberOfAttemptsController } from "../controllers/parameter_controllers/NumberOfAttemptsController.js";
 
 const router = express.Router();
 
@@ -14,6 +15,7 @@ router.post('/forgot-password', InternalUserController.requestResetPassword);
 router.post('/verify-code',InternalUserController.verifyCode);
 router.post('/reset-password',InternalUserController.resetPassword);
 router.post('/change-password',InternalUserController.changePassword);
+router.get("/number-of-attempts/current", NumberOfAttemptsController.getCurrent);
 
 
 
