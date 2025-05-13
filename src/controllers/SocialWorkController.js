@@ -5,7 +5,7 @@ export class SocialWorkController {
     // Obtener todas las evaluaciones
     static async getAll(req, res) {
         try {
-            const records = await SocialWorkModel.getAll();
+            const records = await Social_WorkModel.getAll();
             res.json(records);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -27,7 +27,7 @@ export class SocialWorkController {
     static async getById(req, res) {
         const { id } = req.params;
         try {
-            const record = await SocialWorkModel.getById(id);
+            const record = await Social_WorkModel.getById(id);
             if (record) return res.json(record);
             res.status(404).json({ message: "Social work record not found" });
         } catch (error) {
@@ -45,7 +45,7 @@ export class SocialWorkController {
                 return res.status(400).json({ error: "Init_Code is required." });
             }
 
-            const user = await SocialWorkModel.getUserIdBySocialWork(initCode);
+            const user = await Social_WorkModel.getUserIdBySocialWork(initCode);
 
             if (!user) {
                 return res.status(404).json({ message: `No user found for Init_Code ${initCode}.` });
@@ -67,7 +67,7 @@ export class SocialWorkController {
                 return res.status(400).json({ error: "El campo 'Init_Code' es obligatorio." });
             }
 
-            const newSocialWork = await SocialWorkModel.create(req.body, req, internalId);
+            const newSocialWork = await Social_WorkModel.create(req.body, req, internalId);
 
             res.status(201).json({ message: "Registro de trabajo social creado con éxito", data: newSocialWork });
         } catch (error) {
@@ -82,7 +82,7 @@ export class SocialWorkController {
             const { Internal_ID, ...data } = req.body;
             const internalId = req.headers["internal-id"]
 
-            const updatedRecord = await SocialWorkModel.update(id, data, internalId);
+            const updatedRecord = await Social_WorkModel.update(id, data, internalId);
 
             if (!updatedRecord) return res.status(404).json({ message: "Social work record not found" });
 
@@ -138,7 +138,7 @@ export class SocialWorkController {
             const internalId = req.headers["internal-id"]
 
 
-            const deletedRecord = await SocialWorkModel.delete(id, internalId);
+            const deletedRecord = await Social_WorkModel.delete(id, internalId);
             if (!deletedRecord) return res.status(404).json({ message: "Social work record not found" });
 
             res.json({ message: "Social work record deleted (soft delete)", record: deletedRecord });

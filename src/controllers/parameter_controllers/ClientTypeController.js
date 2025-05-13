@@ -1,4 +1,4 @@
-import { ClientTypeModel } from '../../models/parameter_models/ClientTypeModel.js';
+import { ClientTypeModel } from '../../models/parameter_models/Client_TypeModel.js';
 
 export class ClientTypeController {
     static async getAll(req, res) {

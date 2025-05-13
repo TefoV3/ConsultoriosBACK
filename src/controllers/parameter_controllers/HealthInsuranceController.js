@@ -1,4 +1,4 @@
-import { HealthInsuranceModel } from "../../models/parameter_models/HealthInsuranceModel.js";
+import { HealthInsuranceModel } from "../../models/parameter_models/Health_InsuranceModel.js";
 
 export class HealthInsuranceController {
 

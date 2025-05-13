@@ -1,4 +1,4 @@
-import { VulnerableSituationModel } from "../../models/parameter_models/VulnerableSituationModel.js";
+import { VulnerableSituationModel } from "../../models/parameter_models/Vulnerable_SituationModel.js";
 
 export class VulnerableSituationController {
 

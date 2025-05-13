@@ -3,6 +3,7 @@ import { sequelize } from "../database/database.js";
 import { InitialConsultations } from "./Initial_Consultations.js";
 import { InternalUser } from "./Internal_User.js";
 
+
 /*
 CREATE TABLE Assignment (
     Assignment_ID INT PRIMARY KEY AUTO_INCREMENT,
@@ -34,6 +35,24 @@ export const Assignment = sequelize.define('Assignments', {
 
 // Define associations
 Assignment.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
-Assignment.belongsTo(InternalUser, { foreignKey: "Internal_User_ID" });
 InitialConsultations.hasMany(Assignment, { foreignKey: "Init_Code" });
-InternalUser.hasMany(Assignment, { foreignKey: "Internal_User_ID" });
+
+// Association for the user who assigned the case (Assigner)
+Assignment.belongsTo(InternalUser, {
+    foreignKey: "Internal_User_ID",
+    as: 'Assigner' // Alias for the assigner
+});
+InternalUser.hasMany(Assignment, {
+    foreignKey: "Internal_User_ID",
+    as: 'AssignedCases' // Alias for cases assigned by this user
+});
+
+// Association for the student assigned to the case (Student)
+Assignment.belongsTo(InternalUser, {
+    foreignKey: "Internal_User_ID_Student",
+    as: 'Student' // Alias for the student
+});
+InternalUser.hasMany(Assignment, {
+    foreignKey: "Internal_User_ID_Student",
+    as: 'StudentCases' // Alias for cases assigned to this student
+});

@@ -7,6 +7,7 @@ AssignmentRouter.get('/assignment', AssignmentController.getAssignments);
 AssignmentRouter.get('/assignment/:id', AssignmentController.getById);
 AssignmentRouter.get('/assignment/studentid/:id', AssignmentController.getAssignmentsByStudentId);
 AssignmentRouter.get('/assignment/student/initcode/:initCode', AssignmentController.getStudentByInitCode);
+AssignmentRouter.get('/assignment/cases/all', AssignmentController.getAllWithDetails);
 
 AssignmentRouter.post('/assignment', AssignmentController.createAssignment);
 AssignmentRouter.put('/assignment/:id', AssignmentController.update);

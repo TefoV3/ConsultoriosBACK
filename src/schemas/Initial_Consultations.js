@@ -55,7 +55,15 @@ export const InitialConsultations = sequelize.define('Initial_Consultations', {
     User_ID: {  
         type: DataTypes.CHAR(10),
         allowNull: false
-    }
+    },
+    Init_EndCaseReason: {
+        type: DataTypes.STRING(100),
+        allowNull: true
+    },
+    Init_EndCaseDescription: {
+        type: DataTypes.STRING(250),
+        allowNull: true
+    },
 
 }, { timestamps: false });
 

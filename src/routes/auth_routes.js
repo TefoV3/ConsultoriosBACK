@@ -1,8 +1,24 @@
 import express from 'express';
 import { authMiddleware } from '../middlewares/auth.js';
 import { InternalUserModel } from '../models/InternalUserModel.js'; // Import the model
+import { InternalUserController } from '../controllers/InternalUserController.js';
+import { NumberOfAttemptsController } from "../controllers/parameter_controllers/NumberOfAttemptsController.js";
 
 const router = express.Router();
+
+
+// --- PUBLIC AUTH ROUTES ---
+router.post('/register', InternalUserController.createInternalUser);
+router.post('/login', InternalUserController.login);
+router.post('/logout', InternalUserController.logout);
+router.post('/forgot-password', InternalUserController.requestResetPassword);
+router.post('/verify-code',InternalUserController.verifyCode);
+router.post('/reset-password',InternalUserController.resetPassword);
+router.post('/change-password',InternalUserController.changePassword);
+router.get("/number-of-attempts/current", NumberOfAttemptsController.getCurrent);
+
+
+
 
 // Endpoint para verificar la sesión del usuario
 router.get('/api/me', authMiddleware, async (req, res) => { 

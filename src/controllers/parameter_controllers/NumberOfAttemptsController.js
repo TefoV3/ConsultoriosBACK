@@ -1,10 +1,19 @@
-import { NumberOfAttemptsModel } from "../../models/parameter_models/NumberOfAttemptsModel.js";
+import { NumberOfAttemptsModel } from "../../models/parameter_models/Number_Of_AttemptsModel.js";
 
 export class NumberOfAttemptsController {
 
     static async getAll(req, res) {
         try {
             const data = await NumberOfAttemptsModel.getAll();
+            res.status(200).json(data);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    static async getCurrent(req, res) {
+        try {
+            const data = await NumberOfAttemptsModel.getCurrent();
             res.status(200).json(data);
         } catch (error) {
             res.status(500).json({ error: error.message });

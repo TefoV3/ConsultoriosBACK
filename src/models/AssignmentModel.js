@@ -1,6 +1,7 @@
 import { AuditModel } from "../models/AuditModel.js";
 import { Assignment } from "../schemas/Assignment.js";
 import { InitialConsultations } from "../schemas/Initial_Consultations.js";
+import { User } from "../schemas/User.js";
 import { InternalUser } from "../schemas/Internal_User.js";
 import { sequelize } from "../database/database.js"; // Necesario para transacciones
 import { Op } from 'sequelize'; // Necesario para operadores como 'in'
@@ -14,6 +15,59 @@ export class AssignmentModel {
             throw new Error(`Error retrieving assignments: ${error.message}`);
         }
     }
+
+    static async getAllWithDetails() {
+        try {
+            return await Assignment.findAll({
+                include: [
+                    {
+                        model: InitialConsultations, // Fetches the related InitialConsultation
+                        attributes: ['Init_Code', 'Init_Subject', 'User_ID'], // Specify needed attributes
+                        required: true, // Optional: Makes it an INNER JOIN
+                        include: [
+                            {
+                                model: User, // Fetches the User related to the InitialConsultation
+                                attributes: [
+                                    'User_ID',
+                                    'User_FirstName',
+                                    'User_LastName',
+                                ],
+                                required: true // Optional: Makes it an INNER JOIN
+                            }
+                        ]
+                    },
+                    {
+                        model: InternalUser, // Fetches the InternalUser who assigned the case
+                        as: 'Assigner', 
+                        attributes: ['Internal_ID', 'Internal_Name', 'Internal_LastName'], 
+                        required: false 
+                    },
+                    {
+                        model: InternalUser, // Fetches the InternalUser who is the student
+                        as: 'Student', 
+                        attributes: ['Internal_ID', 'Internal_Name', 'Internal_LastName'], 
+                        required: false 
+                    }
+                ],
+                order: [['Assignment_Date', 'DESC']] 
+            });
+        } catch (error) {
+            console.error("Error retrieving assignments with details:", error);
+            // Check if the error is specifically about associations or fields
+            if (error.message.includes('is not associated') || error.message.includes('Unknown column')) {
+                 console.error("Potential issue with Sequelize associations or model attributes. Verify associations in schema files.");
+            }
+            throw new Error(`Error retrieving assignments with details: ${error.message}`);
+        }
+    }
+
+
+
+
+
+
+
+
     static async getById(id) {
         try {
             return await Assignment.findOne({
