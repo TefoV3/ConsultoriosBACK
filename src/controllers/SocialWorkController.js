@@ -1,4 +1,5 @@
 import { SocialWorkModel } from "../models/SocialWorkModel.js";
+import { InitialConsultationsModel } from "../models/InitialConsultationsModel.js";
 
 export class SocialWorkController {
     // Obtener todas las evaluaciones
@@ -99,10 +100,28 @@ export class SocialWorkController {
                 return res.status(400).json({ error: "Status is required to update the social work record" });
             }
     
+            // Update the status in the SocialWork table
             const isUpdated = await SocialWorkModel.updateStatus(id, status, observations);
     
             if (!isUpdated) {
                 return res.status(404).json({ message: "Social work record not found or not updated" });
+            }
+    
+            // If the status is "Archivado", update the related InitialConsultations record
+            if (status === "Archivado") {
+                const socialWorkRecord = await SocialWorkModel.getById(id);
+    
+                if (socialWorkRecord && socialWorkRecord.Init_Code) {
+                    const initCode = socialWorkRecord.Init_Code;
+    
+                    // Fetch the related InitialConsultation record
+                    const initialConsultation = await InitialConsultationsModel.getById(initCode);
+    
+                    if (initialConsultation && initialConsultation.Init_MandatorySW === true) {
+                        // Update Init_Type to "Por Asignar"
+                        await InitialConsultationsModel.update(initCode, { Init_Type: "Por Asignar" });
+                    }
+                }
             }
     
             res.json({ message: "Social work status updated successfully" });
@@ -127,4 +146,48 @@ export class SocialWorkController {
             res.status(500).json({ error: error.message });
         }
     }
+    static async generateExcelReport(req, res) {
+            try {
+                const { startDate, endDate } = req.query;
+                const userTimezone = 'America/Guayaquil'; // Or your specific GMT-5 timezone identifier
+    
+                // Validate dates using moment's strict parsing
+                if (!startDate || !endDate || !moment(startDate, 'YYYY-MM-DD', true).isValid() || !moment(endDate, 'YYYY-MM-DD', true).isValid()) {
+                    return res.status(400).json({ message: "Fechas de inicio y fin son requeridas en formato YYYY-MM-DD." });
+                }
+    
+                // --- Timezone Correction ---
+                const queryStartDate = moment.tz(startDate, 'YYYY-MM-DD', userTimezone).startOf('day').utc().toDate();
+                const queryEndDate = moment.tz(endDate, 'YYYY-MM-DD', userTimezone).endOf('day').utc().toDate();
+    
+    
+                // Pass the UTC-adjusted dates to the model
+                const excelBuffer = await SocialWorkModel.generateExcelReport(queryStartDate, queryEndDate);
+    
+                // Configurar headers para la descarga del archivo Excel
+                res.setHeader(
+                    'Content-Type',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                );
+                // Use original startDate and endDate strings for the filename
+                res.setHeader(
+                    'Content-Disposition',
+                    `attachment; filename="Reporte_TrabajoSocial_${startDate}_a_${endDate}.xlsx"`
+                );
+                res.setHeader(
+                    'Access-Control-Expose-Headers',
+                    'Content-Disposition'
+                );
+    
+                // Enviar el buffer del archivo Excel
+                res.send(excelBuffer);
+    
+            } catch (error) {
+                console.error("Error generando el reporte Excel:", error);
+                // Ensure error response is always JSON
+                if (!res.headersSent) {
+                     res.status(500).json({ message: "Error interno al generar el reporte Excel.", error: error.message });
+                }
+            }
+        }
 }

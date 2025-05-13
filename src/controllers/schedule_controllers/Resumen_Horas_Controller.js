@@ -54,6 +54,20 @@ export class resumenHorasController {
         }
     }
 
+    static async getResumenConEstudianteByCedula(req, res) {
+        const { id } = req.params; // id = Internal_ID
+        try {
+            const resumen = await Resumen_Horas_EstudiantesModel.getResumenConEstudianteByCedula(id);
+            if (!resumen) {
+                return res.status(404).json({ message: "Resumen no encontrado para el estudiante." });
+            }
+            return res.status(200).json(resumen);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+    
+
     static async delete(req, res) {
         try {
             const { id } = req.params;

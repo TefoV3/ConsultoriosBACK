@@ -30,7 +30,8 @@ export const LivingGroup = sequelize.define('LivingGroup', {
     },
 
     SW_ProcessNumber: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING(50),
+        allowNull: false,
         references: {
             model: SocialWork,
             key: 'SW_ProcessNumber'

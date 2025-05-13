@@ -295,39 +295,73 @@ await this.updateWeeklySummary(periodoId, entrada, diffHours, t, resumenGeneral.
       console.error("Error en la transacción updateSalidaWithResumen:", error);
       throw new Error(`Error al actualizar registro de asistencia y resumen: ${error.message}`);
     }
-  }
+}
+
+
 
 
  
         // Nuevo método: Obtener el registro abierto para un usuario x período
     // Si se pasa la fecha, se filtra entre el inicio y fin del día
-    static async getRegistroAbierto(usuarioXPeriodoId, fecha) {
-        try {
-            //fecha quemada para pruebas 24 de marzo 2025
-            //fecha = '2025-03-24';
-
-          //fecha = '2025-03-24';
-
-          // Asumimos que 'fecha' es una cadena "YYYY-MM-DD" en UTC
-          const start = new Date(fecha);
-          start.setUTCHours(0, 0, 0, 0);
-          const end = new Date(fecha);
-          end.setUTCHours(23, 59, 59, 999);
+static async getRegistroAbierto(usuarioXPeriodoId, fecha, modalidad) {
+    try {
+      // Se asume que 'fecha' es una cadena "YYYY-MM-DD" en UTC
+      const start = new Date(fecha);
+      start.setUTCHours(0, 0, 0, 0);
+      const end = new Date(fecha);
+      end.setUTCHours(23, 59, 59, 999);
+  
+      const whereClause = {
+        UsuarioXPeriodo_ID: usuarioXPeriodoId,
+        Registro_IsDeleted: false,
+        Registro_Salida: null,
+        Registro_Entrada: { [Op.between]: [start, end] }
+      };
       
-          const whereClause = {
-            UsuarioXPeriodo_ID: usuarioXPeriodoId,  // Nombre exacto del campo en el modelo
-            Registro_IsDeleted: false,
-            Registro_Salida: null,
-            Registro_Entrada: { [Op.between]: [start, end] }
-          };
-          console.log('Where:', whereClause);
-      
-          return await Registro_Asistencia.findOne({ where: whereClause });
-        } catch (error) {
-            console.log('Error:', error);
-          throw new Error(`Error al obtener registro abierto: ${error.message}`);
-        }
+      // Si se ha recibido modalidad (no vacía) se añade al filtro
+      if (modalidad && modalidad.trim() !== "") {
+        whereClause.Registro_Tipo = modalidad;
       }
+  
+      console.log("Where:", whereClause);
+  
+      return await Registro_Asistencia.findOne({ where: whereClause });
+    } catch (error) {
+      console.log("Error:", error);
+      throw new Error(`Error al obtener registro abierto: ${error.message}`);
+    }
+  }
+
+  // Nuevo método en Registro_AsistenciaModel para obtener el registro virtual completo
+static async getRegistroVirtualCompleto(usuarioXPeriodoId, fecha) {
+  try {
+    // Se asume que 'fecha' es una cadena "YYYY-MM-DD" en UTC
+    const start = new Date(fecha);
+    start.setUTCHours(0, 0, 0, 0);
+    const end = new Date(fecha);
+    end.setUTCHours(23, 59, 59, 999);
+
+    // Definimos el filtro, forzando la modalidad a "Virtual"
+    const whereClause = {
+      UsuarioXPeriodo_ID: usuarioXPeriodoId,
+      Registro_IsDeleted: false,
+      Registro_Tipo: "Virtual", 
+      Registro_Entrada: { [Op.between]: [start, end] },
+      Registro_Salida: { [Op.ne]: null } // Esto garantiza que el registro esté cerrado.
+    };
+    
+
+    console.log("whereClause en getRegistroVirtualCompleto:", whereClause);
+
+    // Se asume que solo puede existir como máximo un registro virtual abierto por día,
+    // por lo que se utiliza findOne.
+    return await Registro_Asistencia.findOne({ where: whereClause });
+  } catch (error) {
+    console.error("Error en getRegistroVirtualCompleto:", error);
+    throw new Error(`Error al obtener registro virtual completo: ${error.message}`);
+  }
+}
+
 
       static async getRegistrosAbiertosConUsuario() {
         try {

@@ -78,6 +78,31 @@ export class HorarioController {
     }
   }
 
+  // ✅ NUEVO: Obtener horarios completos por Internal_ID (estudiante autenticado)
+static async getHorariosCompletosPorEstudiante(req, res) {
+  try {
+    const { internalId } = req.params;
+
+    if (!internalId) {
+      return res.status(400).json({ message: "Falta el parámetro internalId" });
+    }
+
+    const horarios = await HorarioModel.getHorarioCompletoPorEstudiante(internalId);
+
+    if (!horarios || horarios.length === 0) {
+      return res.status(404).json({ message: "No se encontraron horarios para este estudiante" });
+    }
+
+    res.status(200).json(horarios);
+  } catch (error) {
+    console.error("❌ Error en getHorariosCompletosPorEstudiante:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+}
+
+
+  
+
   static async getHorarioCompletoPorUsuarioXPeriodo(req, res) {
     try {
       const { usuarioXPeriodoId } = req.params;
@@ -106,11 +131,13 @@ export class HorarioController {
   static async cambioAdministrativo(req, res) {
     try {
       const { usuarioXPeriodoId, nuevosHorarios } = req.body;
+      console.log("Datos recibidos para cambio administrativo:", req.body); // Log para depuración
 
       if (!usuarioXPeriodoId || !nuevosHorarios || !Array.isArray(nuevosHorarios) || nuevosHorarios.length === 0) {
         return res.status(400).json({ message: 'Datos incompletos para cambio administrativo' });
       }
 
+    
       const resultado = await HorarioModel.cambioAdministrativo(usuarioXPeriodoId, nuevosHorarios);
 
       if (resultado.ok) {

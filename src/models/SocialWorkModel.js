@@ -3,6 +3,8 @@ import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
 import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { User } from "../schemas/User.js";
 import { getUserId } from '../sessionData.js';
+import ExcelJs from "exceljs";
+import { width } from "pdfkit/js/page";
 
 export class SocialWorkModel {
     // Obtener todas las evaluaciones de trabajo social
@@ -262,4 +264,110 @@ export class SocialWorkModel {
             throw new Error(`Error deleting social work record: ${error.message}`);
         }
     }
+
+
+    static async generateExcelReport(startDate, endDate) {
+        try {
+            // Fetch data from SocialWork and related LivingGroup table
+            const socialWorkRecords = await SocialWork.findAll({
+                where: {
+                    SW_EntryDate: {
+                        [Op.between]: [startDate, endDate],
+                    },
+                },
+                include: [
+                    {
+                        model: LivingGroup, // Assuming LivingGroup is associated with SocialWork
+                        attributes: ["LG_Name", "LG_Relationship", "LG_Age", "LG_Occupation","LG_Notes"], // Add relevant fields
+                    },
+                ],
+            });
+
+            // Create a new Excel workbook and worksheet
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("Social Work Report");
+
+            // Define the header row
+            worksheet.columns = [
+                { header: "Numero de Proceso", key: "SW_ProcessNumber", width: 20 },
+                { header: "Fecha de ingreso", key: "SW_EntryDate", width: 20 },
+                { header: "Status", key: "SW_Status", width: 25 },
+                { header: "Codigo de Consultas Iniciales", key: "Init_Code", width: 25 },
+                { header: "Pedido del Usuario", key: "SW_UserRequests", width: 30 },
+                { header: "Pedido del Área de remisión", key: "SW_ReferralAreaRequests", width: 30 },
+                { header: "Lugar del Trabajo", key: "SW_WorkPlace", width: 20 },
+                { header: "Dirección Domiciliaria", key: "SW_HomeAddress", width: 30 },
+                // Miembros del círculo familiar con discapacidad
+                { header: "Teléfono de referencia", key: "SW_ReferencePhone", width: 20 },
+                { header: "Tipo de discapacidad", key: "SW_DisabilityType", width: 20 },
+                { header: "Porcentaje de discapacidad", key: "SW_DisabilityPercentage", width: 20 },
+                { header: "Tiene carnet de discapacidad", key: "SW_HasDisabilityCard", width: 25 },
+                { header: "Episodios de Violencia", key: "SW_ViolenceEpisodes", width: 20 },
+                { header: "Denuncias", key: "SW_Complaints", width: 20 },
+                { header: "Consumo de Alcohol", key: SW_AlcoholConsumption, width: 20 },
+                { header: "Consumo de Drogas", key: SW_DrugConsumption, width: 20 },
+                // Situación económica
+                { header: "Ingresos", key: SW_Income, width: 20 },
+                { header: "Vivienda", key: SW_HousingType, width: 20 },
+                // Datos de la contraparte
+                { header: "Nombres y Apellidos", key: "SW_CounterpartName", width: 30 },
+                { header: "Edad", key: "SW_CounterpartAge", width: 10 },
+                { header: "Estado Civil", key: "SW_CounterpartMaritalStatus", width: 20 },
+                { header: "Ocupación", key: "SW_CounterpartOccupation", width: 20 },
+                { header: "Dirección Domiciliaria", key: "SW_CounterpartAddress", width: 30 },
+                { header: "Teléfono", key: "SW_CounterpartPhone", width: 20 },
+                { header: "C.I", key: "SW_CounterpartID", width: 20 },
+                { header: "Relación con el usuario", key: "SW_CounterpartRelation", width: 30 },
+                { header: "Caso conocido por otra institución", key: "SW_PreviouslyKnownCase", width: 30 },
+                // Relato de los hechos
+                { header: "Notas", key: "SW_Notes", width: 30 },
+                // Observaciones
+                { header: "Observaciones", key: "SW_Observations", width: 30 },
+                // Composición de grupo de convivencia
+                { header: "Nombres y Apellidos", key: "LG_Name", width: 30 },
+                { header: "Edad", key: "LG_Age", width: 10 },
+                { header: "Parentesco", key: "LG_Relationship", width: 20 },
+                { header: "Ocupación", key: "LG_Occupation", width: 20 },
+                { header: "Notas", key: "LG_Notes", width: 30 }
+            ];
+
+            // Populate the worksheet with data
+            socialWorkRecords.forEach((record) => {
+                const livingGroup = record.LivingGroups || []; // Assuming LivingGroups is the alias for the relation
+
+                // Add a row for each LivingGroup entry
+                if (livingGroup.length > 0) {
+                    livingGroup.forEach((lg) => {
+                        worksheet.addRow({
+                            SW_ProcessNumber: record.SW_ProcessNumber,
+                            SW_EntryDate: record.SW_EntryDate,
+                            SW_Status: record.SW_Status,
+                            Init_Code: record.Init_Code,
+                            LG_Name: lg.LG_Name,
+                            LG_Relationship: lg.LG_Relationship,
+                            LG_Age: lg.LG_Age,
+                            LG_Occupation: lg.LG_Occupation,
+                            LG_Notes: lg.LG_Notes,
+                        });
+                    });
+                } else {
+                    // Add a row with only SocialWork data if no LivingGroup is associated
+                    worksheet.addRow({
+                        SW_ProcessNumber: record.SW_ProcessNumber,
+                        SW_EntryDate: record.SW_EntryDate,
+                        SW_Status: record.SW_Status,
+                        Init_Code: record.Init_Code,
+                    });
+                }
+            });
+
+            // Generate the Excel file as a buffer
+            const buffer = await workbook.xlsx.writeBuffer();
+            return buffer;
+        } catch (error) {
+            console.error("Error generating Excel report:", error);
+            throw new Error(`Error generating Excel report: ${error.message}`);
+        }
+    }
+    
 }

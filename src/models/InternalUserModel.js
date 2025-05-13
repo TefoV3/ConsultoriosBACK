@@ -122,8 +122,19 @@ export class InternalUserModel {
 
             if (!internalUser) return null;
 
+            // Asegurarse de que la contraseña no esté en los datos a actualizar
+            if (data.hasOwnProperty('Internal_Password')) {
+                delete data.Internal_Password;
+            }
+
+            // Si después de eliminar la contraseña, no quedan datos para actualizar, retornar el usuario actual
+            if (Object.keys(data).length === 0) {
+                console.log("No hay datos para actualizar después de excluir la contraseña.");
+                return internalUser; 
+            }
+
             const [rowsUpdated] = await InternalUser.update(data, {
-                where: { Internal_ID: id }
+                where: { Internal_ID: id },
             });
 
             if (rowsUpdated === 0) return null;
@@ -182,6 +193,10 @@ export class InternalUserModel {
                 if (Internal_Password !== internalUser.Internal_Password) return null;
             }
 
+            if (internalUser.Internal_Status !== "Activo") {
+                return { status: 'inactive', message: 'El usuario se encuentra inactivo.' };
+            }
+
             const token = jwt.sign(
                 {
                     id: internalUser.Internal_ID,
@@ -190,7 +205,8 @@ export class InternalUserModel {
                     type: internalUser.Internal_Type,
                     area: internalUser.Internal_Area,
                     phone: internalUser.Internal_Phone,
-                    status: internalUser.Internal_Status
+                    status: internalUser.Internal_Status,
+                    picture: internalUser.Internal_Picture
                 },
                 SECRET_JWT_KEY,
                 { expiresIn: "6h" }
@@ -344,6 +360,20 @@ export class InternalUserModel {
             throw error;
         }
     }
+
+    static async updateProfilePicture(userId, imageUrl) {
+        try {
+
+            const [rowsUpdated] = await InternalUser.update(
+                { Internal_Picture: imageUrl },
+                { where: { Internal_ID: userId } }
+            );
+            return rowsUpdated > 0;
+        } catch (error) {
+            console.error(`Error updating profile picture URL: ${error.message}`);
+            throw new Error(`Error updating profile picture URL: ${error.message}`);
+        }
+    }  
 
 
 }

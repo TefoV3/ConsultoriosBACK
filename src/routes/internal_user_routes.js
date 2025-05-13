@@ -1,6 +1,6 @@
 import { InternalUserController } from "../controllers/InternalUserController.js";
 import { Router } from "express";
-import { authMiddleware } from "../middlewares/auth.js";
+import upload from '../middlewares/multerImage.js';
 
 export const InternalUserRouter = Router();
 
@@ -32,3 +32,10 @@ InternalUserRouter.post('/forgot-password', InternalUserController.requestResetP
 InternalUserRouter.post('/verify-code',InternalUserController.verifyCode);
 InternalUserRouter.post('/reset-password',InternalUserController.resetPassword);
 InternalUserRouter.post('/change-password',InternalUserController.changePassword);
+
+//IMAGE UPLOAD ROUTE
+InternalUserRouter.put(
+    '/internal-users/profile-picture',         
+    upload.single('profilePic'),      
+    InternalUserController.uploadProfilePicture 
+);

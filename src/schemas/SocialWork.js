@@ -4,9 +4,8 @@ import { sequelize } from "../database/database.js";
 
 export const SocialWork = sequelize.define('SocialWork', {
     SW_ProcessNumber: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING(50),
         primaryKey: true,
-        autoIncrement: true
     },
     SW_UserRequests: {
         type: DataTypes.TEXT,
@@ -65,7 +64,7 @@ export const SocialWork = sequelize.define('SocialWork', {
         allowNull: true
     },
     SW_ReferencePhone: {
-        type: DataTypes.STRING(30),
+        type: DataTypes.STRING(50),
         allowNull: true
     },
     SW_Income: {
@@ -97,7 +96,7 @@ export const SocialWork = sequelize.define('SocialWork', {
         allowNull: true
     },
     SW_CounterpartPhone: {
-        type: DataTypes.STRING(30),
+        type: DataTypes.STRING(50),
         allowNull: true
     },
     SW_CounterpartID: {

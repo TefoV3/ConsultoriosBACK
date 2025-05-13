@@ -128,6 +128,7 @@ export class HorarioModel {
   // Actualizar un único registro de horario
   static async update(id, data) {
     try {
+      console.log("Actualizar horario con ID:", id, "y datos:", data);
       const horario = await this.getById(id);
       if (!horario) return null;
       const [rowsUpdated] = await Horarios.update(data, {
@@ -289,6 +290,68 @@ export class HorarioModel {
       throw new Error(`Error al obtener horario completo por UsuarioXPeriodo: ${error.message}`);
     }
   }
+
+  static async getHorarioCompletoPorEstudiante(internalId) {
+    try {
+      const query = `
+        SELECT 
+          h.Horario_ID,
+          h.UsuarioXPeriodo_ID,
+          h.Horario_Modalidad,
+          h.Horario_IsDeleted,
+          h.createdAt,
+          h.updatedAt,
+  
+          h.Horario_Dia_Lunes,
+          phL.Parametro_Horario_Hora_Entrada AS Lunes_Entrada,
+          phL.Parametro_Horario_Hora_Salida  AS Lunes_Salida,
+          phL.Parametro_Horario_Tipo        AS Lunes_Tipo,
+  
+          h.Horario_Dia_Martes,
+          phM.Parametro_Horario_Hora_Entrada AS Martes_Entrada,
+          phM.Parametro_Horario_Hora_Salida  AS Martes_Salida,
+          phM.Parametro_Horario_Tipo        AS Martes_Tipo,
+  
+          h.Horario_Dia_Miercoles,
+          phMi.Parametro_Horario_Hora_Entrada AS Miercoles_Entrada,
+          phMi.Parametro_Horario_Hora_Salida  AS Miercoles_Salida,
+          phMi.Parametro_Horario_Tipo        AS Miercoles_Tipo,
+  
+          h.Horario_Dia_Jueves,
+          phJ.Parametro_Horario_Hora_Entrada AS Jueves_Entrada,
+          phJ.Parametro_Horario_Hora_Salida  AS Jueves_Salida,
+          phJ.Parametro_Horario_Tipo        AS Jueves_Tipo,
+  
+          h.Horario_Dia_Viernes,
+          phV.Parametro_Horario_Hora_Entrada AS Viernes_Entrada,
+          phV.Parametro_Horario_Hora_Salida  AS Viernes_Salida,
+          phV.Parametro_Horario_Tipo        AS Viernes_Tipo
+        FROM Horarios h
+        INNER JOIN UsuarioXPeriodos ux ON h.UsuarioXPeriodo_ID = ux.UsuarioXPeriodo_ID
+        INNER JOIN Internal_Users u ON ux.Internal_ID = u.Internal_ID
+        LEFT JOIN Parametro_Horarios phL ON h.Horario_Dia_Lunes = phL.Parametro_Horario_ID AND phL.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phM ON h.Horario_Dia_Martes = phM.Parametro_Horario_ID AND phM.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phMi ON h.Horario_Dia_Miercoles = phMi.Parametro_Horario_ID AND phMi.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phJ ON h.Horario_Dia_Jueves = phJ.Parametro_Horario_ID AND phJ.Parametro_Horario_IsDeleted = false
+        LEFT JOIN Parametro_Horarios phV ON h.Horario_Dia_Viernes = phV.Parametro_Horario_ID AND phV.Parametro_Horario_IsDeleted = false
+        WHERE u.Internal_ID = :internalId
+          AND h.Horario_IsDeleted = false
+        ORDER BY h.Horario_ID;
+      `;
+  
+      const horarios = await sequelize.query(query, {
+        replacements: { internalId },
+        type: QueryTypes.SELECT
+      });
+  
+      return horarios;
+    } catch (error) {
+      console.log("Error al obtener horario completo por estudiante:", error);
+      console.error(error);
+      throw new Error(`Error al obtener horario completo por estudiante: ${error.message}`);
+    }
+  }
+  
   
   
 
@@ -373,6 +436,8 @@ export class HorarioModel {
       throw new Error(`Error al obtener horarios completos extracción: ${error.message}`);
     }
   }
+
+  
   
   
 }

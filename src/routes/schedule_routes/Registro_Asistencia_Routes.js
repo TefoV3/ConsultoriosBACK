@@ -9,6 +9,9 @@ Registro_Asistencias_Routes.get("/registros/abierto", Registro_Asistencia_Contro
 Registro_Asistencias_Routes.get("/registrosAbiertos", Registro_Asistencia_Controller.getRegistrosAbiertos);
 Registro_Asistencias_Routes.get("/registrosCerrados", Registro_Asistencia_Controller.getRegistrosCerrados);
 Registro_Asistencias_Routes.get("/registros/:id", Registro_Asistencia_Controller.getById);
+// Nueva ruta para el registro virtual completo:
+Registro_Asistencias_Routes.get("/registros/virtual/completo", Registro_Asistencia_Controller.getRegistroVirtualCompleto);
+
 
 // POST endpoints
 Registro_Asistencias_Routes.post("/registros/createConResumen", Registro_Asistencia_Controller.createAsistenciaWithResumen);

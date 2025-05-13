@@ -11,3 +11,4 @@ SocialWorkRouter.post("/social-work", authMiddleware, SocialWorkController.creat
 SocialWorkRouter.put("/social-work/:id", SocialWorkController.update);
 SocialWorkRouter.put("/social-work-status/:id", SocialWorkController.updateStatus);
 SocialWorkRouter.delete("/social-work/:id", SocialWorkController.delete);
+InitialConsultationsRouter.get('/social-work/report/excel', SocialWorkController.generateExcelReport);

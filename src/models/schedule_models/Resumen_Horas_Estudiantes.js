@@ -99,6 +99,38 @@ static async create(data, options = {}) {
         }
     }
 
+    static async getResumenConEstudianteByCedula(internalId) {
+        try {
+            return await Resumen_Horas_Estudiantes.findOne({
+                where: {
+                    Resumen_IsDeleted: false,
+                    Internal_ID: internalId
+                },
+                include: [
+                    {
+                        model: InternalUser,
+                        as: "usuarioResumen",
+                        attributes: [
+                            "Internal_ID",
+                            "Internal_Name",
+                            "Internal_LastName",
+                            "Internal_Area",
+                            "Internal_Email"
+                        ],
+                        where: {
+                            Internal_Status: 'Activo'
+                        }
+                    }
+                ]
+            });
+        } catch (error) {
+            console.error(`❌ Error al obtener el resumen con estudiante por cédula: ${error.message}`);
+            throw new Error(`Error al obtener el resumen con estudiante por cédula: ${error.message}`);
+        }
+    }
+    
+    
+
     static async getResumenConDatosByUser(id) {
         try {
             return await Resumen_Horas_Estudiantes.findOne({

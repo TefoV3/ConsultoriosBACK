@@ -124,36 +124,49 @@ export class Seguimiento_SemanalModel {
 
   static async update(id, data) {
     try {
-      const oldSeguimiento = await this.getById(id);
-      if (!oldSeguimiento) return null;
-      const oldHoras = oldSeguimiento.Semana_Horas || 0;
-
-      const [rowsUpdated] = await Seguimiento_Semanal.update(data, {
+      const old = await this.getById(id);
+      if (!old) return null;
+  
+      const oldHoras = parseFloat(old.Semana_Horas) || 0;
+      const oldFeriado = parseFloat(old.Semana_Feriado) || 0;
+  
+      const newHoras = 'Semana_Horas' in data ? parseFloat(data.Semana_Horas) || 0 : oldHoras;
+      const newFeriado = 'Semana_Feriado' in data ? parseFloat(data.Semana_Feriado) || 0 : oldFeriado;
+  
+      // ⚠️ Validar lógica de feriado antes de actualizar
+      if (newFeriado > newHoras) {
+        throw new Error("Las horas de feriado no pueden ser mayores que las horas de la semana.");
+      }
+  
+      // Calculamos la diferencia neta para ajustar el total del período
+      const oldNet = oldHoras - oldFeriado;
+      const newNet = newHoras - newFeriado;
+      const diferencia = newNet - oldNet;
+  
+      await Seguimiento_Semanal.update(data, {
         where: { Semana_ID: id, Semana_IsDeleted: false }
       });
-      if (rowsUpdated === 0) return null;
-
-      const updatedSeguimiento = await this.getById(id);
-      const newHoras = updatedSeguimiento.Semana_Horas || 0;
-      const diferencia = newHoras - oldHoras;
+  
       if (diferencia !== 0) {
         if (diferencia > 0) {
           await Periodo.increment(
             { Periodo_Total_Horas: diferencia },
-            { where: { Periodo_ID: updatedSeguimiento.Periodo_ID } }
+            { where: { Periodo_ID: old.Periodo_ID } }
           );
         } else {
           await Periodo.decrement(
             { Periodo_Total_Horas: Math.abs(diferencia) },
-            { where: { Periodo_ID: updatedSeguimiento.Periodo_ID } }
+            { where: { Periodo_ID: old.Periodo_ID } }
           );
         }
       }
-      return updatedSeguimiento;
+  
+      return await this.getById(id);
     } catch (error) {
       throw new Error(`Error al actualizar seguimiento: ${error.message}`);
     }
   }
+  
 
   // Método para recalcular el total de horas del período a partir de las semanas activas
   static async recalcularTotalHoras(periodoId) {
@@ -161,7 +174,12 @@ export class Seguimiento_SemanalModel {
       const semanasVigentes = await Seguimiento_Semanal.findAll({
         where: { Periodo_ID: periodoId, Semana_IsDeleted: false }
       });
-      const totalHoras = semanasVigentes.reduce((acc, sem) => acc + (parseFloat(sem.Semana_Horas) || 0), 0);
+      const totalHoras = semanasVigentes.reduce((acc, sem) => {
+        const horas = parseFloat(sem.Semana_Horas) || 0;
+        const feriado = parseFloat(sem.Semana_Feriado) || 0;
+        const netas = Math.max(0, horas - feriado);
+        return acc + netas;
+      }, 0);     
       await Periodo.update({ Periodo_Total_Horas: totalHoras }, { where: { Periodo_ID: periodoId } });
       return totalHoras;
     } catch (error) {
@@ -241,10 +259,14 @@ export class Seguimiento_SemanalModel {
       }
   
       // Recalcular horas totales
-      const totalHoras = semanasFinales.reduce(
-        (acc, s) => acc + (parseFloat(s.Semana_Horas) || 0),
-        0
-      );
+      const totalHoras = semanasFinales.reduce((acc, s) => {
+        const horas = parseFloat(s.Semana_Horas) || 0;
+        const feriado = parseFloat(s.Semana_Feriado) || 0;
+        const netas = Math.max(0, horas - feriado);
+        return acc + netas;
+      }, 0);
+
+      
       await Periodo.update(
         { Periodo_Total_Horas: totalHoras },
         { where: { Periodo_ID: periodoId } }
