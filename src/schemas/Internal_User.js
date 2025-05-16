@@ -1,5 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
+import bcrypt from "bcrypt";
+import { AuditModel } from "../models/AuditModel.js"; // Asegúrate que la ruta sea correcta
 
 /*
 CREATE TABLE Internal_User (
@@ -38,3 +40,44 @@ export const InternalUser = sequelize.define('Internal_User', {
     Internal_Status: DataTypes.STRING(50), // Example: "Active", "Inactive", etc.
 }, { timestamps: false });
 
+
+// 🔹 Crear usuario admin por defecto si no existe
+async function createDefaultAdmin() {
+    try {
+        const adminExists = await InternalUser.findOne({
+            where: { Internal_ID: "0000000000" }
+        });
+
+        if (!adminExists) {
+            const hashedPassword = await bcrypt.hash("admin123", 10);
+
+            const adminUser = await InternalUser.create({
+                Internal_ID: "0000000000",
+                Internal_Name: "Admin",
+                Internal_LastName: "PUCE",
+                Internal_Email: "admin@puce.edu.ec",
+                Internal_Password: hashedPassword,
+                Internal_Type: "Administrador",
+                Internal_Area: "Administración",
+                Internal_Phone: "0999999999",
+                Internal_Status: "Activo",
+                Internal_Huella: null,
+                Internal_Picture: null
+            });
+
+            console.log("✅ Usuario administrador creado por defecto.");
+
+            // 🔹 Registrar auditoría
+            await AuditModel.registerAudit(
+                "0000000000",
+                "INSERT",
+                "Internal_User",
+                `Se creó el usuario administrador con ID 0000000000 automáticamente al sincronizar la base de datos.`
+            );
+        } else {
+            console.log("ℹ️ Usuario administrador ya existe.");
+        }
+    } catch (error) {
+        console.error("❌ Error al crear el usuario administrador:", error.message);
+    }
+}
