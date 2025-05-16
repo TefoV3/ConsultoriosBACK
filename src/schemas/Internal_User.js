@@ -1,7 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../database/database.js";
 import bcrypt from "bcrypt";
-import { AuditModel } from "../models/AuditModel.js"; // Asegúrate que la ruta sea correcta
 
 /*
 CREATE TABLE Internal_User (
@@ -67,13 +66,6 @@ async function createDefaultAdmin() {
 
             console.log("✅ Usuario administrador creado por defecto.");
 
-            // 🔹 Registrar auditoría
-            await AuditModel.registerAudit(
-                "0000000000",
-                "INSERT",
-                "Internal_User",
-                `Se creó el usuario administrador con ID 0000000000 automáticamente al sincronizar la base de datos.`
-            );
         } else {
             console.log("ℹ️ Usuario administrador ya existe.");
         }
@@ -81,3 +73,7 @@ async function createDefaultAdmin() {
         console.error("❌ Error al crear el usuario administrador:", error.message);
     }
 }
+// 🔹 Llamar después de definir el modelo
+sequelize.sync().then(() => {
+    createDefaultAdmin();
+});
