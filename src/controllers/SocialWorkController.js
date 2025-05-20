@@ -1,4 +1,4 @@
-import { SocialWorkModel } from "../models/SocialWorkModel.js";
+import { Social_WorkModel } from "../models/Social_WorkModel.js";
 import { InitialConsultationsModel } from "../models/InitialConsultationsModel.js";
 
 export class SocialWorkController {
@@ -15,7 +15,7 @@ export class SocialWorkController {
     // New endpoint for getting all users with social work records
     static async getAllUsersWithSocialWork(req, res) {
         try {
-            const records = await SocialWorkModel.getAllUsersWithSocialWork();
+            const records = await Social_WorkModel.getAllUsersWithSocialWork();
             res.json(records);
         } catch (error) {
             console.error("Error fetching users with social work:", error);
@@ -101,7 +101,7 @@ export class SocialWorkController {
             }
     
             // Update the status in the SocialWork table
-            const isUpdated = await SocialWorkModel.updateStatus(id, status, observations);
+            const isUpdated = await Social_WorkModel.updateStatus(id, status, observations);
     
             if (!isUpdated) {
                 return res.status(404).json({ message: "Social work record not found or not updated" });
@@ -109,7 +109,7 @@ export class SocialWorkController {
     
             // If the status is "Archivado", update the related InitialConsultations record
             if (status === "Archivado") {
-                const socialWorkRecord = await SocialWorkModel.getById(id);
+                const socialWorkRecord = await Social_WorkModel.getById(id);
     
                 if (socialWorkRecord && socialWorkRecord.Init_Code) {
                     const initCode = socialWorkRecord.Init_Code;
@@ -162,7 +162,7 @@ export class SocialWorkController {
     
     
                 // Pass the UTC-adjusted dates to the model
-                const excelBuffer = await SocialWorkModel.generateExcelReport(queryStartDate, queryEndDate);
+                const excelBuffer = await Social_WorkModel.generateExcelReport(queryStartDate, queryEndDate);
     
                 // Configurar headers para la descarga del archivo Excel
                 res.setHeader(

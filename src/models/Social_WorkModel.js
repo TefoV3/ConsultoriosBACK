@@ -4,7 +4,7 @@ import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { User } from "../schemas/User.js";
 import { getUserId } from '../sessionData.js';
 import ExcelJs from "exceljs";
-import { width } from "pdfkit/js/page";
+
 
 export class Social_WorkModel {
     // Obtener todas las evaluaciones de trabajo social
@@ -27,7 +27,7 @@ export class Social_WorkModel {
                         required: true, // Only include users that have an initial consultation
                         include: [
                             {
-                                model: SocialWork,
+                                model: Social_Work,
                                 required: true // Only include initial consultations that have social work records
                             }
                         ]
@@ -215,10 +215,10 @@ export class Social_WorkModel {
           throw new Error(`Error updating social work record: ${error.message}`);
         }
       }
-      static async updateStatus(socialWorkId, status, status_observations) {
+    static async updateStatus(social_WorkId, status, status_observations) { // Parameter is socialWorkId
         try {
             // First check if the record exists
-            const record = await this.getById(social_WorkId);
+            const record = await this.getById(social_WorkId); // <-- Using social_WorkId here (with underscore) - This is line 221
             
             if (!record) {
                 return false;
@@ -231,7 +231,7 @@ export class Social_WorkModel {
                     SW_Status_Observations: status_observations
                 },
                 {
-                    where: { SW_ProcessNumber: social_WorkId }
+                    where: { SW_ProcessNumber: social_WorkId } // <-- Using social_WorkId here (with underscore)
                 }
             );
     
@@ -241,6 +241,7 @@ export class Social_WorkModel {
             throw new Error("Database error when updating social work status");
         }
     }
+
 
     // Eliminar (borrado lógico) una evaluación de trabajo social
     static async delete(id, internalUser) {
