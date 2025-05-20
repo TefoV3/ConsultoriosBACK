@@ -1,7 +1,7 @@
 import { InternalUserController } from "../controllers/InternalUserController.js";
 import { Router } from "express";
 import upload from '../middlewares/multerImage.js';
-
+import { authMiddleware } from "../middlewares/auth.js";
 
 export const InternalUserRouter = Router();
 

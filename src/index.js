@@ -1,7 +1,7 @@
 import app from "./app.js";
 import { sequelize } from "./database/database.js";
 import { PORT } from "./config.js";
-
+import { InternalUser } from "./schemas/Internal_User.js";
 
 // async function main(){
 //    try {
