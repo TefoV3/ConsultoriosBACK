@@ -112,7 +112,7 @@ export const Social_Work = sequelize.define('Social_Work', {
         allowNull: true
     },
     SW_Status: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(50),
         defaultValue: "Activo"
     },
     Init_Code: { 

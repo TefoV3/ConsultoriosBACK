@@ -3,7 +3,9 @@ import { AuditModel } from "./AuditModel.js"; // Para registrar en auditoría
 import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { User } from "../schemas/User.js";
 import { getUserId } from '../sessionData.js';
-import ExcelJs from "exceljs";
+import ExcelJS from "exceljs";
+import { Op } from "sequelize";
+import { LivingGroup } from "../schemas/Living_Group.js"; // Assuming LivingGroup is defined in schemas
 
 
 export class Social_WorkModel {
@@ -268,107 +270,184 @@ export class Social_WorkModel {
 
 
     static async generateExcelReport(startDate, endDate) {
-        try {
-            // Fetch data from SocialWork and related LivingGroup table
-            const socialWorkRecords = await SocialWork.findAll({
-                where: {
-                    SW_EntryDate: {
-                        [Op.between]: [startDate, endDate],
-                    },
+    try {
+        // Fetch data from SocialWork with proper includes for related data
+        const socialWorkRecords = await Social_Work.findAll({
+            where: {
+                SW_EntryDate: {
+                    [Op.between]: [startDate, endDate],
                 },
-                include: [
-                    {
-                        model: LivingGroup, // Assuming LivingGroup is associated with SocialWork
-                        attributes: ["LG_Name", "LG_Relationship", "LG_Age", "LG_Occupation","LG_Notes"], // Add relevant fields
-                    },
-                ],
-            });
-
-            // Create a new Excel workbook and worksheet
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet("Social Work Report");
-
-            // Define the header row
-            worksheet.columns = [
-                { header: "Numero de Proceso", key: "SW_ProcessNumber", width: 20 },
-                { header: "Fecha de ingreso", key: "SW_EntryDate", width: 20 },
-                { header: "Status", key: "SW_Status", width: 25 },
-                { header: "Codigo de Consultas Iniciales", key: "Init_Code", width: 25 },
-                { header: "Pedido del Usuario", key: "SW_UserRequests", width: 30 },
-                { header: "Pedido del Área de remisión", key: "SW_ReferralAreaRequests", width: 30 },
-                { header: "Lugar del Trabajo", key: "SW_WorkPlace", width: 20 },
-                { header: "Dirección Domiciliaria", key: "SW_HomeAddress", width: 30 },
-                // Miembros del círculo familiar con discapacidad
-                { header: "Teléfono de referencia", key: "SW_ReferencePhone", width: 20 },
-                { header: "Tipo de discapacidad", key: "SW_DisabilityType", width: 20 },
-                { header: "Porcentaje de discapacidad", key: "SW_DisabilityPercentage", width: 20 },
-                { header: "Tiene carnet de discapacidad", key: "SW_HasDisabilityCard", width: 25 },
-                { header: "Episodios de Violencia", key: "SW_ViolenceEpisodes", width: 20 },
-                { header: "Denuncias", key: "SW_Complaints", width: 20 },
-                { header: "Consumo de Alcohol", key: SW_AlcoholConsumption, width: 20 },
-                { header: "Consumo de Drogas", key: SW_DrugConsumption, width: 20 },
-                // Situación económica
-                { header: "Ingresos", key: SW_Income, width: 20 },
-                { header: "Vivienda", key: SW_HousingType, width: 20 },
-                // Datos de la contraparte
-                { header: "Nombres y Apellidos", key: "SW_CounterpartName", width: 30 },
-                { header: "Edad", key: "SW_CounterpartAge", width: 10 },
-                { header: "Estado Civil", key: "SW_CounterpartMaritalStatus", width: 20 },
-                { header: "Ocupación", key: "SW_CounterpartOccupation", width: 20 },
-                { header: "Dirección Domiciliaria", key: "SW_CounterpartAddress", width: 30 },
-                { header: "Teléfono", key: "SW_CounterpartPhone", width: 20 },
-                { header: "C.I", key: "SW_CounterpartID", width: 20 },
-                { header: "Relación con el usuario", key: "SW_CounterpartRelation", width: 30 },
-                { header: "Caso conocido por otra institución", key: "SW_PreviouslyKnownCase", width: 30 },
-                // Relato de los hechos
-                { header: "Notas", key: "SW_Notes", width: 30 },
-                // Observaciones
-                { header: "Observaciones", key: "SW_Observations", width: 30 },
-                // Composición de grupo de convivencia
-                { header: "Nombres y Apellidos", key: "LG_Name", width: 30 },
-                { header: "Edad", key: "LG_Age", width: 10 },
-                { header: "Parentesco", key: "LG_Relationship", width: 20 },
-                { header: "Ocupación", key: "LG_Occupation", width: 20 },
-                { header: "Notas", key: "LG_Notes", width: 30 }
-            ];
-
-            // Populate the worksheet with data
-            socialWorkRecords.forEach((record) => {
-                const livingGroup = record.LivingGroups || []; // Assuming LivingGroups is the alias for the relation
-
-                // Add a row for each LivingGroup entry
-                if (livingGroup.length > 0) {
-                    livingGroup.forEach((lg) => {
-                        worksheet.addRow({
-                            SW_ProcessNumber: record.SW_ProcessNumber,
-                            SW_EntryDate: record.SW_EntryDate,
-                            SW_Status: record.SW_Status,
-                            Init_Code: record.Init_Code,
-                            LG_Name: lg.LG_Name,
-                            LG_Relationship: lg.LG_Relationship,
-                            LG_Age: lg.LG_Age,
-                            LG_Occupation: lg.LG_Occupation,
-                            LG_Notes: lg.LG_Notes,
-                        });
-                    });
-                } else {
-                    // Add a row with only SocialWork data if no LivingGroup is associated
-                    worksheet.addRow({
-                        SW_ProcessNumber: record.SW_ProcessNumber,
-                        SW_EntryDate: record.SW_EntryDate,
-                        SW_Status: record.SW_Status,
-                        Init_Code: record.Init_Code,
-                    });
+            },
+            include: [
+                {
+                    model: InitialConsultations,
+                    // Use the exact association name as defined in your model
+                    as: 'Initial_Consultation', // Make sure this matches your association alias
+                    attributes: ["Init_Code", "Init_Subject", "User_ID"],
+                    include: [
+                        {
+                            model: User,
+                            attributes: [
+                                "User_ID",
+                                "User_FirstName", 
+                                "User_LastName",
+                                "User_Age",
+                                "User_MaritalStatus",
+                                "User_Profession",
+                                "User_Phone"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    model: LivingGroup,
+                    as: 'LivingGroups', // Make sure this matches your association alias
+                    attributes: ["LG_Name", "LG_Relationship", "LG_Age", "LG_Occupation", "LG_Notes"],
+                    required: false // This makes it a LEFT JOIN so records without living groups are still included
                 }
-            });
+            ]
+        });
 
-            // Generate the Excel file as a buffer
-            const buffer = await workbook.xlsx.writeBuffer();
-            return buffer;
-        } catch (error) {
-            console.error("Error generating Excel report:", error);
-            throw new Error(`Error generating Excel report: ${error.message}`);
+        // Debug: Log the structure of the first record to verify the associations
+        if (socialWorkRecords.length > 0) {
+            console.log("Social Work Record Structure:", JSON.stringify({
+                processNumber: socialWorkRecords[0].SW_ProcessNumber,
+                initCode: socialWorkRecords[0].Init_Code,
+                hasInitialConsultation: !!socialWorkRecords[0].Initial_Consultation,
+                hasUser: !!socialWorkRecords[0].Initial_Consultation?.User,
+                userFirstName: socialWorkRecords[0].Initial_Consultation?.User?.User_FirstName,
+                hasLivingGroups: !!socialWorkRecords[0].LivingGroups,
+                livingGroupsCount: socialWorkRecords[0].LivingGroups?.length || 0
+            }, null, 2));
         }
+
+        // Create a new Excel workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Social Work Report");
+
+        // Define the header row (keeping your existing column definitions)
+        worksheet.columns = [
+            { header: "Número de Proceso", key: "SW_ProcessNumber", width: 20 },
+            { header: "Fecha de ingreso", key: "SW_EntryDate", width: 20, style: { numFmt: 'dd/mm/yyyy' } },
+            { header: "Estado", key: "SW_Status", width: 25 },
+            { header: "Código Consulta Inicial", key: "Init_Code", width: 25 },
+            { header: "Usuario (Nombre)", key: "User_FullName", width: 30 },
+            { header: "Usuario (C.I.)", key: "User_ID", width: 15 },
+            { header: "Asunto Consulta Inicial", key: "Init_Subject", width: 30 },
+            { header: "Pedido del Usuario", key: "SW_UserRequests", width: 30 },
+            { header: "Pedido del Área de remisión", key: "SW_ReferralAreaRequests", width: 30 },
+            { header: "Lugar del Trabajo", key: "SW_WorkAdress", width: 20 },
+            { header: "Dirección Domiciliaria", key: "SW_HomeAdress", width: 30 },
+            { header: "Teléfono de referencia", key: "SW_ReferencePhone", width: 20 },
+            { header: "Tipo de discapacidad", key: "SW_DisabilityType", width: 20 },
+            { header: "Porcentaje de discapacidad", key: "SW_DisabilityPercentage", width: 20 },
+            { header: "Tiene carnet de discapacidad", key: "SW_HasDisabilityCard", width: 25 },
+            { header: "Episodios de Violencia", key: "SW_ViolenceEpisodes", width: 20 },
+            { header: "Denuncias", key: "SW_Complaints", width: 20 },
+            { header: "Consumo de Alcohol", key: "SW_AlcoholConsumption", width: 20 },
+            { header: "Consumo de Drogas", key: "SW_DrugConsumption", width: 20 },
+            { header: "Ingresos ($)", key: "SW_Income", width: 20, style: { numFmt: '"$"#,##0.00' } },
+            { header: "Tipo de Vivienda", key: "SW_HousingType", width: 20 },
+            { header: "Contraparte: Nombres y Apellidos", key: "SW_CounterpartName", width: 30 },
+            { header: "Contraparte: Edad", key: "SW_CounterpartAge", width: 10 },
+            { header: "Contraparte: Estado Civil", key: "SW_CounterpartMaritalStatus", width: 20 },
+            { header: "Contraparte: Ocupación", key: "SW_CounterpartOccupation", width: 20 },
+            { header: "Contraparte: Dirección Domiciliaria", key: "SW_CounterpartAddress", width: 30 },
+            { header: "Contraparte: Teléfono", key: "SW_CounterpartPhone", width: 20 },
+            { header: "Contraparte: C.I", key: "SW_CounterpartID", width: 20 },
+            { header: "Contraparte: Relación con el usuario", key: "SW_CounterpartRelation", width: 30 },
+            { header: "Caso conocido por otra institución", key: "SW_PreviouslyKnownCase", width: 30 },
+            { header: "Relato de Hechos (Trabajo Social)", key: "SW_FactsReport", width: 30 },
+            { header: "Observaciones", key: "SW_Observations", width: 30 },
+            // Living group columns
+            { header: "Grupo Convivencia: Nombre", key: "LG_Name", width: 30 },
+            { header: "Grupo Convivencia: Edad", key: "LG_Age", width: 10 },
+            { header: "Grupo Convivencia: Parentesco", key: "LG_Relationship", width: 20 },
+            { header: "Grupo Convivencia: Ocupación", key: "LG_Occupation", width: 20 },
+            { header: "Grupo Convivencia: Notas", key: "LG_Notes", width: 30 }
+        ];
+
+        // Populate the worksheet with data
+        socialWorkRecords.forEach((record) => {
+            // Safely extract user information with proper null checking
+            const user = record.Initial_Consultation?.User;
+            const userFullName = user ? 
+                `${user.User_FirstName || ''} ${user.User_LastName || ''}`.trim() : 
+                'N/A';
+            const userId = user?.User_ID || 'N/A';
+            const initSubject = record.Initial_Consultation?.Init_Subject || 'N/A';
+
+            // Base data for each social work record
+            const baseData = {
+                SW_ProcessNumber: record.SW_ProcessNumber,
+                SW_EntryDate: record.SW_EntryDate,
+                SW_Status: record.SW_Status,
+                Init_Code: record.Init_Code,
+                User_FullName: userFullName,
+                User_ID: userId,
+                Init_Subject: initSubject,
+                SW_UserRequests: record.SW_UserRequests || '',
+                SW_ReferralAreaRequests: record.SW_ReferralAreaRequests || '',
+                SW_WorkAdress: record.SW_WorkAdress || '',
+                SW_HomeAdress: record.SW_HomeAdress || '',
+                SW_ReferencePhone: record.SW_ReferencePhone || '',
+                SW_DisabilityType: record.SW_DisabilityType || '',
+                SW_DisabilityPercentage: record.SW_DisabilityPercentage || '',
+                SW_HasDisabilityCard: record.SW_HasDisabilityCard ? 'Sí' : 'No',
+                SW_ViolenceEpisodes: record.SW_ViolenceEpisodes || '',
+                SW_Complaints: record.SW_Complaints || '',
+                SW_AlcoholConsumption: record.SW_AlcoholConsumption || '',
+                SW_DrugConsumption: record.SW_DrugConsumption || '',
+                SW_Income: record.SW_Income || 0,
+                SW_HousingType: record.SW_HousingType || '',
+                SW_CounterpartName: record.SW_CounterpartName || '',
+                SW_CounterpartAge: record.SW_CounterpartAge || '',
+                SW_CounterpartMaritalStatus: record.SW_CounterpartMaritalStatus || '',
+                SW_CounterpartOccupation: record.SW_CounterpartOccupation || '',
+                SW_CounterpartAddress: record.SW_CounterpartAddress || '',
+                SW_CounterpartPhone: record.SW_CounterpartPhone || '',
+                SW_CounterpartID: record.SW_CounterpartID || '',
+                SW_CounterpartRelation: record.SW_CounterpartRelation || '',
+                SW_PreviouslyKnownCase: record.SW_PreviouslyKnownCase || '',
+                SW_FactsReport: record.SW_FactsReport || record.SW_Notes || '',
+                SW_Observations: record.SW_Observations || '',
+            };
+
+            // Handle living group members
+            const livingGroupMembers = record.LivingGroups || [];
+
+            if (livingGroupMembers.length > 0) {
+                // Create a row for each living group member
+                livingGroupMembers.forEach((lg) => {
+                    worksheet.addRow({
+                        ...baseData,
+                        LG_Name: lg.LG_Name || '',
+                        LG_Relationship: lg.LG_Relationship || '',
+                        LG_Age: lg.LG_Age || '',
+                        LG_Occupation: lg.LG_Occupation || '',
+                        LG_Notes: lg.LG_Notes || '',
+                    });
+                });
+            } else {
+                // Add a single row with empty living group data
+                worksheet.addRow({
+                    ...baseData,
+                    LG_Name: '',
+                    LG_Relationship: '',
+                    LG_Age: '',
+                    LG_Occupation: '',
+                    LG_Notes: '',
+                });
+            }
+        });
+
+        // Generate the Excel file as a buffer
+        const buffer = await workbook.xlsx.writeBuffer();
+        return buffer;
+    } catch (error) {
+        console.error("Error generating Excel report:", error);
+        throw new Error(`Error generating Excel report: ${error.message}`);
     }
+}
     
 }
