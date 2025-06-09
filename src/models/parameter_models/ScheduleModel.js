@@ -13,7 +13,7 @@ export class ScheduleModel {
     static async getById(id) {
         try {
             return await Schedule.findOne({
-                where: { Schedule_Id: id, Schedule_Status: true }
+                where: { Schedule_ID: id, Schedule_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class ScheduleModel {
             if (!scheduleRecord) return null;
 
             const [rowsUpdated] = await Schedule.update(data, {
-                where: { Schedule_Id: id, Schedule_Status: true }
+                where: { Schedule_ID: id, Schedule_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class ScheduleModel {
 
             await Schedule.update(
                 { Schedule_Status: false },
-                { where: { Schedule_Id: id, Schedule_Status: true } }
+                { where: { Schedule_ID: id, Schedule_Status: true } }
             );
             return scheduleRecord;
         } catch (error) {

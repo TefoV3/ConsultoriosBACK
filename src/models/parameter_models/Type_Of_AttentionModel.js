@@ -13,7 +13,7 @@ export class TypeOfAttentionModel {
     static async getById(id) {
         try {
             return await Type_Of_Attention.findOne({
-                where: { Type_Of_Attention_Id: id, Type_Of_Attention_Status: true }
+                where: { Type_Of_Attention_ID: id, Type_Of_Attention_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class TypeOfAttentionModel {
             if (!typeOfAttentionRecord) return null;
 
             const [rowsUpdated] = await Type_Of_Attention.update(data, {
-                where: { Type_Of_Attention_Id: id, Type_Of_Attention_Status: true }
+                where: { Type_Of_Attention_ID: id, Type_Of_Attention_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class TypeOfAttentionModel {
 
             await Type_Of_Attention.update(
                 { Type_Of_Attention_Status: false },
-                { where: { Type_Of_Attention_Id: id, Type_Of_Attention_Status: true } }
+                { where: { Type_Of_Attention_ID: id, Type_Of_Attention_Status: true } }
             );
             return typeOfAttentionRecord;
         } catch (error) {

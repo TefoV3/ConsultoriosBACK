@@ -13,7 +13,7 @@ export class PensionerModel {
     static async getById(id) {
         try {
             return await Pensioner.findOne({
-                where: { Pensioner_Id: id, Pensioner_Status: true }
+                where: { Pensioner_ID: id, Pensioner_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class PensionerModel {
             if (!PensionerRecord) return null;
 
             const [rowsUpdated] = await Pensioner.update(data, {
-                where: { Pensioner_Id: id, Pensioner_Status: true }
+                where: { Pensioner_ID: id, Pensioner_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class PensionerModel {
 
             await Pensioner.update(
                 { Pensioner_Status: false },
-                { where: { Pensioner_Id: id, Pensioner_Status: true } }
+                { where: { Pensioner_ID: id, Pensioner_Status: true } }
             );
             return PensionerRecord;
         } catch (error) {

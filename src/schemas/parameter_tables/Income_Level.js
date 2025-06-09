@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
 
 export const Income_Level = sequelize.define('Income_Level', {
-    Income_Level_Id: {
+    Income_Level_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true

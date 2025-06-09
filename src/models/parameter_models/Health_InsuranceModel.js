@@ -13,7 +13,7 @@ export class HealthInsuranceModel {
     static async getById(id) {
         try {
             return await Health_Insurance.findOne({
-                where: { Health_Insurance_Id: id, Health_Insurance_Status: true }
+                where: { Health_Insurance_ID: id, Health_Insurance_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class HealthInsuranceModel {
             if (!caseStatusRecord) return null;
 
             const [rowsUpdated] = await Health_Insurance.update(data, {
-                where: { Health_Insurance_Id: id, Health_Insurance_Status: true }
+                where: { Health_Insurance_ID: id, Health_Insurance_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class HealthInsuranceModel {
 
             await Health_Insurance.update(
                 { Health_Insurance_Status: false },
-                { where: { Health_Insurance_Id: id, Health_Insurance_Status: true } }
+                { where: { Health_Insurance_ID: id, Health_Insurance_Status: true } }
             );
             return caseStatusRecord;
         } catch (error) {

@@ -226,17 +226,9 @@ export class InternalUserModel {
             console.log("Usuario interno encontrado:", internalUser);
             if (!internalUser) return null;
 
-            // Si no es un administrador, se verifica que la contraseña en texto plano coincida con la encriptada en la base de datos
-            // Esto no se hace para los administradores, ya que si es la primera vez que se inicia sesión, la contraseña en la base de datos
-            // estará en texto plano y no se podrá comparar con la contraseña encriptada
-            if (internalUser.Internal_Type !== "SuperAdmin") { //El primer usuario que se registra debe tener el TIPO: SuperAdmin
-                const isPasswordValid = await bcrypt.compare(Internal_Password, internalUser.Internal_Password);
-                console.log("Contrasenias comparadas:", isPasswordValid);
-                if (!isPasswordValid) return null;
-            }
-            else {
-                if (Internal_Password !== internalUser.Internal_Password) return null;
-            }
+            const isPasswordValid = await bcrypt.compare(Internal_Password, internalUser.Internal_Password);
+            console.log("Contrasenias comparadas:", isPasswordValid);
+            if (!isPasswordValid) return null;
 
             if (internalUser.Internal_Status !== "Activo") {
                 return { status: 'inactive', message: 'El usuario se encuentra inactivo.' };
@@ -248,6 +240,7 @@ export class InternalUserModel {
                     name: `${internalUser.Internal_Name} ${internalUser.Internal_LastName}`,
                     email: internalUser.Internal_Email,
                     type: internalUser.Internal_Type,
+                    profile: internalUser.Profile_ID,
                     area: internalUser.Internal_Area,
                     phone: internalUser.Internal_Phone,
                     status: internalUser.Internal_Status,

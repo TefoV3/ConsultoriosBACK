@@ -13,7 +13,7 @@ export class TypeOfHousingModel {
     static async getById(id) {
         try {
             return await Type_Of_Housing.findOne({
-                where: { Type_Of_Housing_Id: id, Type_Of_Housing_Status: true }
+                where: { Type_Of_Housing_ID: id, Type_Of_Housing_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class TypeOfHousingModel {
             if (!Type_Of_HousingRecord) return null;
 
             const [rowsUpdated] = await Type_Of_Housing.update(data, {
-                where: { Type_Of_Housing_Id: id, Type_Of_Housing_Status: true }
+                where: { Type_Of_Housing_ID: id, Type_Of_Housing_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class TypeOfHousingModel {
 
             await Type_Of_Housing.update(
                 { Type_Of_Housing_Status: false },
-                { where: { Type_Of_Housing_Id: id, Type_Of_Housing_Status: true } }
+                { where: { Type_Of_Housing_ID: id, Type_Of_Housing_Status: true } }
             );
             return Type_Of_HousingRecord;
         } catch (error) {

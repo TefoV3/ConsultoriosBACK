@@ -13,7 +13,7 @@ export class FamilyGroupModel {
     static async getById(id) {
         try {
             return await Family_Group.findOne({
-                where: { Family_Group_Id: id, Family_Group_Status: true }
+                where: { Family_Group_ID: id, Family_Group_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class FamilyGroupModel {
             if (!Family_GroupRecord) return null;
 
             const [rowsUpdated] = await Family_Group.update(data, {
-                where: { Family_Group_Id: id, Family_Group_Status: true }
+                where: { Family_Group_ID: id, Family_Group_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class FamilyGroupModel {
 
             await Family_Group.update(
                 { Family_Group_Status: false },
-                { where: { Family_Group_Id: id, Family_Group_Status: true } }
+                { where: { Family_Group_ID: id, Family_Group_Status: true } }
             );
             return Family_GroupRecord;
         } catch (error) {

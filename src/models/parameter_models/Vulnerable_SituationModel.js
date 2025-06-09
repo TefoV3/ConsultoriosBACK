@@ -14,7 +14,7 @@ export class VulnerableSituationModel {
     static async getById(id) {
         try {
             return await Vulnerable_Situation.findOne({
-                where: { Vulnerable_Situation_Id: id, Vulnerable_Situation_Status: true }
+                where: { Vulnerable_Situation_ID: id, Vulnerable_Situation_Status: true }
             });
         }
         catch (error) {
@@ -42,7 +42,7 @@ export class VulnerableSituationModel {
             if (!vulnerableSituationRecord) return null;
 
             const [rowsUpdated] = await Vulnerable_Situation.update(data, {
-                where: { Vulnerable_Situation_Id: id, Vulnerable_Situation_Status: true }
+                where: { Vulnerable_Situation_ID: id, Vulnerable_Situation_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -59,7 +59,7 @@ export class VulnerableSituationModel {
 
             await Vulnerable_Situation.update(
                 { Vulnerable_Situation_Status: false },
-                { where: { Vulnerable_Situation_Id: id, Vulnerable_Situation_Status: true } }
+                { where: { Vulnerable_Situation_ID: id, Vulnerable_Situation_Status: true } }
             );
             return vulnerableSituationRecord;
         } catch (error) {

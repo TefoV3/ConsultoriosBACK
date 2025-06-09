@@ -13,7 +13,7 @@ export class CaseStatusModel {
     static async getById(id) {
         try {
             return await Case_Status.findOne({
-                where: { Case_Status_Id: id, Case_Status_Status: true }
+                where: { Case_Status_ID: id, Case_Status_Status: true }
             });
         }
         catch (error) {
@@ -42,7 +42,7 @@ export class CaseStatusModel {
             if (!caseStatusRecord) return null;
 
             const [rowsUpdated] = await Case_Status.update(data, {
-                where: { Case_Status_Id: id, Case_Status_Status: true }
+                where: { Case_Status_ID: id, Case_Status_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -59,7 +59,7 @@ export class CaseStatusModel {
 
             await Case_Status.update(
                 { Case_Status_Status: false },
-                { where: { Case_Status_Id: id, Case_Status_Status: true } }
+                { where: { Case_Status_ID: id, Case_Status_Status: true } }
             );
             return caseStatusRecord;
         } catch (error) {

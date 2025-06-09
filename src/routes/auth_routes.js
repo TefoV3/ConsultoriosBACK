@@ -38,6 +38,7 @@ router.get('/api/me', authMiddleware, async (req, res) => {
         name: currentUser.Internal_Name + ' ' + currentUser.Internal_LastName,
         email: currentUser.Internal_Email,
         type: currentUser.Internal_Type,
+        profile: currentUser.Profile_ID, 
         area: currentUser.Internal_Area,
         phone: currentUser.Internal_Phone,
         status: currentUser.Internal_Status,

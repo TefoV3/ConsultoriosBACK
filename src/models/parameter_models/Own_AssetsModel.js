@@ -13,7 +13,7 @@ export class OwnAssetsModel {
     static async getById(id) {
         try {
             return await Own_Assets.findOne({
-                where: { Own_Assets_Id: id, Own_Assets_Status: true }
+                where: { Own_Assets_ID: id, Own_Assets_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class OwnAssetsModel {
             if (!Own_AssetsRecord) return null;
 
             const [rowsUpdated] = await Own_Assets.update(data, {
-                where: { Own_Assets_Id: id, Own_Assets_Status: true }
+                where: { Own_Assets_ID: id, Own_Assets_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class OwnAssetsModel {
 
             await Own_Assets.update(
                 { Own_Assets_Status: false },
-                { where: { Own_Assets_Id: id, Own_Assets_Status: true } }
+                { where: { Own_Assets_ID: id, Own_Assets_Status: true } }
             );
             return Own_AssetsRecord;
         } catch (error) {

@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
 
 export const Vulnerable_Situation = sequelize.define('Vulnerable_Situation', {
-    Vulnerable_Situation_Id: {
+    Vulnerable_Situation_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true

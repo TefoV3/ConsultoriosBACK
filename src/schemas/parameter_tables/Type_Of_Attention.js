@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
 
 export const Type_Of_Attention = sequelize.define('Type_Of_Attention', {
-    Type_Of_Attention_Id: {
+    Type_Of_Attention_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true

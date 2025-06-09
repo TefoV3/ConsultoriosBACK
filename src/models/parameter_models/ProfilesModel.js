@@ -14,7 +14,7 @@ export class ProfilesModel {
     static async getById(id) {
         try {
             return await Profiles.findOne({
-                where: { Profile_Id: id, Profile_Status: true }
+                where: { Profile_ID: id, Profile_Status: true }
             });
         }
         catch (error) {
@@ -24,6 +24,16 @@ export class ProfilesModel {
 
     static async create(data) {
         try {
+            // Validar que el nombre del perfil no exista
+            const existingProfile = await Profiles.findOne({
+                where: { Profile_Name: data.Profile_Name, Profile_Status: true }
+            });
+            if (existingProfile) {
+                throw new Error(`Profile with name "${data.Profile_Name}" already exists.`);
+            }
+            // Crear el nuevo perfil
+            data.Profile_Status = true; // Aseguramos que el perfil esté activo al crearlo
+            data.Profile_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             return await Profiles.create(data);
         } catch (error) {
             throw new Error(`Error creating profile: ${error.message}`);
@@ -42,7 +52,7 @@ export class ProfilesModel {
             if (!profileRecord) return null;
 
             const [rowsUpdated] = await Profiles.update(data, {
-                where: { Profile_Id: id, Profile_Status: true }
+                where: { Profile_ID: id, Profile_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -59,7 +69,7 @@ export class ProfilesModel {
 
             await Profiles.update(
                 { Profile_Status: false },
-                { where: { Profile_Id: id, Profile_Status: true } }
+                { where: { Profile_ID: id, Profile_Status: true } }
             );
             return profileRecord;
         } catch (error) {

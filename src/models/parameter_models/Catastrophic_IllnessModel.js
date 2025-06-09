@@ -13,7 +13,7 @@ export class CatastrophicIllnessModel {
             static async getById(id) {
                 try {
                     return await Catastrophic_Illness.findOne({
-                        where: { Catastrophic_Illness_Id: id, Catastrophic_Illness_Status: true }
+                        where: { Catastrophic_Illness_ID: id, Catastrophic_Illness_Status: true }
                     });
                 } catch (error) {
                     throw new Error(`Error retrieving catastrophic illness: ${error.message}`);
@@ -40,7 +40,7 @@ export class CatastrophicIllnessModel {
                     if (!catastrophicIllnessRecord) return null;
         
                     const [rowsUpdated] = await Catastrophic_Illness.update(data, {
-                        where: { Catastrophic_Illness_Id: id, Catastrophic_Illness_Status: true }
+                        where: { Catastrophic_Illness_ID: id, Catastrophic_Illness_Status: true }
                     });
         
                     if (rowsUpdated === 0) return null;
@@ -57,7 +57,7 @@ export class CatastrophicIllnessModel {
         
                     await Catastrophic_Illness.update(
                         { Catastrophic_Illness_Status: false },
-                        { where: { Catastrophic_Illness_Id: id, Catastrophic_Illness_Status: true } }
+                        { where: { Catastrophic_Illness_ID: id, Catastrophic_Illness_Status: true } }
                     );
                     return catastrophicIllnessRecord;
                 } catch (error) {

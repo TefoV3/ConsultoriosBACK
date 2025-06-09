@@ -13,7 +13,7 @@ export class DisabilityModel {
     static async getById(id) {
         try {
             return await Disability.findOne({
-                where: { Disability_Id: id, Disability_Status: true }
+                where: { Disability_ID: id, Disability_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class DisabilityModel {
             if (!disabilityRecord) return null;
 
             const [rowsUpdated] = await Disability.update(data, {
-                where: { Disability_Id: id, Disability_Status: true }
+                where: { Disability_ID: id, Disability_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class DisabilityModel {
 
             await Disability.update(
                 { Disability_Status: false },
-                { where: { Disability_Id: id, Disability_Status: true } }
+                { where: { Disability_ID: id, Disability_Status: true } }
             );
             return disabilityRecord;
         } catch (error) {

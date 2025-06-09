@@ -13,7 +13,7 @@ export class ProtocolsModel {
     static async getById(id) {
         try {
             return await Protocols.findOne({
-                where: { Protocol_Id: id, Protocol_Status: true }
+                where: { Protocol_ID: id, Protocol_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class ProtocolsModel {
             if (!protocolRecord) return null;
 
             const [rowsUpdated] = await Protocols.update(data, {
-                where: { Protocol_Id: id, Protocol_Status: true }
+                where: { Protocol_ID: id, Protocol_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class ProtocolsModel {
 
             await Protocols.update(
                 { Protocol_Status: false },
-                { where: { Protocol_Id: id, Protocol_Status: true } }
+                { where: { Protocol_ID: id, Protocol_Status: true } }
             );
             return protocolRecord;
         } catch (error) {

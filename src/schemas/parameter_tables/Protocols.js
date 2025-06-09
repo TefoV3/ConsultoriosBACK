@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
 
 export const Protocols = sequelize.define('Protocols', {
-    Protocol_Id: {
+    Protocol_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true

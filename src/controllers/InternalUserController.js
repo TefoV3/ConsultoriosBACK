@@ -1,4 +1,5 @@
 import { InternalUserModel } from "../models/InternalUserModel.js";
+import { Profiles } from "../schemas/parameter_tables/Profiles.js";
 import { z } from "zod";
 import { SALT_ROUNDS } from "../config.js";
 import { EMAIL_USER, EMAIL_PASS } from "../config.js";
@@ -160,21 +161,39 @@ export class InternalUserController {
       // Extraer los datos validados
       const data = parseResult.data;
 
+      // --- BUSCAR EL PROFILE_ID ---
+      // 1. Buscamos el perfil en la BD usando el nombre que llegó.
+      const profile = await Profiles.findOne({ where: { Profile_Name: data.Internal_Type } });
+
+      // 2. Si no se encuentra, devolvemos un error.
+      if (!profile) {
+          return res.status(400).json({ message: `El perfil '${data.Internal_Type}' no es válido.` });
+      }
+
+
+
       const plainPassword = data.Internal_Password;
 
       // Asignar null si no se recibe Internal_Huella
       if (!data.Internal_Huella) {
         data.Internal_Huella = null;
       }
-
       // Hashear la contraseña
       const hashedPassword = await bcrypt.hash(
         data.Internal_Password,
         SALT_ROUNDS
       );
-      data.Internal_Password = hashedPassword;
 
-      const internalUser = await InternalUserModel.create(data);
+
+        const dataToCreate = {
+            ...data,
+            Profile_ID: profile.Profile_ID,
+            Internal_Password: hashedPassword 
+        };
+
+
+
+      const internalUser = await InternalUserModel.create(dataToCreate);
 
       // --- Send welcome email ---
       try {
@@ -281,6 +300,21 @@ export class InternalUserController {
         }
       }
 
+
+      // Si en los datos a actualizar viene un nuevo tipo de perfil...
+      if (updateData.Internal_Type) {
+          // ...buscamos su ID correspondiente.
+          const profile = await Profiles.findOne({ where: { Profile_Name: updateData.Internal_Type } });
+          if (!profile) {
+              return res.status(400).json({ message: `El perfil '${updateData.Internal_Type}' no es válido.` });
+          }
+          // Y lo añadimos a los datos a actualizar.
+          updateData.Profile_ID = profile.Profile_ID;
+      }
+
+
+
+
       // 2. Perform the update
       const updatedInternalUser = await InternalUserModel.update(
         id,
@@ -288,13 +322,7 @@ export class InternalUserController {
         internalId // Pass the ID of the user performing the update for auditing/logging if needed in the model
       );
 
-      // If update failed in the model (e.g., validation error, db error handled there)
-      // Note: The original code checked the *result* of update, assuming it returns the updated user or null/false.
-      // We'll keep that logic. If the model throws an error, it will be caught below.
       if (!updatedInternalUser) {
-         // It's possible the user was found initially but the update itself failed or returned no rows affected.
-         // The message might need adjustment depending on InternalUserModel.update's return behavior.
-         // If InternalUserModel.update returns the updated user or null/0 if not found/updated, this is okay.
         return res.status(404).json({ message: "Internal user not found or update failed" });
       }
 

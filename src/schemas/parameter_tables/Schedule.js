@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
 
 export const Schedule = sequelize.define('Schedule', {
-    Schedule_Id: {
+    Schedule_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true

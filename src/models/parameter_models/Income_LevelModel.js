@@ -13,7 +13,7 @@ export class IncomeLevelModel {
     static async getById(id) {
         try {
             return await Income_Level.findOne({
-                where: { Income_Level_Id: id, Income_Level_Status: true }
+                where: { Income_Level_ID: id, Income_Level_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class IncomeLevelModel {
             if (!Income_LevelRecord) return null;
 
             const [rowsUpdated] = await Income_Level.update(data, {
-                where: { Income_Level_Id: id, Income_Level_Status: true }
+                where: { Income_Level_ID: id, Income_Level_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class IncomeLevelModel {
 
             await Income_Level.update(
                 { Income_Level_Status: false },
-                { where: { Income_Level_Id: id, Income_Level_Status: true } }
+                { where: { Income_Level_ID: id, Income_Level_Status: true } }
             );
             return Income_LevelRecord;
         } catch (error) {

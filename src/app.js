@@ -13,6 +13,7 @@ import { corsMiddleware } from './middlewares/cors.js'
 import {SocialWorkRouter} from './routes/social_work_routes.js'
 import { LivingGroupRouter } from './routes/living_group_routes.js'
 import { ActivityRecordRouter } from "./routes/activity_record_routes.js";
+import { ProfilePermissionRouter } from './routes/profile_permission_routes.js'
 
 //Parameter Routes
 import { CaseStatusRouter } from './routes/parameter_routes/case_status_routes.js'
@@ -104,7 +105,7 @@ app.use(AuditRouter)
 app.use(SocialWorkRouter);
 app.use(LivingGroupRouter)
 app.use(ActivityRecordRouter);
-
+app.use(ProfilePermissionRouter); // Rutas para permisos de perfil
 
 // ✅ Updated Schedules routes with new router names
 app.use(AlertRouter); // /alerta

@@ -13,7 +13,7 @@ export class FamilyIncomeModel {
     static async getById(id) {
         try {
             return await Family_Income.findOne({
-                where: { Family_Income_Id: id, Family_Income_Status: true }
+                where: { Family_Income_ID: id, Family_Income_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class FamilyIncomeModel {
             if (!Family_IncomeRecord) return null;
 
             const [rowsUpdated] = await Family_Income.update(data, {
-                where: { Family_Income_Id: id, Family_Income_Status: true }
+                where: { Family_Income_ID: id, Family_Income_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class FamilyIncomeModel {
 
             await Family_Income.update(
                 { Family_Income_Status: false },
-                { where: { Family_Income_Id: id, Family_Income_Status: true } }
+                { where: { Family_Income_ID: id, Family_Income_Status: true } }
             );
             return Family_IncomeRecord;
         } catch (error) {

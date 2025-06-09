@@ -13,7 +13,7 @@ export class OccupationsModel {
     static async getById(id) {
         try {
             return await Occupations.findOne({
-                where: { Occupation_Id: id, Occupation_Status: true }
+                where: { Occupation_ID: id, Occupation_Status: true }
             });
         }
         catch (error) {
@@ -41,7 +41,7 @@ export class OccupationsModel {
             if (!OccupationsRecord) return null;
 
             const [rowsUpdated] = await Occupations.update(data, {
-                where: { Occupation_Id: id, Occupation_Status: true }
+                where: { Occupation_ID: id, Occupation_Status: true }
             });
 
             if (rowsUpdated === 0) return null;
@@ -58,7 +58,7 @@ export class OccupationsModel {
 
             await Occupations.update(
                 { Occupation_Status: false },
-                { where: { Occupation_Id: id, Occupation_Status: true } }
+                { where: { Occupation_ID: id, Occupation_Status: true } }
             );
             return OccupationsRecord;
         } catch (error) {
