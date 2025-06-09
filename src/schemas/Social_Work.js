@@ -64,7 +64,7 @@ export const Social_Work = sequelize.define('Social_Work', {
         allowNull: true
     },
     SW_ReferencePhone: {
-        type: DataTypes.STRING(30),
+        type: DataTypes.STRING(50),
         allowNull: true
     },
     SW_Income: {
@@ -96,7 +96,7 @@ export const Social_Work = sequelize.define('Social_Work', {
         allowNull: true
     },
     SW_CounterpartPhone: {
-        type: DataTypes.STRING(30),
+        type: DataTypes.STRING(50),
         allowNull: true
     },
     SW_CounterpartID: {
@@ -112,7 +112,7 @@ export const Social_Work = sequelize.define('Social_Work', {
         allowNull: true
     },
     SW_Status: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(50),
         defaultValue: "Activo"
     },
     Init_Code: { 
@@ -135,7 +135,7 @@ export const Social_Work = sequelize.define('Social_Work', {
         type: DataTypes.DATE,
         allowNull: true
     }
-}, { timestamps: false });
+}, { timestamps: false });  
 // Relación uno a uno
 Social_Work.belongsTo(InitialConsultations, { foreignKey: "Init_Code" });
 InitialConsultations.hasOne(Social_Work, { foreignKey: "Init_Code" });
