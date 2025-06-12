@@ -1,4 +1,5 @@
 import { Sex } from "../../schemas/parameter_tables/Sex.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class SexModel {
 
@@ -22,21 +23,41 @@ export class SexModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Sex.create(data);
+            const newRecord = await Sex.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Sex",
+                            `El usuario interno ${internalId} creó un nuevo registro de Sex con ID ${newRecord.Sex_ID}`
+                        );
+            
+            return newRecord;
+
         } catch (error) {
             throw new Error(`Error creating sex: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Sex.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Sex.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Sex",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Sex.`
+                        );
+            
+                        return createdRecords;
+
         } catch (error) {
             throw new Error(`Error creating Sex: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const sexRecord = await this.getById(id);
             if (!sexRecord) return null;
@@ -46,13 +67,22 @@ export class SexModel {
             });
 
             if (rowsUpdated === 0) return null;
-            return await this.getById(id);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "UPDATE",
+                            "Sex",
+                            `El usuario interno ${internalId} actualizó Sex con ID ${id}`
+                        );
+            
+                        return await this.getById(id);
+
         } catch (error) {
             throw new Error(`Error updating sex: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const sexRecord = await this.getById(id);
             if (!sexRecord) return null;
@@ -61,6 +91,13 @@ export class SexModel {
                 { Sex_Status: false },
                 { where: { Sex_ID: id, Sex_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                            internalId,
+                            "DELETE",
+                            "Sex",
+                            `El usuario interno ${internalId} eliminó lógicamente Sex con ID ${id}`
+                        );
             return sexRecord;
         } catch (error) {
             throw new Error(`Error deleting sex: ${error.message}`);

@@ -1,4 +1,5 @@
 import { Own_Assets } from "../../schemas/parameter_tables/Own_Assets.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class OwnAssetsModel {
     
@@ -21,21 +22,40 @@ export class OwnAssetsModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Own_Assets.create(data);
+            const newRecord = await Own_Assets.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Own_Assets",
+                            `El usuario interno ${internalId} creó un nuevo registro Own_Assets con ID ${newRecord.Own_Assets_ID}`
+                        );
+            
+                        return newRecord;
+
         } catch (error) {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Own_Assets.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Own_Assets.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Own_Assets",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Own_Assets.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Own Assets: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const Own_AssetsRecord = await this.getById(id);
             if (!Own_AssetsRecord) return null;
@@ -45,13 +65,21 @@ export class OwnAssetsModel {
             });
 
             if (rowsUpdated === 0) return null;
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Own_Assets",
+                `El usuario interno ${internalId} actualizó Own_Assets con ID ${id}`
+            );
+
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating case Status: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const Own_AssetsRecord = await this.getById(id);
             if (!Own_AssetsRecord) return null;
@@ -59,6 +87,13 @@ export class OwnAssetsModel {
             await Own_Assets.update(
                 { Own_Assets_Status: false },
                 { where: { Own_Assets_ID: id, Own_Assets_Status: true } }
+            );
+
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Own_Assets",
+                `El usuario interno ${internalId} eliminó lógicamente Own_Assets con ID ${id}`
             );
             return Own_AssetsRecord;
         } catch (error) {

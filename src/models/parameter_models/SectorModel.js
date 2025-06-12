@@ -1,5 +1,6 @@
 import { Sector } from "../../schemas/parameter_tables/Sector.js";
 import { Zone } from "../../schemas/parameter_tables/Zone.js"; // Importar Zone
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class SectorModel {
 
@@ -50,22 +51,40 @@ static async getAll() {
 
 
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Sector.create(data);
+            const newRecord = await Sector.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Sector",
+                            `El usuario interno ${internalId} creó un nuevo registro de Sector con ID ${newRecord.Sector_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating sector: ${error.message}`);
         }
     }
     
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Sector.bulkCreate(data);
+            const createdRecords = await Sector.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Sector",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Sector.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error creating sectors: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const sectorRecord = await this.getById(id);
             if (!sectorRecord) return null;
@@ -75,13 +94,21 @@ static async getAll() {
             });
 
             if (rowsUpdated === 0) return null;
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Sector",
+                `El usuario interno ${internalId} actualizó la Sector con ID ${id}`
+            );
+
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating sector: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const sectorRecord = await this.getById(id);
             if (!sectorRecord) return null;
@@ -89,6 +116,13 @@ static async getAll() {
             await Sector.update(
                 { Sector_Status: false },
                 { where: { Sector_ID: id, Sector_Status: true } }
+            );
+
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Sector",
+                `El usuario interno ${internalId} eliminó lógicamente la Sector con ID ${id}`
             );
             return sectorRecord;
         } catch (error) {

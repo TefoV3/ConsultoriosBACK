@@ -1,4 +1,5 @@
 import { Protocols } from "../../schemas/parameter_tables/Protocols.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class ProtocolsModel {
 
@@ -21,21 +22,39 @@ export class ProtocolsModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Protocols.create(data);
+            const newRecord = await Protocols.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Protocols",
+                            `El usuario interno ${internalId} creó un nuevo registro de Protocols con ID ${newRecord.Protocol_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating protocol: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Protocols.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Protocols.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Protocols",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros Protocols.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Protocols: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const protocolRecord = await this.getById(id);
             if (!protocolRecord) return null;
@@ -45,13 +64,21 @@ export class ProtocolsModel {
             });
 
             if (rowsUpdated === 0) return null;
-            return await this.getById(id);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "UPDATE",
+                            "Protocols",
+                            `El usuario interno ${internalId} actualizó Protocols con ID ${id}`
+                        );
+            
+                        return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating protocol: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const protocolRecord = await this.getById(id);
             if (!protocolRecord) return null;
@@ -60,6 +87,14 @@ export class ProtocolsModel {
                 { Protocol_Status: false },
                 { where: { Protocol_ID: id, Protocol_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                            internalId,
+                            "DELETE",
+                            "Protocols",
+                            `El usuario interno ${internalId} eliminó lógicamente Protocols con ID ${id}`
+                        );
+
             return protocolRecord;
         } catch (error) {
             throw new Error(`Error deleting protocol: ${error.message}`);

@@ -41,9 +41,9 @@ export class AcademicInstructionModel {
         }
     }
 
-    static async bulkCreate(dataArray, internalId) {
+    static async bulkCreate(data, internalId) {
         try {
-            const createdRecords = await Academic_Instruction.bulkCreate(dataArray);
+            const createdRecords = await Academic_Instruction.bulkCreate(data);
 
             await AuditModel.registerAudit(
                 internalId,

@@ -1,4 +1,5 @@
 import { Pensioner } from "../../schemas/parameter_tables/Pensioner.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class PensionerModel {
 
@@ -21,21 +22,40 @@ export class PensionerModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Pensioner.create(data);
+            const newRecord = await Pensioner.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Pensioner",
+                            `El usuario interno ${internalId} creó un nuevo registro de Pensioner con ID ${newRecord.Pensioner_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating Pensioner: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Pensioner.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Pensioner.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Pensioner",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Pensioner`
+                        );
+            
+                        return createdRecords;
+
         } catch (error) {
             throw new Error(`Error creating Pensioner: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const PensionerRecord = await this.getById(id);
             if (!PensionerRecord) return null;
@@ -45,13 +65,21 @@ export class PensionerModel {
             });
 
             if (rowsUpdated === 0) return null;
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Pensioner",
+                `El usuario interno ${internalId} actualizó Pensioner con ID ${id}`
+            );
+
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating Pensioner: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const PensionerRecord = await this.getById(id);
             if (!PensionerRecord) return null;
@@ -59,6 +87,13 @@ export class PensionerModel {
             await Pensioner.update(
                 { Pensioner_Status: false },
                 { where: { Pensioner_ID: id, Pensioner_Status: true } }
+            );
+
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Pensioner",
+                `El usuario interno ${internalId} eliminó lógicamente Pensioner con ID ${id}`
             );
             return PensionerRecord;
         } catch (error) {

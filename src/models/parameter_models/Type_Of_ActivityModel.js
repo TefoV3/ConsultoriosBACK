@@ -1,4 +1,5 @@
 import { Type_Of_Activity } from "../../schemas/parameter_tables/Type_Of_Activity.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class TypeOfActivityModel {
     
@@ -21,22 +22,41 @@ export class TypeOfActivityModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Type_Of_Activity.create(data);
+            const newRecord = await Type_Of_Activity.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Type_Of_Activity",
+                            `El usuario interno ${internalId} creó un nuevo registro de Type_Of_Activity con ID ${newRecord.Type_Of_Activity_Id}`
+                        );
+            
+                        return newRecord;
+
         } catch (error) {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Type_Of_Activity.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Type_Of_Activity.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Type_Of_Activity",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Type_Of_Activity.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Case Status: ${error.message}`);
         }
     }
 
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const typeOfActivityRecord = await this.getById(id);
             if (!typeOfActivityRecord) return null;
@@ -46,13 +66,21 @@ export class TypeOfActivityModel {
             });
 
             if (rowsUpdated === 0) return null;
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Type_Of_Activity",
+                `El usuario interno ${internalId} actualizó la Type_Of_Activity con ID ${id}`
+            );
+
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating case Status: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const typeOfActivityRecord = await this.getById(id);
             if (!typeOfActivityRecord) return null;
@@ -61,6 +89,14 @@ export class TypeOfActivityModel {
                 { Type_Of_Activity_Status: false },
                 { where: { Type_Of_Activity_Id: id, Type_Of_Activity_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Type_Of_Activity",
+                `El usuario interno ${internalId} eliminó lógicamente la Type_Of_Activity con ID ${id}`
+            );
+
             return typeOfActivityRecord;
         } catch (error) {
             throw new Error(`Error deleting case Status: ${error.message}`);

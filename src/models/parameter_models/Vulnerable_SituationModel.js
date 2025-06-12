@@ -1,4 +1,5 @@
 import { Vulnerable_Situation } from "../../schemas/parameter_tables/Vulnerable_Situation.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class VulnerableSituationModel {
 
@@ -22,21 +23,40 @@ export class VulnerableSituationModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Vulnerable_Situation.create(data);
+            const newRecord = await Vulnerable_Situation.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Vulnerable_Situation",
+                            `El usuario interno ${internalId} creó un nuevo registro de Vulnerable_Situation con ID ${newRecord.Vulnerable_Situation}`
+                        );
+            
+                        return newRecord;
+
         } catch (error) {
             throw new Error(`Error creating vulnerable situation: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Vulnerable_Situation.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Vulnerable_Situation.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Vulnerable_Situation",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Vulnerable_Situation.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Vulnerable Situation: ${error.message}`);
         }
     } 
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const vulnerableSituationRecord = await this.getById(id);
             if (!vulnerableSituationRecord) return null;
@@ -46,13 +66,21 @@ export class VulnerableSituationModel {
             });
 
             if (rowsUpdated === 0) return null;
-            return await this.getById(id);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "UPDATE",
+                            "Vulnerable_Situation",
+                            `El usuario interno ${internalId} actualizó la Vulnerable_Situation con ID ${id}`
+                        );
+            
+                        return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating vulnerable situation: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const vulnerableSituationRecord = await this.getById(id);
             if (!vulnerableSituationRecord) return null;
@@ -61,6 +89,13 @@ export class VulnerableSituationModel {
                 { Vulnerable_Situation_Status: false },
                 { where: { Vulnerable_Situation_ID: id, Vulnerable_Situation_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                            internalId,
+                            "DELETE",
+                            "Vulnerable_Situation",
+                            `El usuario interno ${internalId} eliminó lógicamente Vulnerable_Situation con ID ${id}`
+                        );
             return vulnerableSituationRecord;
         } catch (error) {
             throw new Error(`Error deleting vulnerable situation: ${error.message}`);
