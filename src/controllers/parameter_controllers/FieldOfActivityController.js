@@ -78,6 +78,7 @@ export class FieldOfActivityController {
         try {
             // Opcional: Validación con Schema (como en el ejemplo anterior)
             // const validationResult = ...; if (!validationResult.success) ...
+            const internalId = req.headers["internal-id"]
 
             // Lógica para manejar creación individual o masiva, como en TopicController
             if (Array.isArray(req.body)) {
@@ -87,7 +88,7 @@ export class FieldOfActivityController {
                 }
                 // Opcional: Validar cada item del array con schema
 
-                const createdFieldsOfActivity = await Field_Of_Activity_Model.bulkCreate(req.body);
+                const createdFieldsOfActivity = await Field_Of_Activity_Model.bulkCreate(req.body, internalId);
                 return res.status(201).json(createdFieldsOfActivity);
             } else {
                 // Validación básica para creación individual (como en el ejemplo anterior)
@@ -96,7 +97,7 @@ export class FieldOfActivityController {
                 }
                 // Opcional: Validar el objeto individual con schema
 
-                const newFieldOfActivity = await Field_Of_Activity_Model.create(req.body);
+                const newFieldOfActivity = await Field_Of_Activity_Model.create(req.body, internalId);
                 res.status(201).json(newFieldOfActivity);
             }
         } catch (error) {
@@ -114,13 +115,14 @@ export class FieldOfActivityController {
             const { id } = req.params;
             // Opcional: Validación con Schema (como en el ejemplo anterior)
             // const validationResult = ...; if (!validationResult.success) ...
+            const internalId = req.headers["internal-id"]
 
             // Validación básica (como en el ejemplo anterior)
             if (!req.body || Object.keys(req.body).length === 0) {
                return res.status(400).json({ message: "Request body must contain data to update." });
            }
 
-            const updatedFieldOfActivity = await Field_Of_Activity_Model.update(id, req.body);
+            const updatedFieldOfActivity = await Field_Of_Activity_Model.update(id, req.body, internalId);
             if (!updatedFieldOfActivity) {
                 // Alineado con TopicController
                 return res.status(404).json({ message: "Field Of Activity not found or no changes made" });
@@ -138,8 +140,9 @@ export class FieldOfActivityController {
 
     static async delete(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const { id } = req.params;
-            const deletedFieldOfActivity = await Field_Of_Activity_Model.delete(id);
+            const deletedFieldOfActivity = await Field_Of_Activity_Model.delete(id, internalId);
             if (!deletedFieldOfActivity) {
                 // Alineado con TopicController
                 return res.status(404).json({ message: "Field Of Activity not found" });

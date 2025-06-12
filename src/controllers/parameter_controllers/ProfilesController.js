@@ -24,12 +24,13 @@ export class ProfilesController {
 
     static async create(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             if (Array.isArray(req.body)) {
-                const createdprofile = await ProfilesModel.bulkCreate(req.body);
+                const createdprofile = await ProfilesModel.bulkCreate(req.body, internalId);
                 return res.status(201).json(createdprofile);
             }
             // Si es un objeto, usa create normal
-            const profile = await ProfilesModel.create(req.body);
+            const profile = await ProfilesModel.create(req.body, internalId);
             return res.status(201).json(profile);
         } catch (error) {
             return res.status(500).json({ error: error.message });
@@ -38,7 +39,8 @@ export class ProfilesController {
 
     static async update(req, res) {
         try {
-            const profile = await ProfilesModel.update(req.params.id, req.body);
+            const internalId = req.headers["internal-id"]
+            const profile = await ProfilesModel.update(req.params.id, req.body, internalId);
             if (!profile) return res.status(404).json({ error: 'Profile not found' });
             return res.status(200).json(profile);
         } catch (error) {
@@ -49,7 +51,7 @@ export class ProfilesController {
 static async delete(req, res) {
         try {
             const profileId = req.params.id;
-
+            const internalId = req.headers["internal-id"]
             // Verificar que no haya usuarios asociados al perfil antes de eliminarlo
             const associatedUsersCount = await InternalUser.count({
                 where: { Profile_ID: profileId }
@@ -60,7 +62,7 @@ static async delete(req, res) {
             }
 
             // Si no hay usuarios asociados, procede a eliminar (marcar como inactivo) el perfil
-            const profile = await ProfilesModel.delete(profileId);
+            const profile = await ProfilesModel.delete(profileId, internalId);
             if (!profile) return res.status(404).json({ error: 'Perfil no encontrado o ya inactivo.' });
             
             // Devuelve un mensaje de éxito o el perfil actualizado

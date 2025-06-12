@@ -27,13 +27,14 @@ export class FamilyIncomeController {
 
     static async create(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             if (Array.isArray(req.body)) {
-                const createdFamilyIncome = await FamilyIncomeModel.bulkCreate(req.body);
+                const createdFamilyIncome = await FamilyIncomeModel.bulkCreate(req.body, internalId);
                 return res.status(201).json(createdFamilyIncome);
             }
             // Si es un objeto, usa create normal
             const FamilyIncome = req.body;
-            const newFamilyIncome = await FamilyIncomeModel.create(FamilyIncome);
+            const newFamilyIncome = await FamilyIncomeModel.create(FamilyIncome, internalId);
             res.status(201).json(newFamilyIncome);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -42,8 +43,9 @@ export class FamilyIncomeController {
 
     static async update(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const updatedFamilyIncome = await FamilyIncomeModel.update(id, req.body);
+            const updatedFamilyIncome = await FamilyIncomeModel.update(id, req.body, internalId);
             if (!updatedFamilyIncome) {
                 res.status(404).json({ error: 'Family Income not found' });
             } else {
@@ -56,8 +58,9 @@ export class FamilyIncomeController {
 
     static async delete(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const deletedFamilyIncome = await FamilyIncomeModel.delete(id);
+            const deletedFamilyIncome = await FamilyIncomeModel.delete(id, internalId);
             if (!deletedFamilyIncome) {
                 res.status(404).json({ error: 'Family Income not found' });
             } else {

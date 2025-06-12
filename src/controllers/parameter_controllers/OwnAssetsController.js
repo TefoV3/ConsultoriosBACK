@@ -27,13 +27,14 @@ export class OwnAssetsController {
 
     static async create(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             if (Array.isArray(req.body)) {
-                const createdOwnAssets = await OwnAssetsModel.bulkCreate(req.body);
+                const createdOwnAssets = await OwnAssetsModel.bulkCreate(req.body, internalId);
                 return res.status(201).json(createdOwnAssets);
             }
             // Si es un objeto, usa create normal
             const OwnAssets = req.body;
-            const newOwnAssets = await OwnAssetsModel.create(OwnAssets);
+            const newOwnAssets = await OwnAssetsModel.create(OwnAssets, internalId);
             res.status(201).json(newOwnAssets);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -42,8 +43,9 @@ export class OwnAssetsController {
 
     static async update(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const updatedOwnAssets = await OwnAssetsModel.update(id, req.body);
+            const updatedOwnAssets = await OwnAssetsModel.update(id, req.body, internalId);
             if (!updatedOwnAssets) {
                 res.status(404).json({ error: 'Own Assets not found' });
             } else {
@@ -56,8 +58,9 @@ export class OwnAssetsController {
 
     static async delete(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const deletedOwnAssets = await OwnAssetsModel.delete(id);
+            const deletedOwnAssets = await OwnAssetsModel.delete(id, internalId);
             if (!deletedOwnAssets) {
                 res.status(404).json({ error: 'Own Assets not found' });
             } else {
