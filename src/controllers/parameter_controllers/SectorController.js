@@ -35,13 +35,14 @@ export class SectorController {
 
     static async create(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             if (Array.isArray(req.body)) {
                 // Si es un array, usa bulkCreate
-                const createdSectors = await SectorModel.bulkCreate(req.body);
+                const createdSectors = await SectorModel.bulkCreate(req.body, internalId);
                 return res.status(201).json(createdSectors);
             }
             // Si es un objeto, usa create (asumiendo que existe un método SectorModel.create)
-            const newSector = await SectorModel.create(req.body); // Cambiado de bulkCreate a create
+            const newSector = await SectorModel.create(req.body, internalId); // Cambiado de bulkCreate a create
             res.status(201).json(newSector);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -50,8 +51,9 @@ export class SectorController {
 
     static async update(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const { id } = req.params;
-            const updatedSector = await SectorModel.update(id, req.body);
+            const updatedSector = await SectorModel.update(id, req.body, internalId);
             if (!updatedSector) return res.status(404).json({ message: "Sector not found or no changes made" });
             res.status(200).json(updatedSector);
         } catch (error) {
@@ -61,8 +63,9 @@ export class SectorController {
 
     static async delete(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const { id } = req.params;
-            const deletedSector = await SectorModel.delete(id);
+            const deletedSector = await SectorModel.delete(id, internalId);
             if (!deletedSector) return res.status(404).json({ message: "Sector not found" });
             res.status(200).json(deletedSector);
         } catch (error) {
