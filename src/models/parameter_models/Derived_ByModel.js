@@ -1,4 +1,5 @@
 import { Derived_By } from "../../schemas/parameter_tables/Derived_By.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class DerivedByModel {
 
@@ -22,22 +23,40 @@ export class DerivedByModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Derived_By.create(data);
+            const newRecord = await Derived_By.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Derived_By",
+                            `El usuario interno ${internalId} creó un nuevo registro Derived_By con ID ${newRecord.Derived_By_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating derived by record: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Derived_By.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Derived_By.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Derived_By",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Derived_By.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Derived By: ${error.message}`);
         }
     }
 
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const derivedByRecord = await this.getById(id);
             if (!derivedByRecord) return null;
@@ -47,13 +66,21 @@ export class DerivedByModel {
             });
 
             if (rowsUpdated === 0) return null;
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Derived_By",
+                `El usuario interno ${internalId} actualizó la Derived_By con ID ${id}`
+            );
+
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating derived by record: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const derivedByRecord = await this.getById(id);
             if (!derivedByRecord) return null;
@@ -62,6 +89,14 @@ export class DerivedByModel {
                 { Derived_By_Status: false },
                 { where: { Derived_By_ID: id, Derived_By_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Derived_By",
+                `El usuario interno ${internalId} eliminó lógicamente Derived_By con ID ${id}`
+            );
+
             return derivedByRecord;
         } catch (error) {
             throw new Error(`Error deleting derived by record: ${error.message}`);

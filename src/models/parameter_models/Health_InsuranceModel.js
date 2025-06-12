@@ -1,4 +1,5 @@
 import { Health_Insurance } from "../../schemas/parameter_tables/Health_Insurance.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class HealthInsuranceModel {
     
@@ -21,21 +22,39 @@ export class HealthInsuranceModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Health_Insurance.create(data);
+            const newRecord = await Health_Insurance.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Health_Insurance",
+                            `El usuario interno ${internalId} creó un nuevo registro de Health_Insurance con ID ${newRecord.Health_Insurance_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Health_Insurance.bulkCreate(data); // Usa el bulkCreate de Sequelize
+             const createdRecords = await Health_Insurance.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Health_Insurance",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Health_Insurance.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Health Insurance: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const caseStatusRecord = await this.getById(id);
             if (!caseStatusRecord) return null;
@@ -45,13 +64,20 @@ export class HealthInsuranceModel {
             });
 
             if (rowsUpdated === 0) return null;
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Health_Insurance",
+                `El usuario interno ${internalId} actualizó Health_Insurance con ID ${id}`
+            );
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating case Status: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const caseStatusRecord = await this.getById(id);
             if (!caseStatusRecord) return null;
@@ -60,6 +86,14 @@ export class HealthInsuranceModel {
                 { Health_Insurance_Status: false },
                 { where: { Health_Insurance_ID: id, Health_Insurance_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Health_Insurance",
+                `El usuario interno ${internalId} eliminó lógicamente Health_Insurance con ID ${id}`
+            );
+
             return caseStatusRecord;
         } catch (error) {
             throw new Error(`Error deleting case Status: ${error.message}`);

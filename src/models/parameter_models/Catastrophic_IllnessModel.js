@@ -1,4 +1,5 @@
 import { Catastrophic_Illness } from "../../schemas/parameter_tables/Catastrophic_Illness.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class CatastrophicIllnessModel {
         
@@ -20,21 +21,37 @@ export class CatastrophicIllnessModel {
                 }
             }
         
-            static async create(data) {
+            static async create(data, internalId) {
                 try {
-                    return await Catastrophic_Illness.create(data);
+                    const newRecord = await Catastrophic_Illness.create(data);
+                    await AuditModel.registerAudit(
+                        internalId,
+                        "INSERT",
+                        "Catastrophic_Illness",
+                        `El usuario interno ${internalId} creó un nuevo registro de enfermedad catastrófica con ID ${newRecord.Catastrophic_Illness_ID}`
+                    );
+                        return newRecord
                 } catch (error) {
                     throw new Error(`Error creating catastrophic illness: ${error.message}`);
                 }
             }
-            static async bulkCreate(data) {
+            static async bulkCreate(data, internalId) {
                 try {
-                    return await Catastrophic_Illness.bulkCreate(data); // Usa el bulkCreate de Sequelize
+                    const createdRecords = await Catastrophic_Illness.bulkCreate(data);
+                    
+                            await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Catastrophic_Illness",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de enfermedad catastrófica.`
+                        );
+                    
+                    return createdRecords;
                 } catch (error) {
                     throw new Error(`Error creating Catastrophic Illness: ${error.message}`);
                 }
             }
-            static async update(id, data) {
+            static async update(id, data, internalId) {
                 try {
                     const catastrophicIllnessRecord = await this.getById(id);
                     if (!catastrophicIllnessRecord) return null;
@@ -44,13 +61,20 @@ export class CatastrophicIllnessModel {
                     });
         
                     if (rowsUpdated === 0) return null;
+                    await AuditModel.registerAudit(
+                        internalId,
+                        "UPDATE",
+                        "Catastrophic_Illness",
+                        `El usuario interno ${internalId} actualizó la enfermedad catastrófica con ID ${id}`
+                    );
+
                     return await this.getById(id);
                 } catch (error) {
                     throw new Error(`Error updating catastrophic illness: ${error.message}`);
                 }
             }
         
-            static async delete(id) {
+            static async delete(id, internalId) {
                 try {
                     const catastrophicIllnessRecord = await this.getById(id);
                     if (!catastrophicIllnessRecord) return null;
@@ -58,6 +82,12 @@ export class CatastrophicIllnessModel {
                     await Catastrophic_Illness.update(
                         { Catastrophic_Illness_Status: false },
                         { where: { Catastrophic_Illness_ID: id, Catastrophic_Illness_Status: true } }
+                    );
+                    await AuditModel.registerAudit(
+                        internalId,
+                        "DELETE",
+                        "Catastrophic_Illness",
+                        `El usuario interno ${internalId} eliminó lógicamente la enfermedad catastrófica con ID ${id}`
                     );
                     return catastrophicIllnessRecord;
                 } catch (error) {

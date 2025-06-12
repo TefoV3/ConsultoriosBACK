@@ -1,4 +1,5 @@
 import { Family_Income } from "../../schemas/parameter_tables/Family_Income.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class FamilyIncomeModel {
     
@@ -21,21 +22,39 @@ export class FamilyIncomeModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Family_Income.create(data);
+            const newRecord = await Family_Income.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Family_Income",
+                            `El usuario interno ${internalId} creó un nuevo registro de Family_Income con ID ${newRecord.Family_Income_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Family_Income.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Family_Income.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Family_Income",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Family_Income.`
+                        );
+            
+                        return createdRecords; // Usa el bulkCreate de Sequelize
         } catch (error) {
             throw new Error(`Error creating Family Income: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const Family_IncomeRecord = await this.getById(id);
             if (!Family_IncomeRecord) return null;
@@ -45,13 +64,21 @@ export class FamilyIncomeModel {
             });
 
             if (rowsUpdated === 0) return null;
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Family_Income",
+                `El usuario interno ${internalId} actualizó Family_Income con ID ${id}`
+            );
+
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating case Status: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const Family_IncomeRecord = await this.getById(id);
             if (!Family_IncomeRecord) return null;
@@ -59,6 +86,12 @@ export class FamilyIncomeModel {
             await Family_Income.update(
                 { Family_Income_Status: false },
                 { where: { Family_Income_ID: id, Family_Income_Status: true } }
+            );
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Family_Income",
+                `El usuario interno ${internalId} eliminó lógicamente Family_Income con ID ${id}`
             );
             return Family_IncomeRecord;
         } catch (error) {

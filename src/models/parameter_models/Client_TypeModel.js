@@ -1,4 +1,5 @@
 import { Client_Type } from "../../schemas/parameter_tables/Client_Type.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class ClientTypeModel {
     static async getAll() {
@@ -21,21 +22,39 @@ export class ClientTypeModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Client_Type.create(data);
+            const newRecord = await Client_Type.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Client_Type",
+                            `El usuario interno ${internalId} creó un nuevo registro de Client Type con ID ${newRecord.Client_Type_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating client type: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Client_Type.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Client_Type.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Client_Type",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Client Type.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Client Type: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const clientTypeRecord = await this.getById(id);
             if (!clientTypeRecord) return null;
@@ -45,13 +64,21 @@ export class ClientTypeModel {
             });
 
             if (rowsUpdated === 0) return null;
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "UPDATE",
+                            "Client_Type",
+                            `El usuario interno ${internalId} actualizó la Client Type con ID ${id}`
+                        );
+            
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating client type: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const clientTypeRecord = await this.getById(id);
             if (!clientTypeRecord) return null;
@@ -60,6 +87,13 @@ export class ClientTypeModel {
                 { Client_Type_Status: false },
                 { where: { Client_Type_ID: id, Client_Type_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                            internalId,
+                            "DELETE",
+                            "Client_Type",
+                            `El usuario interno ${internalId} eliminó lógicamente la Client Type con ID ${id}`
+                        );
             return clientTypeRecord;
         } catch (error) {
             throw new Error(`Error deleting client type: ${error.message}`);

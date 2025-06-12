@@ -1,6 +1,7 @@
 import { Field_Of_Activity } from "../../schemas/parameter_tables/Field_Of_Activity.js";
 // Corregido: Importar Type_Of_Activity en lugar de Subject
 import { Type_Of_Activity } from "../../schemas/parameter_tables/Type_Of_Activity.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class Field_Of_Activity_Model {
 
@@ -35,16 +36,34 @@ export class Field_Of_Activity_Model {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Field_Of_Activity.create(data);
+            const newRecord = await Field_Of_Activity.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Field_Of_Activity",
+                            `El usuario interno ${internalId} creó un nuevo registro de Field_Of_Activity con ID ${newRecord.Field_Of_Activity_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating Field Of Activity: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Field_Of_Activity.bulkCreate(data);
+            const createdRecords = await Field_Of_Activity.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Field_Of_Activity",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Field_Of_Activity.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error bulk creating Fields Of Activity: ${error.message}`);
         }
@@ -81,7 +100,7 @@ export class Field_Of_Activity_Model {
         }
     }
 
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             // Reutiliza getById para asegurar que el registro existe y está activo
             const record = await this.getById(id);
@@ -98,6 +117,13 @@ export class Field_Of_Activity_Model {
                  return null; // O re-obtener para confirmar el estado actual
             }
 
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Field_Of_Activity",
+                `El usuario interno ${internalId} actualizó la Field_Of_Activity con ID ${id}`
+            );
+
             // Devuelve el registro actualizado con la relación incluida
             return await this.getById(id);
         } catch (error) {
@@ -105,7 +131,7 @@ export class Field_Of_Activity_Model {
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             // Reutiliza getById para obtener el registro antes de "eliminarlo"
             const record = await this.getById(id);
@@ -123,6 +149,12 @@ export class Field_Of_Activity_Model {
                  return null;
             }
 
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Field_Of_Activity",
+                `El usuario interno ${internalId} eliminó lógicamente Field_Of_Activity con ID ${id}`
+            );
             // Retorna el registro como estaba *antes* de marcarse como inactivo
             // Opcionalmente, podrías re-consultar si necesitas confirmar el cambio,
             // pero usualmente se retorna el objeto encontrado para indicar qué se "eliminó".

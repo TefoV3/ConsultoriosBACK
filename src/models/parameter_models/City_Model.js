@@ -1,5 +1,6 @@
 import { City } from "../../schemas/parameter_tables/City.js";
 import { Province } from "../../schemas/parameter_tables/Province.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class CityModel {
 
@@ -43,15 +44,22 @@ export class CityModel {
 
 
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await City.create(data);
+            const newRecord = await City.create(data);
+                                await AuditModel.registerAudit(
+                                    internalId,
+                                    "INSERT",
+                                    "City",
+                                    `El usuario interno ${internalId} creó un nuevo registro de City con ID ${newRecord.City_ID}`
+                                );
+                                    return newRecord
         } catch (error) {
             throw new Error(`Error creating city: ${error.message}`);
         }
     }
 
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const cityRecord = await this.getById(id);
             if (!cityRecord) return null;
@@ -61,13 +69,20 @@ export class CityModel {
             });
 
             if (rowsUpdated === 0) return null;
-            return await this.getById(id);
+                    await AuditModel.registerAudit(
+                        internalId,
+                        "UPDATE",
+                        "City",
+                        `El usuario interno ${internalId} actualizó la City con ID ${id}`
+                    );
+
+                    return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating city: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const cityRecord = await this.getById(id);
             if (!cityRecord) return null;
@@ -76,6 +91,13 @@ export class CityModel {
                 { City_Status: false },
                 { where: { City_ID: id, City_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                        internalId,
+                        "DELETE",
+                        "City",
+                        `El usuario interno ${internalId} eliminó lógicamente la enfermedad City con ID ${id}`
+                    );
             return cityRecord;
         } catch (error) {
             throw new Error(`Error deleting city: ${error.message}`);

@@ -1,3 +1,5 @@
+// Importa el modelo de auditoría
+import { AuditModel } from "../../models/AuditModel.js";
 import { Academic_Instruction } from "../../schemas/parameter_tables/Academic_Instruction.js";
 
 export class AcademicInstructionModel {
@@ -22,22 +24,41 @@ export class AcademicInstructionModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Academic_Instruction.create(data);
+            const newRecord = await Academic_Instruction.create(data);
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Academic_Instruction",
+                `El usuario interno ${internalId} creó un nuevo registro de instrucción académica con ID ${newRecord.Academic_Instruction_ID}`
+            );
+
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating academic instruction: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+
+    static async bulkCreate(dataArray, internalId) {
         try {
-            return await Academic_Instruction.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Academic_Instruction.bulkCreate(dataArray);
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Academic_Instruction",
+                `El usuario interno ${internalId} creó ${createdRecords.length} registros de instrucción académica.`
+            );
+
+            return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Academic Instruction: ${error.message}`);
         }
     }
 
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const academic_InstructionRecord = await this.getById(id);
             if (!academic_InstructionRecord) return null;
@@ -47,13 +68,21 @@ export class AcademicInstructionModel {
             });
 
             if (rowsUpdated === 0) return null;
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Academic_Instruction",
+                `El usuario interno ${internalId} actualizó la instrucción académica con ID ${id}`
+            );
+
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating academic instruction: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const academic_InstructionRecord = await this.getById(id);
             if (!academic_InstructionRecord) return null;
@@ -62,6 +91,14 @@ export class AcademicInstructionModel {
                 { Academic_Instruction_Status: false },
                 { where: { Academic_Instruction_ID: id, Academic_Instruction_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Academic_Instruction",
+                `El usuario interno ${internalId} eliminó lógicamente la instrucción académica con ID ${id}`
+            );
+
             return academic_InstructionRecord;
         } catch (error) {
             throw new Error(`Error deleting academic instruction: ${error.message}`);

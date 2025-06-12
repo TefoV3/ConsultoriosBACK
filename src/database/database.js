@@ -57,27 +57,27 @@ import dotenv from "dotenv";
 
 
 //TefoVirtual
-// export const sequelize = new Sequelize(
-//     'ConsultoriosJuridicosevi', 
-//     'Cliente', 
-//     '2444', 
-//     {
-//         host: '192.168.56.101', 
-//         dialect: 'mysql'
-//     }
-// );
+export const sequelize = new Sequelize(
+    'ConsultoriosJuridicosevi', 
+    'Cliente', 
+    '2444', 
+    {
+        host: '192.168.100.105', 
+        dialect: 'mysql'
+    }
+);
 
 
 // // //Francis
-export const sequelize = new Sequelize(
-    'consultoriosjuridicos', 
-    'fvelasco', 
-    'ltic', 
-    {
-       host: '192.168.161.3',
-       dialect: 'mysql'
-    }
-);
+// export const sequelize = new Sequelize(
+//     'consultoriosjuridicos', 
+//     'fvelasco', 
+//     'ltic', 
+//     {
+//        host: '192.168.161.3',
+//        dialect: 'mysql'
+//     }
+// );
 
 // export const sequelize = new Sequelize(
 //     'seguimiento_final3', 

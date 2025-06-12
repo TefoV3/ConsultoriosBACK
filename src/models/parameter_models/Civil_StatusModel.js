@@ -1,4 +1,5 @@
 import { Civil_Status } from "../../schemas/parameter_tables/Civil_Status.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class CivilStatusModel {
 
@@ -22,21 +23,37 @@ export class CivilStatusModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Civil_Status.create(data);
+            const newRecord = await Civil_Status.create(data);
+                                await AuditModel.registerAudit(
+                                    internalId,
+                                    "INSERT",
+                                    "Civil_Statusn",
+                                    `El usuario interno ${internalId} creó un nuevo registro de Civil Status con ID ${newRecord.Civil_Status_ID}`
+                                );
+                                    return newRecord
         } catch (error) {
             throw new Error(`Error creating civil status: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Civil_Status.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Civil_Status.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Civil_Status",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Civil Status.`
+                        );
+            
+                        return createdRecords; // Usa el bulkCreate de Sequelize
         } catch (error) {
             throw new Error(`Error creating Civil Status: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const civilStatusRecord = await this.getById(id);
             if (!civilStatusRecord) return null;
@@ -46,13 +63,20 @@ export class CivilStatusModel {
             });
 
             if (rowsUpdated === 0) return null;
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Civil_Status",
+                `El usuario interno ${internalId} actualizó la Civil Status con ID ${id}`
+            );
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating civil status: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const civilStatusRecord = await this.getById(id);
             if (!civilStatusRecord) return null;
@@ -61,6 +85,14 @@ export class CivilStatusModel {
                 { Civil_Status_Status: false },
                 { where: { Civil_Status_ID: id, Civil_Status_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Civil_Status",
+                `El usuario interno ${internalId} eliminó lógicamente la Civil Status con ID ${id}`
+            );
+
             return civilStatusRecord;
         } catch (error) {
             throw new Error(`Error deleting civil status: ${error.message}`);

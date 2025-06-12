@@ -1,4 +1,5 @@
 import { Country } from "../../schemas/parameter_tables/Country.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class CountryModel {
 
@@ -20,21 +21,39 @@ export class CountryModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Country.create(data);
+            const newRecord = await Country.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Country",
+                            `El usuario interno ${internalId} creó un nuevo registro de Country con ID ${newRecord.Country_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating country: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Country.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Country.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Country",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Country.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Country: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const countryRecord = await this.getById(id);
             if (!countryRecord) return null;
@@ -44,13 +63,21 @@ export class CountryModel {
             });
 
             if (rowsUpdated === 0) return null;
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Country",
+                `El usuario interno ${internalId} actualizó Country con ID ${id}`
+            );
+
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating country: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const countryRecord = await this.getById(id);
             if (!countryRecord) return null;
@@ -59,6 +86,12 @@ export class CountryModel {
                 { Country_Status: false },
                 { where: { Country_ID: id, Country_Status: true }
             });
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Country",
+                `El usuario interno ${internalId} eliminó lógicamente Country con ID ${id}`
+            );
             return countryRecord;
         } catch (error) {
             throw new Error(`Error deleting country: ${error.message}`);

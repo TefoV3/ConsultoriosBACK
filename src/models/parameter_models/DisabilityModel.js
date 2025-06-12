@@ -1,4 +1,5 @@
 import { Disability } from "../../schemas/parameter_tables/Disability.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class DisabilityModel {
 
@@ -21,21 +22,39 @@ export class DisabilityModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Disability.create(data);
+            const newRecord = await Disability.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Disability",
+                            `El usuario interno ${internalId} creó un nuevo registro de instrucción académica con ID ${newRecord.Disability_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating disability: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Disability.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Disability.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Disability",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Disability.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Disability: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const disabilityRecord = await this.getById(id);
             if (!disabilityRecord) return null;
@@ -45,6 +64,14 @@ export class DisabilityModel {
             });
 
             if (rowsUpdated === 0) return null;
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "UPDATE",
+                            "Disability",
+                            `El usuario interno ${internalId} actualizó Disability con ID ${id}`
+                        );
+            
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating disability: ${error.message}`);
@@ -60,6 +87,13 @@ export class DisabilityModel {
                 { Disability_Status: false },
                 { where: { Disability_ID: id, Disability_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                            internalId,
+                            "DELETE",
+                            "Disability",
+                            `El usuario interno ${internalId} eliminó lógicamente Disability con ID ${id}`
+                        );
             return disabilityRecord;
         } catch (error) {
             throw new Error(`Error deleting disability: ${error.message}`);

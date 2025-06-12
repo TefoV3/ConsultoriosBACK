@@ -1,4 +1,5 @@
 import { Income_Level } from "../../schemas/parameter_tables/Income_Level.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class IncomeLevelModel {
     
@@ -21,21 +22,39 @@ export class IncomeLevelModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Income_Level.create(data);
+            const newRecord = await Income_Level.create(data);
+           
+                       await AuditModel.registerAudit(
+                           internalId,
+                           "INSERT",
+                           "Income_Level",
+                           `El usuario interno ${internalId} creó un nuevo registro de Income_Level con ID ${newRecord.Academic_Instruction_ID}`
+                       );
+           
+                       return newRecord;
         } catch (error) {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
     }
-    static async bulkCreate(data) {
+    static async bulkCreate(data, internalId) {
         try {
-            return await Income_Level.bulkCreate(data); // Usa el bulkCreate de Sequelize
+            const createdRecords = await Academic_Instruction.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Income_Level",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Income_Level.`
+                        );
+            
+                        return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Income_Level: ${error.message}`);
         }
     }
-    static async update(id, data) {
+    static async update(id, data, internalId) {
         try {
             const Income_LevelRecord = await this.getById(id);
             if (!Income_LevelRecord) return null;
@@ -45,13 +64,21 @@ export class IncomeLevelModel {
             });
 
             if (rowsUpdated === 0) return null;
-            return await this.getById(id);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "UPDATE",
+                            "Income_Level",
+                            `El usuario interno ${internalId} actualizó la Income_Level con ID ${id}`
+                        );
+            
+                        return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating case Status: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const Income_LevelRecord = await this.getById(id);
             if (!Income_LevelRecord) return null;
@@ -60,6 +87,13 @@ export class IncomeLevelModel {
                 { Income_Level_Status: false },
                 { where: { Income_Level_ID: id, Income_Level_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                            internalId,
+                            "DELETE",
+                            "Income_Level",
+                            `El usuario interno ${internalId} eliminó lógicamente Income_Level con ID ${id}`
+                        );
             return Income_LevelRecord;
         } catch (error) {
             throw new Error(`Error deleting case Status: ${error.message}`);
