@@ -24,12 +24,13 @@ export class SexController {
 
     static async create(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             if (Array.isArray(req.body)) {
-                const createdSex = await SexModel.bulkCreate(req.body);
+                const createdSex = await SexModel.bulkCreate(req.body, internalId);
                 return res.status(201).json(createdSex);
             }
             // Si es un objeto, usa create normal
-            const newSex = await SexModel.create(req.body);
+            const newSex = await SexModel.create(req.body, internalId);
             res.status(201).json(newSex);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -38,8 +39,9 @@ export class SexController {
 
     static async update(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const { id } = req.params;
-            const updatedSex = await SexModel.update(id, req.body);
+            const updatedSex = await SexModel.update(id, req.body, internalId);
             if (!updatedSex) return res.status(404).json({ message: "Sex not found or no changes made" });
             res.status(200).json(updatedSex);
         } catch (error) {
@@ -49,8 +51,9 @@ export class SexController {
 
     static async delete(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const { id } = req.params;
-            const deletedSex = await SexModel.delete(id);
+            const deletedSex = await SexModel.delete(id, internalId);
             if (!deletedSex) return res.status(404).json({ message: "Sex not found" });
             res.status(200).json(deletedSex);
         } catch (error) {

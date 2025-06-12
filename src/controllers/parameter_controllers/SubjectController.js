@@ -24,12 +24,13 @@ export class SubjectController {
 
     static async create(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             if (Array.isArray(req.body)) {
-                const createdSubject = await SubjectModel.bulkCreate(req.body);
+                const createdSubject = await SubjectModel.bulkCreate(req.body,internalId);
                 return res.status(201).json(createdSubject);
             }
             // Si es un objeto, usa create normal
-            const newSubject = await SubjectModel.create(req.body);
+            const newSubject = await SubjectModel.create(req.body,internalId);
             res.status(201).json(newSubject);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -38,8 +39,9 @@ export class SubjectController {
 
     static async update(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const { id } = req.params;
-            const updatedSubject = await SubjectModel.update(id, req.body);
+            const updatedSubject = await SubjectModel.update(id, req.body, internalId);
             if (!updatedSubject) return res.status(404).json({ message: "Subject not found or no changes made" });
             res.status(200).json(updatedSubject);
         } catch (error) {
@@ -49,6 +51,7 @@ export class SubjectController {
 
 static async delete(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const { id } = req.params; // This is Subject_ID
 
             // First, get the Subject to find its name, as Internal_Area is likely a name string
@@ -67,7 +70,7 @@ static async delete(req, res) {
             }
 
             // If no users are associated, proceed with marking the subject as inactive
-            const deletedSubject = await SubjectModel.delete(id);
+            const deletedSubject = await SubjectModel.delete(id,internalId);
             // The original check for deletedSubject is still valid, as SubjectModel.delete might return null
             if (!deletedSubject) return res.status(404).json({ message: "Subject not found or already inactive" }); // Adjusted message
 

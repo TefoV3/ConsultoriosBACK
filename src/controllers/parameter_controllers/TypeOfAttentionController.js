@@ -26,12 +26,13 @@ export class TypeOfAttentionController {
 
     static async create(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             if (Array.isArray(req.body)) {
-                const createdtypeOfAttention = await TypeOfAttentionModel.bulkCreate(req.body);
+                const createdtypeOfAttention = await TypeOfAttentionModel.bulkCreate(req.body, internalId);
                 return res.status(201).json(createdtypeOfAttention);
             }
             // Si es un objeto, usa create normal
-            const typeOfAttention = await TypeOfAttentionModel.create(req.body);
+            const typeOfAttention = await TypeOfAttentionModel.create(req.body, internalId);
             res.status(201).json(typeOfAttention);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -40,7 +41,8 @@ export class TypeOfAttentionController {
 
     static async update(req, res) {
         try {
-            const typeOfAttention = await TypeOfAttentionModel.update(req.params.id, req.body);
+            const internalId = req.headers["internal-id"]
+            const typeOfAttention = await TypeOfAttentionModel.update(req.params.id, req.body, internalId);
             if (!typeOfAttention) {
                 res.status(404).json({ error: `Type of Attention with id ${req.params.id} not found` });
                 return;
@@ -53,7 +55,8 @@ export class TypeOfAttentionController {
 
     static async delete(req, res) {
         try {
-            const typeOfAttention = await TypeOfAttentionModel.delete(req.params.id);
+            const internalId = req.headers["internal-id"]
+            const typeOfAttention = await TypeOfAttentionModel.delete(req.params.id, internalId);
             if (!typeOfAttention) {
                 res.status(404).json({ error: `Type of Attention with id ${req.params.id} not found` });
                 return;
