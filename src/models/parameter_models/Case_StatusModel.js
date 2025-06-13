@@ -24,6 +24,19 @@ export class CaseStatusModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del estado del caso no exista
+            const existingCaseStatus = await Case_Status.findOne({
+                where: { Case_Status_Name: data.Case_Status_Name, Case_Status_Status: true }
+            });
+            if (existingCaseStatus) {
+                throw new Error(`Case Status with name "${data.Case_Status_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Case_Status_Status = true; // Aseguramos que el estado del caso esté activo al crearlo
+            data.Case_Status_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
+
+
+
             const newRecord = await Case_Status.create(data);
             await AuditModel.registerAudit(
                 internalId,

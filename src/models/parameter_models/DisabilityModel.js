@@ -24,13 +24,23 @@ export class DisabilityModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre de la discapacidad no exista
+            const existingDisability = await Disability.findOne({
+                where: { Disability_Name: data.Disability_Name, Disability_Status: true }
+            });
+            if (existingDisability) {
+                throw new Error(`Disability with name "${data.Disability_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Disability_Status = true; // Aseguramos que la discapacidad esté activa al crearlo
+            data.Disability_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Disability.create(data);
             
                         await AuditModel.registerAudit(
                             internalId,
                             "INSERT",
                             "Disability",
-                            `El usuario interno ${internalId} creó un nuevo registro de instrucción académica con ID ${newRecord.Disability_ID}`
+                            `El usuario interno ${internalId} creó un nuevo registro de Discapacidad con ID ${newRecord.Disability_ID}`
                         );
             
                         return newRecord;

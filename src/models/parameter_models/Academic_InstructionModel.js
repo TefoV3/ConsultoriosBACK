@@ -26,6 +26,18 @@ export class AcademicInstructionModel {
 
     static async create(data, internalId) {
         try {
+            //Validar que el nombre de la instrucción académica no exista
+            const existingInstruction = await Academic_Instruction.findOne({ 
+                where: { Academic_Instruction_Name: data.Academic_Instruction_Name, Academic_Instruction_Status: true }
+            });
+            if (existingInstruction) {
+                throw new Error(`Academic instruction with name "${data.Academic_Instruction_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Academic_Instruction_Status = true; // Aseguramos que la instrucción académica esté activa al crearlo
+            data.Academic_Instruction_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
+
+
             const newRecord = await Academic_Instruction.create(data);
 
             await AuditModel.registerAudit(
@@ -61,7 +73,7 @@ export class AcademicInstructionModel {
     static async update(id, data, internalId) {
         try {
             const academic_InstructionRecord = await this.getById(id);
-            if (!academic_InstructionRecord) return null;
+            if (!academic_InstructionRecord) return null;            
 
             const [rowsUpdated] = await Academic_Instruction.update(data, {
                 where: { Academic_Instruction_ID: id, Academic_Instruction_Status: true }

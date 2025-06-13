@@ -25,6 +25,16 @@ export class DerivedByModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del derivado no exista
+            const existingDerivedBy = await Derived_By.findOne({
+                where: { Derived_By_Name: data.Derived_By_Name, Derived_By_Status: true }
+            });
+            if (existingDerivedBy) {
+                throw new Error(`Derived By with name "${data.Derived_By_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Derived_By_Status = true; // Aseguramos que el derivado esté activo al crearlo
+            data.Derived_By_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Derived_By.create(data);
             
                         await AuditModel.registerAudit(

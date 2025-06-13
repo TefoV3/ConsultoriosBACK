@@ -24,6 +24,16 @@ export class ClientTypeModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del tipo de cliente no exista
+            const existingClientType = await Client_Type.findOne({
+                where: { Client_Type_Name: data.Client_Type_Name, Client_Type_Status: true }
+            });
+            if (existingClientType) {
+                throw new Error(`Client Type with name "${data.Client_Type_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Client_Type_Status = true; // Aseguramos que el tipo de cliente esté activo al crearlo
+            data.Client_Type_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Client_Type.create(data);
             
                         await AuditModel.registerAudit(

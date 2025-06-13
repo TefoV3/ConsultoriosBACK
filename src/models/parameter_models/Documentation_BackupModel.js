@@ -25,13 +25,23 @@ export class DocumentationBackupModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del backup no exista
+            const existingBackup = await Documentation_Backup.findOne({
+                where: { Documentation_Backup_Name: data.Documentation_Backup_Name, Documentation_Backup_Status: true }
+            });
+            if (existingBackup) {
+                throw new Error(`Documentation Backup with name "${data.Documentation_Backup_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Documentation_Backup_Status = true; // Aseguramos que el backup esté activo al crearlo
+            data.Documentation_Backup_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Documentation_Backup.create(data);
             
                         await AuditModel.registerAudit(
                             internalId,
                             "INSERT",
                             "Documentation_Backup",
-                            `El usuario interno ${internalId} creó un nuevo registro de instrucción académica con ID ${newRecord.Documentation_Backup_ID}`
+                            `El usuario interno ${internalId} creó un nuevo registro de documentosd de respaldo con ID ${newRecord.Documentation_Backup_ID}`
                         );
             
                         return newRecord;

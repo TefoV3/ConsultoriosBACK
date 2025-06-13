@@ -25,6 +25,16 @@ export class EthnicityModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre de la etnia no exista
+            const existingEthnicity = await Ethnicity.findOne({
+                where: { Ethnicity_Name: data.Ethnicity_Name, Ethnicity_Status: true }
+            });
+            if (existingEthnicity) {
+                throw new Error(`Ethnicity with name "${data.Ethnicity_Name}" already exists.`);
+            }
+
+
+
             const newRecord = await Ethnicity.create(data);
             
                         await AuditModel.registerAudit(

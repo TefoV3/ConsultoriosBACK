@@ -24,6 +24,16 @@ export class FamilyGroupModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del grupo familiar no exista
+            const existingFamilyGroup = await Family_Group.findOne({
+                where: { Family_Group_Name: data.Family_Group_Name, Family_Group_Status: true }
+            });
+            if (existingFamilyGroup) {
+                throw new Error(`Family Group with name "${data.Family_Group_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Family_Group_Status = true; // Aseguramos que el grupo familiar esté activo al crearlo
+            data.Family_Group_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Family_Group.create(data);
             
                         await AuditModel.registerAudit(

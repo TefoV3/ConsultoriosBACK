@@ -24,6 +24,16 @@ export class IncomeLevelModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del nivel de ingreso no exista
+            const existingIncomeLevel = await Income_Level.findOne({
+                where: { Income_Level_Name: data.Income_Level_Name, Income_Level_Status: true }
+            });
+            if (existingIncomeLevel) {
+                throw new Error(`Income Level with name "${data.Income_Level_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Income_Level_Status = true; // Aseguramos que el nivel de ingreso esté activo al crearlo
+            data.Income_Level_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Income_Level.create(data);
            
                        await AuditModel.registerAudit(

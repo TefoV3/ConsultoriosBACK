@@ -25,6 +25,16 @@ export class CivilStatusModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del estado civil no exista
+            const existingCivilStatus = await Civil_Status.findOne({
+                where: { Civil_Status_Name: data.Civil_Status_Name, Civil_Status_Status: true }
+            });
+            if (existingCivilStatus) {
+                throw new Error(`Civil Status with name "${data.Civil_Status_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Civil_Status_Status = true; // Aseguramos que el estado civil esté activo al crearlo
+            data.Civil_Status_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Civil_Status.create(data);
                                 await AuditModel.registerAudit(
                                     internalId,

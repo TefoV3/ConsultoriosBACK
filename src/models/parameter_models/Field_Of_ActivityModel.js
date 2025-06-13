@@ -38,6 +38,16 @@ export class Field_Of_Activity_Model {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del campo de actividad no exista
+            const existingFieldOfActivity = await Field_Of_Activity.findOne({
+                where: { Field_Of_Activity_Name: data.Field_Of_Activity_Name, Field_Of_Activity_Status: true }
+            });
+            if (existingFieldOfActivity) {
+                throw new Error(`Field Of Activity with name "${data.Field_Of_Activity_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Field_Of_Activity_Status = true; // Aseguramos que el campo de actividad esté activo al crearlo
+            data.Field_Of_Activity_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Field_Of_Activity.create(data);
             
                         await AuditModel.registerAudit(

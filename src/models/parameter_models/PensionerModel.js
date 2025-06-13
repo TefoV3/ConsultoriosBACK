@@ -24,6 +24,16 @@ export class PensionerModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del pensionado no exista
+            const existingPensioner = await Pensioner.findOne({
+                where: { Pensioner_Name: data.Pensioner_Name, Pensioner_Status: true }
+            });
+            if (existingPensioner) {
+                throw new Error(`Pensioner with name "${data.Pensioner_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Pensioner_Status = true; // Aseguramos que el pensionado esté activo al crearlo    
+            data.Pensioner_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Pensioner.create(data);
             
                         await AuditModel.registerAudit(

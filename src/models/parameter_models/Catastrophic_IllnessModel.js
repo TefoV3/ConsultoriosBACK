@@ -23,6 +23,18 @@ export class CatastrophicIllnessModel {
         
             static async create(data, internalId) {
                 try {
+                    // Validar que el nombre de la enfermedad catastrófica no exista
+                    const existingIllness = await Catastrophic_Illness.findOne({
+                        where: { Catastrophic_Illness_Name: data.Catastrophic_Illness_Name, Catastrophic_Illness_Status: true }
+                    });
+                    if (existingIllness) {
+                        throw new Error(`Catastrophic illness with name "${data.Catastrophic_Illness_Name}" already exists.`);
+                    }
+                    // Aseguramos que el estado esté activo al crear
+                    data.Catastrophic_Illness_Status = true; // Aseguramos que la enfermedad catastrófica esté activa al crearlo
+                    data.Catastrophic_Illness_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
+
+
                     const newRecord = await Catastrophic_Illness.create(data);
                     await AuditModel.registerAudit(
                         internalId,

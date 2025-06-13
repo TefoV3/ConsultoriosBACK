@@ -25,6 +25,16 @@ export class ComplexityModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre de la complejidad no exista
+            const existingComplexity = await Complexity.findOne({
+                where: { Complexity_Name: data.Complexity_Name, Complexity_Status: true }
+            });
+            if (existingComplexity) {
+                throw new Error(`Complexity with name "${data.Complexity_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Complexity_Status = true; // Aseguramos que la complejidad esté activa al crearlo
+            data.Complexity_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Complexity.create(data);
             
                         await AuditModel.registerAudit(

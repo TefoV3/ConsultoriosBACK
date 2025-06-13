@@ -25,6 +25,16 @@ export class VulnerableSituationModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre no exista
+            const existingRecord = await Vulnerable_Situation.findOne({
+                where: {
+                    Vulnerable_Situation_Name: data.Vulnerable_Situation_Name,
+                    Vulnerable_Situation_Status: true
+                }
+            });
+            if (existingRecord) {
+                throw new Error(`Ya existe un registro de Vulnerable_Situation con el nombre ${data.Vulnerable_Situation_Name}`);
+            }
             const newRecord = await Vulnerable_Situation.create(data);
             
                         await AuditModel.registerAudit(

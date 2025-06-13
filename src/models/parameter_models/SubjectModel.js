@@ -23,6 +23,14 @@ export class SubjectModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del subject no exista
+            const existingSubject = await Subject.findOne({
+                where: { Subject_Name: data.Subject_Name, Subject_Status: true }
+            });
+            if (existingSubject) {
+                throw new Error(`Subject with name "${data.Subject_Name}" already exists.`);
+            }
+            // Crear el nuevo registro
             const newRecord = await Subject.create(data);
             
                         await AuditModel.registerAudit(

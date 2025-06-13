@@ -46,6 +46,20 @@ export class CityModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre de la ciudad no exista en la misma provincia
+            const existingCity = await City.findOne({
+                where: {
+                    City_Name: data.City_Name,
+                    Province_FK: data.Province_FK,
+                    City_Status: true
+                }
+            });
+            if (existingCity) {
+                throw new Error(`City with name "${data.City_Name}" already exists in the specified province.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.City_Status = true; // Aseguramos que la ciudad esté activa al crearlo
+            data.City_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await City.create(data);
                                 await AuditModel.registerAudit(
                                     internalId,

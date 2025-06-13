@@ -34,8 +34,19 @@ export class TopicModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
+            // Validar que el nombre no exista
+            const existingRecord = await Topic.findOne({
+                where: {
+                    Topic_Name: data.Topic_Name,
+                    Subject_FK: data.Subject_FK,
+                    Topic_Status: true
+                }
+            });
+            if (existingRecord) {
+                throw new Error(`Ya existe un registro de Topic con el nombre ${data.Topic_Name} para el Subject con ID ${data.Subject_FK}`);
+            }
             const newRecord = await Topic.create(data);
             
                         await AuditModel.registerAudit(

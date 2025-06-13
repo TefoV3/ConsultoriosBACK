@@ -25,6 +25,16 @@ export class SexModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del sexo no exista
+            const existingSex = await Sex.findOne({
+                where: { Sex_Name: data.Sex_Name, Sex_Status: true }
+            });
+
+            if (existingSex) {
+                throw new Error(`Sex with name "${data.Sex_Name}" already exists.`);
+            }
+
+
             const newRecord = await Sex.create(data);
             
                         await AuditModel.registerAudit(

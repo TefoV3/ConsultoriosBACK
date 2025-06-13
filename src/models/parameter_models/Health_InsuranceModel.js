@@ -24,6 +24,16 @@ export class HealthInsuranceModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del seguro de salud no exista
+            const existingHealthInsurance = await Health_Insurance.findOne({
+                where: { Health_Insurance_Name: data.Health_Insurance_Name, Health_Insurance_Status: true }
+            });
+            if (existingHealthInsurance) {
+                throw new Error(`Health Insurance with name "${data.Health_Insurance_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Health_Insurance_Status = true; // Aseguramos que el seguro de salud esté activo al crearlo
+            data.Health_Insurance_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Health_Insurance.create(data);
             
                         await AuditModel.registerAudit(

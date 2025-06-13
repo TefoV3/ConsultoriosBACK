@@ -24,6 +24,16 @@ export class OccupationsModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre de la ocupación no exista
+            const existingOccupation = await Occupations.findOne({
+                where: { Occupation_Name: data.Occupation_Name, Occupation_Status: true }
+            });
+            if (existingOccupation) {
+                throw new Error(`Occupation with name "${data.Occupation_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Occupation_Status = true; // Aseguramos que la ocupación esté activa al crearlo
+            data.Occupation_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Occupations.create(data);
             
                         await AuditModel.registerAudit(

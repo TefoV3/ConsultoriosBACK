@@ -23,6 +23,13 @@ export class ZoneModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre de la zona no exista
+            const existingZone = await Zone.findOne({
+                where: { Zone_Name: data.Zone_Name, Zone_Status: true }
+            });
+            if (existingZone) {
+                throw new Error(`Zone with name "${data.Zone_Name}" already exists.`);
+            }
             const newRecord = await Zone.create(data);
             
                         await AuditModel.registerAudit(

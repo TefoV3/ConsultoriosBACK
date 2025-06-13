@@ -23,6 +23,16 @@ export class CountryModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del país no exista
+            const existingCountry = await Country.findOne({
+                where: { Country_Name: data.Country_Name, Country_Status: true }
+            });
+            if (existingCountry) {
+                throw new Error(`Country with name "${data.Country_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Country_Status = true; // Aseguramos que el país esté activo al crearlo
+            data.Country_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Country.create(data);
             
                         await AuditModel.registerAudit(

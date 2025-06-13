@@ -24,6 +24,16 @@ export class FamilyIncomeModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del ingreso familiar no exista
+            const existingFamilyIncome = await Family_Income.findOne({
+                where: { Family_Income_Name: data.Family_Income_Name, Family_Income_Status: true }
+            });
+            if (existingFamilyIncome) {
+                throw new Error(`Family Income with name "${data.Family_Income_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Family_Income_Status = true; // Aseguramos que el ingreso familiar esté activo al crearlo
+            data.Family_Income_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Family_Income.create(data);
             
                         await AuditModel.registerAudit(

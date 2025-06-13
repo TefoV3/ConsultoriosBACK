@@ -25,6 +25,16 @@ export class PeriodTypeModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del tipo de periodo no exista
+            const existingPeriodType = await Period_Type.findOne({
+                where: { Period_Type_Name: data.Period_Type_Name, Period_Type_Status: true }
+            });
+            if (existingPeriodType) {
+                throw new Error(`Period Type with name "${data.Period_Type_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Period_Type_Status = true; // Aseguramos que el tipo de periodo esté activo al crearlo
+            data.Period_Type_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Period_Type.create(data);
             
                         await AuditModel.registerAudit(

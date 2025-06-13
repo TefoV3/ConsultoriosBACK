@@ -24,6 +24,16 @@ export class TypeOfAttentionModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre no exista
+            const existingRecord = await Type_Of_Attention.findOne({
+                where: {
+                    Type_Of_Attention_Name: data.Type_Of_Attention_Name,
+                    Type_Of_Attention_Status: true
+                }   
+            });
+            if (existingRecord) {
+                throw new Error(`Ya existe un registro de Type_Of_Attention con el nombre ${data.Type_Of_Attention_Name}`);
+            }
             const newRecord = await Type_Of_Attention.create(data);
             
                         await AuditModel.registerAudit(

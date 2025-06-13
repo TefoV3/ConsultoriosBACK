@@ -24,6 +24,16 @@ export class OwnAssetsModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre del activo no exista
+            const existingOwnAsset = await Own_Assets.findOne({
+                where: { Own_Assets_Name: data.Own_Assets_Name, Own_Assets_Status: true }
+            });
+            if (existingOwnAsset) {
+                throw new Error(`Own Asset with name "${data.Own_Assets_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Own_Assets_Status = true; // Aseguramos que el activo esté activo al crearlo
+            data.Own_Assets_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Own_Assets.create(data);
             
                         await AuditModel.registerAudit(

@@ -24,6 +24,16 @@ export class TypeOfActivityModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre no exista
+            const existingRecord = await Type_Of_Activity.findOne({
+                where: {
+                    Type_Of_Activity_Name: data.Type_Of_Activity_Name,
+                    Type_Of_Activity_Status: true
+                }
+            });
+            if (existingRecord) {
+                throw new Error(`Ya existe un registro de Type_Of_Activity con el nombre ${data.Type_Of_Activity_Name}`);
+            }
             const newRecord = await Type_Of_Activity.create(data);
             
                         await AuditModel.registerAudit(

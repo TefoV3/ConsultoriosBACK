@@ -24,6 +24,16 @@ export class TypeOfHousingModel {
 
     static async create(data, internalId) {
         try {
+            // Validar que el nombre no exista
+            const existingRecord = await Type_Of_Housing.findOne({
+                where: {
+                    Type_Of_Housing_Name: data.Type_Of_Housing_Name,
+                    Type_Of_Housing_Status: true
+                }
+            });
+            if (existingRecord) {
+                throw new Error(`Ya existe un registro de Type_Of_Housing con el nombre ${data.Type_Of_Housing_Name}`);
+            }
             const newRecord = await Type_Of_Housing.create(data);
             
                         await AuditModel.registerAudit(
