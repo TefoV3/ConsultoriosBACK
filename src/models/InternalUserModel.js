@@ -104,9 +104,16 @@ export class InternalUserModel {
 
     //CREATE, UPDATE AND DELETE METHODS
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
             const newRecord = await InternalUser.create(data);
+            // Registrar en auditoría la creación
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "InternalUser",
+                `El usuario interno ${internalId} creó un nuevo registro de Usuario Interno con ID ${newRecord.Internal_ID}`
+            );
             return newRecord;
             
         } catch (error) {
@@ -132,9 +139,8 @@ export class InternalUserModel {
       }
       
 
-    static async update(id, data, internalUserID) {
+    static async update(id, data, internalID) {
         try {
-            const internalId = internalUserID || getUserId(); // Obtener el ID del usuario activo desde la sesión
             const internalUser = await this.getById(id);
 
             if (!internalUser) return null;
@@ -155,13 +161,14 @@ export class InternalUserModel {
             });
 
             if (rowsUpdated === 0) return null;
-            // 🔹 Registrar en auditoría la actualización
-          /*  await AuditModel.registerAudit(
-                internalId,
+            // Registrar en auditoría la actualización
+            await AuditModel.registerAudit(
+                internalID,
                 "UPDATE",
-                "LivingGroup",
-                `El usuario interno ${internalId} actualizó el registro de Usuario Interno con ID ${id}`
-            );*/
+                "InternalUser",
+                `El usuario interno ${internalID} actualizó el usuario interno con ID ${id}`
+            );
+
             return await this.getById(id);
         } catch (error) {
             console.log(error);

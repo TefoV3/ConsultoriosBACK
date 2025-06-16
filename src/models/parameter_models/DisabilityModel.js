@@ -88,7 +88,7 @@ export class DisabilityModel {
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const disabilityRecord = await this.getById(id);
             if (!disabilityRecord) return null;

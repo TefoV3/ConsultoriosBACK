@@ -124,6 +124,8 @@ export class InternalUserController {
   static async createInternalUser(req, res) {
     try {
       // Definir el esquema de validación con Zod
+      const internalId = req.headers["internal-id"]
+      console.log("Internal ID:", internalId);
       const internalUserSchema = z.object({
         Internal_ID: z.string().min(1, { message: "El ID es obligatorio" }),
         Internal_Name: z
@@ -193,7 +195,7 @@ export class InternalUserController {
 
 
 
-      const internalUser = await InternalUserModel.create(dataToCreate);
+      const internalUser = await InternalUserModel.create(dataToCreate, internalId);
 
       // --- Send welcome email ---
       try {
