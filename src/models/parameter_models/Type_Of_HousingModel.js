@@ -39,8 +39,8 @@ export class TypeOfHousingModel {
                         await AuditModel.registerAudit(
                             internalId,
                             "INSERT",
-                            "Academic_Instruction",
-                            `El usuario interno ${internalId} creó un nuevo registro de instrucción académica con ID ${newRecord.Type_Of_Housing_ID}`
+                            "Type_Of_Housing",
+                            `El usuario interno ${internalId} creó un nuevo registro de Type_Of_Housing con ID ${newRecord.Type_Of_Housing_ID}`
                         );
             
                         return newRecord;

@@ -125,7 +125,7 @@ export class AssignmentModel {
                 internalId, 
                 "INSERT",
                 "Assignment",
-                `El usuario interno ${internalId} creó la asignación con ID ${newAssignment.Assignment_Id}`
+                `El usuario interno ${internalId} creó la asignación con ID ${newAssignment.Assignment_ID}`
             );
 
             return newAssignment;

@@ -30,7 +30,7 @@ export class PracticalHoursController {
                 return res.status(201).json(createdPracticalHours);
             }
             // Si es un objeto, usa create normal
-            const newPracticalHours = await PracticalHoursModel.create(req.body);
+            const newPracticalHours = await PracticalHoursModel.create(req.body, internalId);
             res.status(201).json(newPracticalHours);
         } catch (error) {
             res.status(500).json({ error: error.message });

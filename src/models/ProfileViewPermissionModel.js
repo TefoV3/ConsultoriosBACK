@@ -1,7 +1,7 @@
 import { Profiles } from "../schemas/parameter_tables/Profiles.js";
 import { ProfileViewPermission } from "../schemas/Profile_View_Permission.js";
 import { sequelize } from "../database/database.js";
-
+import { AuditModel } from "../models/AuditModel.js";
 
 const ALL_APPLICATION_VIEWS = [
 
@@ -121,8 +121,10 @@ export class ProfilePermissionModel {
      * @param {Array} permissionsToUpdate - Array de { View_Name, Has_Permission }.
      * @returns {Promise<Object>} - Mensaje de éxito.
      */
-    static async updateByProfileId(profileId, permissionsToUpdate) {
+    static async updateByProfileId(profileId, permissionsToUpdate, internalUser) {
         const transaction = await sequelize.transaction();
+        const internalId = internalUser || getUserId();
+
         try {
             const profile = await Profiles.findByPk(profileId, { transaction });
             if (!profile) {
@@ -151,6 +153,12 @@ export class ProfilePermissionModel {
             }
 
             await transaction.commit();
+            await AuditModel.registerAudit(
+                            internalId, 
+                            "UPDATE",
+                            "Profile_View_Permission",
+                            `El usuario interno ${internalId} actualizó los permisos del rol de ${profile.Profile_Name}`
+                        );
             return { message: `Permisos para el perfil '${profile.Profile_Name}' actualizados.` };
 
         } catch (error) {

@@ -29,7 +29,7 @@ export class ScheduleController {
                 return res.status(201).json(createdschedule);
             }
             // Si es un objeto, usa create normal
-            const schedule = await ScheduleModel.create(req.body);
+            const schedule = await ScheduleModel.create(req.body, internalId);
             res.status(201).json(schedule);
         } catch (error) {
             res.status(500).json({ error: error.message });

@@ -22,9 +22,10 @@ export class ProfilePermissionController {
         try {
             const { profileId } = req.params;
             const permissionsData = req.body;
+            const internalId = req.headers["internal-id"];
             
             // Llama al método estático del modelo para actualizar los datos
-            const result = await ProfilePermissionModel.updateByProfileId(profileId, permissionsData);
+            const result = await ProfilePermissionModel.updateByProfileId(profileId, permissionsData, internalId);
             res.json(result);
         } catch (error) {
             // Manejo de errores que puedan venir del modelo
