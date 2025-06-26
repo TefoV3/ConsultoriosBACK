@@ -55,6 +55,10 @@ export const Social_Work = sequelize.define('Social_Work', {
         type: DataTypes.TEXT,
         allowNull: true
     },
+    SW_TypeOfDisease: {
+        type: DataTypes.STRING(100),
+        allowNull: true
+    },
     SW_WorkAdress: {
         type: DataTypes.STRING(250),
         allowNull: true
@@ -99,8 +103,12 @@ export const Social_Work = sequelize.define('Social_Work', {
         type: DataTypes.STRING(50),
         allowNull: true
     },
+    SW_TypeOfID: {
+        type: DataTypes.STRING(50),
+        allowNull: true
+    },
     SW_CounterpartID: {
-        type: DataTypes.STRING(10),
+        type: DataTypes.STRING(15),
         allowNull: true
     },
     SW_CounterpartRelation: {

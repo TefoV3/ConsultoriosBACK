@@ -191,4 +191,25 @@ export class SocialWorkController {
                 }
             }
         }
+    static async generateWordReport(req, res) {
+    try {
+      const { processNumber } = req.query;
+      if (!processNumber) {
+        return res.status(400).json({ message: "processNumber is required." });
+      }
+      const wordBuffer = await Social_WorkModel.generateWordForCase(processNumber);
+
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      );
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="Reporte_TrabajoSocial_${processNumber}.docx"`
+      );
+      res.send(wordBuffer);
+    } catch (error) {
+      res.status(500).json({ message: "Error al generar el documento Word.", error: error.message });
+    }
+  }
 }
