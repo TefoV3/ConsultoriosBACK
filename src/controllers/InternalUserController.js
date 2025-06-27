@@ -149,6 +149,16 @@ export class InternalUserController {
         Internal_Huella: z.any().optional().nullable(), // <-- Campo opcional y nullable
       });
 
+      //Validar que no haya un usuario con el mismo ID y correo electrónico
+      const existingUserById = await InternalUserModel.getById(req.body.Internal_ID);
+      const existingUserByEmail = await InternalUserModel.getByEmail(req.body.Internal_Email);
+      if (existingUserById) {
+        return res.status(400).json({ message: "Ya existe un usuario con este ID." });
+      }
+      if (existingUserByEmail) {
+        return res.status(400).json({ message: "Ya existe un usuario con este correo electrónico." });
+      }
+
       // Validar el request body
       const parseResult = internalUserSchema.safeParse(req.body);
       console.log(parseResult);
