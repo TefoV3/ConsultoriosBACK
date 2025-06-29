@@ -378,7 +378,7 @@ export class InitialConsultationsModel {
         userId,
         "INSERT",
         "Initial_Consultations",
-        `El usuario interno ${userId} creó la consulta inicial ${data.Init_Code} para el usuario ${data.User_ID}`
+        `El usuario interno ${userId} creó la consulta inicial ${newConsultation.Init_Code} para el usuario ${data.User_ID}`
       );
 
       // 🔹 Crear la evidencia asociada
@@ -406,7 +406,7 @@ export class InitialConsultationsModel {
         userId,
         "INSERT",
         "Evidences",
-        `El usuario interno ${userId} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
+        `El usuario interno ${userId} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${newConsultation.Init_Code}`
       );
 
 // --- Lógica para crear el registro en Social_Work si corresponde ---
