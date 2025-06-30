@@ -987,7 +987,7 @@ if (newConsultation.Init_SocialWork === true) {
         workbook.created = new Date();
         workbook.modified = new Date();
 
-        const worksheet = workbook.addWorksheet('Reporte Consultas Iniciales');
+        const worksheet = workbook.addWorksheet('Reporte Primeras Consultas');
 
         // --- Define Column Keys and Main Headers (Row 1) ---
         const columnsDefinition = [
@@ -999,7 +999,7 @@ if (newConsultation.Init_SocialWork === true) {
              { header: 'Apellidos', key: 'User_LastName', width: 25 },
              { header: 'Edad', key: 'User_Age', width: 10 },
              { header: 'Género', key: 'User_Gender', width: 15 },
-             { header: 'Fecha Nacimiento', key: 'Init_EndDate', width: 18, style: { numFmt: 'dd/mm/yyyy' } },
+             { header: 'Fecha Nacimiento', key: 'User_BirthDate', width: 18, style: { numFmt: 'dd/mm/yyyy' } },
              { header: 'Nacionalidad', key: 'User_Nationality', width: 20 },
              { header: 'Etnia', key: 'User_Ethnicity', width: 15 },
              { header: 'Provincia', key: 'User_Province', width: 15 },
@@ -1059,7 +1059,7 @@ if (newConsultation.Init_SocialWork === true) {
         // --- Add Sub-Headers (Row 2) ---
         // ... (existing sub-header logic) ...
         worksheet.insertRow(2, []); // Insert a blank row at position 2
-        const mergeRanges = { personal: 'A2:K2', contacto: 'L2:S2', socioEco: 'T2:AI2', salud: 'AJ2:AM2', consulta: 'AN2:BF2' };
+        const mergeRanges = { personal: 'A2:K2', contacto: 'L2:S2', socioEco: 'T2:AI2', salud: 'AJ2:AL2', consulta: 'AM2:BD2' };
         worksheet.mergeCells(mergeRanges.personal); worksheet.getCell('A2').value = 'DATOS PERSONALES DEL USUARIO';
         worksheet.mergeCells(mergeRanges.contacto); worksheet.getCell('L2').value = 'CONTACTO';
         worksheet.mergeCells(mergeRanges.socioEco); worksheet.getCell('T2').value = 'DATOS DEMOGRÁFICOS Y SOCIOECONÓMICOS';
@@ -1078,7 +1078,7 @@ if (newConsultation.Init_SocialWork === true) {
         worksheet.getRow(2).eachCell({ includeEmpty: true }, cell => { cell.style = subHeaderStyleDefault; });
         worksheet.getRow(2).height = 20;
 
-        const consultaStartCol = 'AN'; const consultaEndCol = 'BF';
+        const consultaStartCol = 'AM'; const consultaEndCol = 'BD';
         const consultaStartColNum = worksheet.getColumn(consultaStartCol).number;
         const consultaEndColNum = worksheet.getColumn(consultaEndCol).number;
         // Apply specific styles to Row 1 (Main Header) for Consulta section
@@ -1139,9 +1139,26 @@ if (newConsultation.Init_SocialWork === true) {
         // Add data rows starting from Row 3
         rowsToAdd.forEach((rowData, index) => {
             const row = worksheet.addRow(rowData);
+            
+            // Apply alternating row colors
             if ((index + 3) % 2 === 0) {
                  row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } };
              }
+             
+             // Center align all cells in this row
+             row.eachCell({ includeEmpty: true }, (cell) => {
+                 cell.alignment = { 
+                     vertical: 'middle', 
+                     horizontal: 'center' 
+                 };
+                 // Add borders to each cell
+                 cell.border = {
+                     top: { style: 'thin' },
+                     left: { style: 'thin' },
+                     bottom: { style: 'thin' },
+                     right: { style: 'thin' }
+                 };
+             });
         });
 
 
