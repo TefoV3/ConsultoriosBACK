@@ -808,123 +808,221 @@ if (newConsultation.Init_SocialWork === true) {
           "User_LastName",
           "User_Age",
           "User_Phone",
+          "User_IncomeLevel",
+          "User_AcademicInstruction",
+          "User_Profession",
+          "User_VulnerableSituation"
         ],
       });
 
+      // Función para limpiar y normalizar texto HTML
+      const cleanHtmlText = (htmlText) => {
+        if (!htmlText || typeof htmlText !== 'string') return '';
+        
+        return htmlText
+          // Limpiar entidades HTML
+          .replace(/&nbsp;/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&apos;/g, "'")
+          // Remover etiquetas HTML
+          .replace(/<\/?[^>]+(>|$)/g, ' ')
+          // Normalizar espacios
+          .replace(/\s+/g, ' ')
+          .replace(/\n/g, ' ')
+          .trim();
+      };
+
+      // Función optimizada para dividir texto en líneas
+      const wrapTextForPDF = (text, maxWidth, font, fontSize) => {
+        const cleanText = cleanHtmlText(text);
+        if (!cleanText) return [];
+        
+        const words = cleanText.split(' ').filter(word => word.length > 0);
+        const lines = [];
+        let currentLine = '';
+
+        for (const word of words) {
+          const testLine = currentLine + (currentLine ? ' ' : '') + word;
+          
+          try {
+            const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+            
+            if (testWidth <= maxWidth) {
+              currentLine = testLine;
+            } else {
+              if (currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+              } else {
+                // Para palabras muy largas, intentar dividirlas
+                if (word.length > 30) {
+                  const chunks = [];
+                  let chunk = '';
+                  
+                  for (const char of word) {
+                    const testChunk = chunk + char;
+                    const chunkWidth = font.widthOfTextAtSize(testChunk, fontSize);
+                    
+                    if (chunkWidth <= maxWidth) {
+                      chunk = testChunk;
+                    } else {
+                      if (chunk) chunks.push(chunk);
+                      chunk = char;
+                    }
+                  }
+                  
+                  if (chunk) chunks.push(chunk);
+                  lines.push(...chunks.slice(0, -1));
+                  currentLine = chunks[chunks.length - 1] || '';
+                } else {
+                  currentLine = word;
+                }
+              }
+            }
+          } catch (error) {
+            console.warn('Error midiendo texto, usando estimación:', error.message);
+            // Fallback usando estimación de caracteres
+            const estimatedWidth = testLine.length * fontSize * 0.6;
+            if (estimatedWidth <= maxWidth) {
+              currentLine = testLine;
+            } else {
+              if (currentLine) lines.push(currentLine);
+              currentLine = word;
+            }
+          }
+        }
+        
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+        
+        return lines;
+      };
+
+      // Validar datos del usuario
       if (!userData) {
         throw new Error("No se encontraron datos del usuario.");
       }
 
-      console.log("Datos del usuario:", userData);
-
-      // Limpiar etiquetas HTML del campo Init_Notes
-      const cleanNotes = data.Init_Notes.replace(/&nbsp;/g, " ")
-        .replace(/<\/?[^>]+(>|$)/g, "")
-        .trim();
-
-      // Cargar la plantilla PDF
-      const templatePath = "./src/docs/FICHA DE ATENCION.pdf"; //Ruta de la plantilla
+      // Cargar y configurar el PDF
+      const templatePath = "./src/docs/FICHA DE ATENCION.pdf";
       const templateBytes = fs.readFileSync(templatePath);
-
-      // Crear un nuevo documento PDF basado en la plantilla
       const pdfDoc = await PDFDocument.load(templateBytes);
-
-      // Registrar fontkit antes de usarlo
+      
+      // Registrar fontkit
       pdfDoc.registerFontkit(fontkit);
 
-      // Cargar la fuente Aptos
-      const AptosBytes = fs.readFileSync("./src/docs/Aptos.ttf"); // Ruta de la fuente
-      const AptosFont = await pdfDoc.embedFont(AptosBytes);
+      // Cargar fuente con manejo de errores
+      let font;
+      try {
+        const fontBytes = fs.readFileSync("./src/docs/Aptos.ttf");
+        font = await pdfDoc.embedFont(fontBytes);
+        console.log('Fuente Aptos cargada correctamente');
+      } catch (error) {
+        console.error('Error cargando fuente Aptos:', error.message);
+        throw new Error('No se pudo cargar la fuente requerida para el PDF');
+      }
 
+      // Configuración general
       const userTimezone = 'America/Guayaquil'; 
       const formattedInitDate = data.Init_Date
         ? moment(data.Init_Date).tz(userTimezone).format('DD/MM/YYYY') 
         : "";
 
-      // Obtener la primera página del PDF
       const pages = pdfDoc.getPages();
       const firstPage = pages[0];
-      const fontSize = 11; // Tamaño de fuente para los textos
+      const fontSize = 11;
 
-      // Rellenar los campos con los datos proporcionados
-      firstPage.drawText(`${data.User_ID}`, {
-        x: 113,
-        y: 655,
-        size: fontSize,
-        font: AptosFont,
-      });
-
-      firstPage.drawText(
-        `${userData.User_FirstName} ${userData.User_LastName}`,
-        {
-          x: 123,
-          y: 632,
-          size: fontSize,
-          font: AptosFont,
+      // Función helper para dibujar texto con validación
+      const drawTextSafely = (text, options) => {
+        const safeText = text ? String(text).trim() : '';
+        if (safeText) {
+          firstPage.drawText(safeText, { ...options, font });
         }
-      );
+      };
 
-      firstPage.drawText(
-        formattedInitDate, // Use the formatted date string
-        {
-          x: 397,
-          y: 655,
-          size: fontSize,
-          font: AptosFont,
-        }
-      );
-
-      firstPage.drawText(`${userData.User_Age}`, {
-        x: 391,
-        y: 632,
-        size: fontSize,
-        font: AptosFont,
+      // COLUMNA 1 - Datos del usuario
+      drawTextSafely(`${userData.User_FirstName} ${userData.User_LastName}`, {
+        x: 156, y: 736, size: fontSize
+      });
+      
+      drawTextSafely(data.User_ID, {
+        x: 156, y: 715, size: fontSize
+      });
+      
+      drawTextSafely(userData.User_Phone, {
+        x: 156, y: 690, size: fontSize
+      });
+      
+      drawTextSafely(data.Init_Subject, {
+        x: 156, y: 660, size: fontSize
+      });
+      
+      drawTextSafely(data.Init_Service, {
+        x: 156, y: 620, size: fontSize
       });
 
-      firstPage.drawText(`${userData.User_Phone}`, {
-        x: 120,
-        y: 608,
-        size: fontSize,
-        font: AptosFont,
+      // COLUMNA 2 - Información adicional
+      drawTextSafely(formattedInitDate, {
+        x: 420, y: 736, size: fontSize
+      });
+      
+      drawTextSafely(userData.User_Age, {
+        x: 420, y: 715, size: fontSize
+      });
+      
+      drawTextSafely(userData.User_IncomeLevel, {
+        x: 420, y: 690, size: fontSize
+      });
+      
+      drawTextSafely(userData.User_AcademicInstruction, {
+        x: 420, y: 668, size: fontSize
+      });
+      
+      drawTextSafely(userData.User_Profession, {
+        x: 420, y: 646, size: fontSize
+      });
+      
+      drawTextSafely(userData.User_VulnerableSituation, {
+        x: 420, y: 620, size: fontSize
       });
 
-      firstPage.drawText(`${data.Init_Subject}`, {
-        x: 116,
-        y: 584.5,
-        size: fontSize,
-        font: AptosFont,
+      // NOTAS DE ATENCIÓN - Manejo avanzado de texto
+      const notesLines = wrapTextForPDF(data.Init_Notes, 500, font, 9);
+      const startY = 570;
+      const lineHeight = 14;
+      const maxLines = 15; // Límite de líneas visibles
+      
+      notesLines.slice(0, maxLines).forEach((line, index) => {
+        firstPage.drawText(line, {
+          x: 47,
+          y: startY - (index * lineHeight),
+          size: 9,
+          font
+        });
       });
 
-      firstPage.drawText(`${data.Init_Service}`, {
-        x: 448,
-        y: 608,
-        size: fontSize,
-        font: AptosFont,
-      });
+      // Si hay más líneas de las que caben, mostrar indicador
+      if (notesLines.length > maxLines) {
+        firstPage.drawText('...', {
+          x: 47,
+          y: startY - (maxLines * lineHeight),
+          size: 9,
+          font
+        });
+      }
 
-      firstPage.drawText(cleanNotes, {
-        x: 76,
-        y: 536,
-        size: 10,
-        font: AptosFont,
-        maxWidth: 500,
-        lineHeight: 14,
+      // CONSENTIMIENTO INFORMADO
+      drawTextSafely(`${userData.User_FirstName} ${userData.User_LastName}`, {
+        x: 78, y: 460, size: 10.5
       });
-
-      firstPage.drawText(
-        `${userData.User_FirstName} ${userData.User_LastName}`,
-        {
-          x: 92,
-          y: 194.5,
-          size: 10,
-          font: AptosFont,
-        }
-      );
-      firstPage.drawText(`${data.User_ID}`, {
-        x: 284,
-        y: 194.5,
-        size: 10,
-        font: AptosFont,
+      
+      drawTextSafely(data.User_ID, {
+        x: 78, y: 446, size: 10.5
       });
 
       // Generar el PDF modificado
