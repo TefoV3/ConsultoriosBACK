@@ -575,7 +575,7 @@ if (newConsultation.Init_SocialWork === true) {
         internalId,
         "INSERT",
         "Initial_Consultations",
-        `El usuario interno ${internalId} creó una nueva consulta inicial ${newConsultation.Init_Code} para el usuario ${data.User_ID}`,
+        `El usuario interno ${internalId} creó una nueva consulta inicial ${newConsultation.Init_Code} para el usuario ${newConsultation.User_ID}`,
         { transaction: t }
       );
 
