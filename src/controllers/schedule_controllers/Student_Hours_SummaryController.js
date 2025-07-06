@@ -24,7 +24,11 @@ export class Student_Hours_SummaryController {
 
   static async create(req, res) {
     try {
-      const newSummary = await Student_Hours_SummaryModel.create(req.body);
+      const internalUser = req.headers['internal-id'];
+      const newSummary = await Student_Hours_SummaryModel.create(req.body, {
+        internalUser,
+        isAutomatic: false // Manual creation from controller
+      });
       return res.status(201).json(newSummary);
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -34,7 +38,11 @@ export class Student_Hours_SummaryController {
   static async update(req, res) {
     try {
       const { id } = req.params;
-      const updatedSummary = await Student_Hours_SummaryModel.update(id, req.body);
+      const internalUser = req.headers['internal-id'];
+      const updatedSummary = await Student_Hours_SummaryModel.update(id, req.body, {
+        internalUser,
+        isAutomatic: false // Manual update from controller
+      });
 
       if (!updatedSummary) {
         return res.status(404).json({ message: "Summary not found" });
@@ -49,7 +57,8 @@ export class Student_Hours_SummaryController {
   static async delete(req, res) {
     try {
       const { id } = req.params;
-      const deleted = await Student_Hours_SummaryModel.delete(id);
+      const internalUser = req.headers['internal-id'];
+      const deleted = await Student_Hours_SummaryModel.delete(id, internalUser);
 
       if (!deleted) {
         return res.status(404).json({ message: "Summary not found" });

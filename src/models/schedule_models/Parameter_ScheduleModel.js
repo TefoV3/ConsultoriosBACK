@@ -1,6 +1,8 @@
 import { Parameter_Schedule } from "../../schemas/schedules_tables/Parameter_Schedule.js";
 import { sequelize } from "../../database/database.js";
 import { QueryTypes } from "sequelize";
+import { AuditModel } from "../AuditModel.js";
+import { getUserId } from "../../sessionData.js";
 
 export class Parameter_ScheduleModel {
   // 1. Get all active records
@@ -81,32 +83,93 @@ export class Parameter_ScheduleModel {
   }
 
   // 4. Create new record
-  static async create(data) {
+  static async create(data, internalUser) {
+    const t = await sequelize.transaction(); // Start transaction
     try {
-      return await Parameter_Schedule.create(data);
+      const internalId = internalUser || getUserId();
+
+      const newParameterSchedule = await Parameter_Schedule.create(data, { transaction: t });
+
+      // Register audit
+      await AuditModel.registerAudit(
+        internalId,
+        "INSERT",
+        "Parameter_Schedule",
+        `El usuario interno ${internalId} creó el parámetro de horario ${newParameterSchedule.Parameter_Schedule_ID} - ${data.Parameter_Schedule_Type} (${data.Parameter_Schedule_Start_Time} - ${data.Parameter_Schedule_End_Time})`
+      );
+
+      await t.commit(); // Commit transaction
+      return newParameterSchedule;
     } catch (error) {
+      await t.rollback(); // Rollback on error
+      console.error("Error en Parameter_ScheduleModel.create:", error);
       throw new Error(`Error creating parameter: ${error.message}`);
     }
   }
 
   // 5. Update record
-  static async update(id, data) {
+  static async update(id, data, internalUser) {
+    const t = await sequelize.transaction(); // Start transaction
     try {
-      return await Parameter_Schedule.update(data, {
+      const internalId = internalUser || getUserId();
+      const current = await this.getById(id);
+      if (!current) {
+        await t.rollback();
+        return null;
+      }
+
+      const [rowsUpdated] = await Parameter_Schedule.update(data, {
         where: { Parameter_Schedule_ID: id },
+        transaction: t
       });
+
+      // Register audit
+      await AuditModel.registerAudit(
+        internalId,
+        "UPDATE",
+        "Parameter_Schedule",
+        `El usuario interno ${internalId} actualizó el parámetro de horario ${id}`
+      );
+
+      if (rowsUpdated === 0) {
+        console.warn(`[Parameter_Schedule Update] No rows updated for Parameter_Schedule_ID: ${id}. Data might be identical.`);
+      }
+
+      await t.commit(); // Commit transaction
+
+      // Fetch the potentially updated parameter outside the transaction
+      return await this.getById(id);
     } catch (error) {
+      await t.rollback(); // Rollback on error
+      console.error("Error en Parameter_ScheduleModel.update:", error);
       throw new Error(`Error updating parameter: ${error.message}`);
     }
   }
 
   // 6. Soft delete
-  static async delete(id) {
+  static async delete(id, internalUser) {
     try {
-      return await Parameter_Schedule.update(
+      if (!id) {
+        throw new Error("The Parameter_Schedule_ID field is required to delete a parameter schedule");
+      }
+
+      const internalId = internalUser || getUserId();
+      const parameterSchedule = await this.getById(id);
+      if (!parameterSchedule) return null;
+
+      await Parameter_Schedule.update(
         { Parameter_Schedule_IsDeleted: true },
         { where: { Parameter_Schedule_ID: id } }
       );
+
+      await AuditModel.registerAudit(
+        internalId,
+        "DELETE",
+        "Parameter_Schedule",
+        `El usuario interno ${internalId} eliminó lógicamente el parámetro de horario ${id} - ${parameterSchedule.Parameter_Schedule_Type}`
+      );
+
+      return parameterSchedule;
     } catch (error) {
       throw new Error(`Error deleting parameter: ${error.message}`);
     }

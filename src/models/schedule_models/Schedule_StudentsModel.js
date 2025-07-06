@@ -1,6 +1,8 @@
 import { Schedule_Students } from "../../schemas/schedules_tables/Schedule_Students.js";
 import { sequelize } from "../../database/database.js";
 import { QueryTypes } from "sequelize";
+import { AuditModel } from "../AuditModel.js";
+import { getUserId } from "../../sessionData.js";
 
 export class ScheduleStudentsModel {
   // 1. Get all active schedules
@@ -77,21 +79,47 @@ export class ScheduleStudentsModel {
   }
 
   // 5. Create a new schedule
-  static async create(data) {
+  static async create(data, internalUser) {
+    const t = await sequelize.transaction(); // Start transaction
     try {
-      return await Schedule_Students.create(data);
+      const internalId = internalUser || getUserId();
+
+      const newSchedule = await Schedule_Students.create(data, { transaction: t });
+
+      // Register audit
+      await AuditModel.registerAudit(
+        internalId,
+        "INSERT",
+        "Schedule_Students",
+        `El usuario interno ${internalId} creó un horario de estudiante ID ${newSchedule.Schedule_Students_ID} para UserXPeriod ${data.UserXPeriod_ID} - Modo: ${data.Schedule_Mode}`
+      );
+
+      await t.commit(); // Commit transaction
+      return newSchedule;
     } catch (error) {
-      console.error(`Error creating schedule: ${error.message}`);
+      await t.rollback(); // Rollback on error
+      console.error("Error en ScheduleStudentsModel.create:", error);
       throw new Error(`Error creating schedule: ${error.message}`);
     }
   }
 
   // 6. Administrative change
-  static async adminChange(userXPeriodId, newSchedules) {
+  static async adminChange(userXPeriodId, newSchedules, internalUser) {
     const t = await sequelize.transaction();
     try {
+      const internalId = internalUser || getUserId();
       const scheduleMode = newSchedules[0]?.Schedule_Mode; // ⬅️ obtener el modo actual
   
+      // Get existing schedules for audit
+      const existingSchedules = await Schedule_Students.findAll({
+        where: {
+          UserXPeriod_ID: userXPeriodId,
+          Schedule_Mode: scheduleMode,
+          Schedule_IsDeleted: false,
+        },
+        transaction: t,
+      });
+
       await Schedule_Students.update(
         { Schedule_IsDeleted: true },
         {
@@ -104,8 +132,9 @@ export class ScheduleStudentsModel {
         }
       );
   
+      const createdScheduleIds = [];
       for (const schedule of newSchedules) {
-        await Schedule_Students.create(
+        const created = await Schedule_Students.create(
           {
             UserXPeriod_ID: userXPeriodId,
             Schedule_Day_Monday: schedule.Schedule_Day_Monday,
@@ -117,46 +146,93 @@ export class ScheduleStudentsModel {
           },
           { transaction: t }
         );
+        createdScheduleIds.push(created.Schedule_Students_ID);
       }
+
+      // Register audit for administrative change
+      const deletedIds = existingSchedules.map(s => s.Schedule_Students_ID).join(', ');
+      const createdIds = createdScheduleIds.join(', ');
+      await AuditModel.registerAudit(
+        internalId,
+        "UPDATE",
+        "Schedule_Students",
+        `El usuario interno ${internalId} realizó cambio administrativo en UserXPeriod ${userXPeriodId} - Modo: ${scheduleMode}. Eliminó horarios [${deletedIds}] y creó [${createdIds}]`
+      );
   
       await t.commit();
       return { ok: true, message: "Administrative schedule change completed" };
     } catch (error) {
       await t.rollback();
+      console.error("Error en ScheduleStudentsModel.adminChange:", error);
       throw new Error(`Error in administrative change: ${error.message}`);
     }
   }
   
 
   // 7. Update a schedule
-  static async update(id, data) {
+  static async update(id, data, internalUser) {
+    const t = await sequelize.transaction(); // Start transaction
     try {
+      const internalId = internalUser || getUserId();
       const record = await this.getById(id);
       if (!record) return null;
 
       const [updated] = await Schedule_Students.update(data, {
         where: { Schedule_Students_ID: id, Schedule_IsDeleted: false },
+        transaction: t,
       });
 
-      return updated ? await this.getById(id) : null;
+      if (updated) {
+        // Register audit
+        await AuditModel.registerAudit(
+          internalId,
+          "UPDATE",
+          "Schedule_Students",
+          `El usuario interno ${internalId} actualizó el horario de estudiante ID ${id} para UserXPeriod ${record.UserXPeriod_ID}`
+        );
+
+        await t.commit(); // Commit transaction
+        return await this.getById(id);
+      } else {
+        await t.rollback();
+        return null;
+      }
     } catch (error) {
+      await t.rollback(); // Rollback on error
+      console.error("Error en ScheduleStudentsModel.update:", error);
       throw new Error(`Error updating schedule: ${error.message}`);
     }
   }
 
   // 8. Delete (soft) a schedule
-  static async delete(id) {
+  static async delete(id, internalUser) {
+    const t = await sequelize.transaction(); // Start transaction
     try {
+      const internalId = internalUser || getUserId();
       const record = await this.getById(id);
       if (!record) return null;
 
       await Schedule_Students.update(
         { Schedule_IsDeleted: true },
-        { where: { Schedule_Students_ID: id, Schedule_IsDeleted: false } }
+        { 
+          where: { Schedule_Students_ID: id, Schedule_IsDeleted: false },
+          transaction: t,
+        }
       );
 
+      // Register audit
+      await AuditModel.registerAudit(
+        internalId,
+        "DELETE",
+        "Schedule_Students",
+        `El usuario interno ${internalId} eliminó el horario de estudiante ID ${id} para UserXPeriod ${record.UserXPeriod_ID}`
+      );
+
+      await t.commit(); // Commit transaction
       return record;
     } catch (error) {
+      await t.rollback(); // Rollback on error
+      console.error("Error en ScheduleStudentsModel.delete:", error);
       throw new Error(`Error deleting schedule: ${error.message}`);
     }
   }

@@ -211,10 +211,11 @@ export class InternalUserController {
       try {
         // Configurar el transporte de correo
         const transporter = nodemailer.createTransport({
-          host: "smtp.gmail.com",
-          port: 465,
-          secure: true,
-          auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+          service: 'hotmail', // Usar servicio predefinido
+          auth: {
+            user: EMAIL_USER,
+            pass: EMAIL_PASS
+          }
         });
 
         // Enviar el correo con las credenciales
@@ -647,6 +648,8 @@ export class InternalUserController {
   static async actualizarHuella(req, res) {
     try {
       const { usuarioCedula, template } = req.body;
+      const internalId = req.headers['internal-id'];
+      
       if (!usuarioCedula || !template) {
         return res
           .status(400)
@@ -656,7 +659,8 @@ export class InternalUserController {
       // 🔹 Llamamos al modelo para actualizar la huella
       const usuarioActualizado = await InternalUserModel.updateHuella(
         usuarioCedula,
-        template
+        template,
+        internalId
       );
 
       if (!usuarioActualizado) {
@@ -675,115 +679,11 @@ export class InternalUserController {
     }
   }
 
-  //  static async createInternalUsersBulk(req, res) {
-  //       try {
-  //         // Normalizar: si no es un array, lo convertimos en array
-  //         const records = Array.isArray(req.body) ? req.body : [req.body];
-
-  //         // Definir el esquema de validación para cada registro
-  //         const internalUserSchema = z.object({
-  //           Internal_ID:  z.string().min(1, { message: "El ID es obligatorio" }),
-  //           Internal_Name: z.string().min(1, { message: "El nombre es obligatorio" }),
-  //           Internal_LastName: z.string().min(1, { message: "El apellido es obligatorio" }),
-  //           Internal_Email: z.string().email({ message: "Correo no válido" }),
-  //           // Aquí ya no se realiza preprocess; manejaremos la contraseña por separado
-  //           Internal_Password: z.string().optional(),
-  //           Internal_Type: z.string().min(1, { message: "El tipo es obligatorio" }),
-  //           Internal_Area: z.string().min(1, { message: "El área es obligatoria" }),
-  //           Internal_Phone: z.string().optional(),
-  //           Internal_Status: z.string().min(1, { message: "El estado es obligatorio" }).default(""),
-  //           Internal_Huella: z.any().optional().nullable()
-  //         }).passthrough();
-
-  //         // Crear el transporter de correo una sola vez
-  //         const transporter = nodemailer.createTransport({
-  //           host: "smtp.gmail.com",
-  //           port: 465,
-  //           secure: true,
-  //           auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-  //         });
-
-  //         // Array para almacenar resultados por cada registro
-  //         const results = [];
-
-  //         // Procesar cada registro
-  //         for (const record of records) {
-  //           // Validar cada registro
-  //           const parseResult = internalUserSchema.safeParse(record);
-  //           if (!parseResult.success) {
-  //             const errorMessages = parseResult.error.errors.map((err) => err.message).join(', ');
-  //             results.push({ Internal_ID: record.Internal_ID || null, error: errorMessages });
-  //             continue;
-  //           }
-  //           const data = parseResult.data;
-
-  //           // Verificar duplicados por cédula o correo
-  //           const existingID = await InternalUserModel.getById(data.Internal_ID);
-  //           const existingEmail = await InternalUserModel.getByEmail(data.Internal_Email);
-  //           if (existingID || existingEmail) {
-  //             results.push({ Internal_ID: data.Internal_ID, error: "Ya existe un usuario con esa cédula o correo" });
-  //             continue;
-  //           }
-
-  //           // Manejo de la contraseña: si no se envía (o es cadena vacía), se genera una contraseña aleatoria.
-  //           // Conservamos la contraseña en texto plano para luego enviarla por correo.
-  //           let plainPassword = data.Internal_Password;
-  //           console.log("Contraseña recibida:", plainPassword);
-  //           if (!plainPassword || plainPassword.trim() === "") {
-  //             plainPassword = generateRandomPassword(8);
-  //           }
-
-  //           // Hashear la contraseña
-  //           const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
-  //           data.Internal_Password = hashedPassword;
-
-  //           // Crear el usuario en la base de datos
-  //           const internalUser = await InternalUserModel.create(data);
-
-  //           // Preparar las opciones del correo; se envía siempre, usando la contraseña en texto plano (ya sea la ingresada o generada)
-  //           const mailOptions = {
-  //             from: '"Support Balanza Web" <cjgpuce.system@gmail.com>',
-  //             to: data.Internal_Email,
-  //             subject: 'Tus credenciales de acceso',
-  //             html: `
-  //               <html>
-  //                 <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
-  //                   <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-  //                     <h2 style="text-align: center; color: #4a90e2;">Bienvenido a Balanza Web</h2>
-  //                     <p>Estas son tus credenciales de acceso:</p>
-  //                     <p><strong>Correo:</strong> ${data.Internal_Email}</p>
-  //                     <p><strong>Contraseña:</strong> ${plainPassword}</p>
-  //                     <p>Por favor, ingresa con estas credenciales y cambia tu contraseña lo antes posible.</p>
-  //                     <p>Saludos,</p>
-  //                     <p>El equipo de Balanza Web</p>
-  //                   </div>
-  //                 </body>
-  //               </html>
-  //             `
-  //           };
-
-  //           // Enviar el correo y manejar errores individualmente
-  //           try {
-  //             await transporter.sendMail(mailOptions);
-  //             console.log(`Correo enviado a ${data.Internal_Email}`);
-  //           } catch (errorEmail) {
-  //             console.error(`Error al enviar email a ${data.Internal_Email}:`, errorEmail);
-  //           }
-
-  //           results.push({ Internal_ID: data.Internal_ID, result: "Creado", user: internalUser });
-  //         }
-
-  //         return res.status(201).json({ message: "Proceso completado", results });
-  //       } catch (error) {
-  //           console.error("Error al crear usuarios internos:", error);
-  //         return res.status(500).json({ error: error.message });
-  //       }
-  //     }
-
   static async createInternalUsersBulk(req, res) {
     const transaction = await sequelize.transaction();
     try {
       const periodId = req.params.periodId;
+      const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
       const records = Array.isArray(req.body) ? req.body : [req.body];
 
       const internalUserSchema = z
@@ -826,6 +726,16 @@ export class InternalUserController {
 
         const data = parseResult.data;
 
+        // --- BUSCAR EL PROFILE_ID ---
+        // 1. Buscamos el perfil en la BD usando el nombre que llegó.
+        const profile = await Profiles.findOne({ where: { Profile_Name: data.Internal_Type } });
+
+        // 2. Si no se encuentra, devolvemos un error.
+        if (!profile) {
+          await transaction.rollback();
+          return res.status(400).json({ message: `El perfil '${data.Internal_Type}' no es válido para el usuario ${data.Internal_ID}.` });
+        }
+
         // Email temporal si no hay válido
         if (!data.Internal_Email || !data.Internal_Email.includes("@")) {
           data.Internal_Email = `${data.Internal_ID}@temporal.local`;
@@ -846,6 +756,7 @@ export class InternalUserController {
           Internal_Email: data.Internal_Email,
           Internal_Password: hashedPassword,
           Internal_Type: data.Internal_Type,
+          Profile_ID: profile.Profile_ID, // Agregar el Profile_ID encontrado
           Internal_Area: data.Internal_Area,
           Internal_Phone: data.Internal_Phone || null,
           Internal_Status: data.Internal_Status,
@@ -864,12 +775,13 @@ export class InternalUserController {
           emailsToSend.push({
             to: data.Internal_Email,
             password: plainPassword,
+            name: data.Internal_Name, // Agregar el nombre para personalizar el email
           });
         }
       }
 
       // 🔹 1. Crear usuarios y asignaciones en transaction
-      await InternalUserModel.bulkCreateUsers(usersToCreate, { transaction });
+      await InternalUserModel.bulkCreateUsers(usersToCreate, internalId, { transaction }); // Pasar el Internal_ID al modelo
       if (userXPeriodToCreate.length > 0) {
         await UserXPeriodModel.create(userXPeriodToCreate, { transaction });
       }
@@ -888,23 +800,52 @@ export class InternalUserController {
         const mailOptions = {
           from: '"Support Balanza Web" <cjgpuce.system@gmail.com>',
           to: emailInfo.to,
-          subject: "Tus credenciales de acceso",
+          subject: "¡Bienvenido/a a Balanza Web! Tus Credenciales de Acceso",
           html: `
-                <html>
-                  <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
-                    <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                      <h2 style="text-align: center; color: #4a90e2;">Bienvenido a Balanza Web</h2>
-                      <p>Estas son tus credenciales de acceso:</p>
-                      <p><strong>Correo:</strong> ${emailInfo.to}</p>
-                      <p><strong>Contraseña:</strong> ${emailInfo.password}</p>
-                      <p>Por favor, ingresa con estas credenciales y cambia tu contraseña lo antes posible.</p>
-                      <p>Saludos,</p>
-                      <p>El equipo de Balanza Web</p>
-                    </div>
-                  </body>
-                </html>
-              `
-            };
+      <html>
+        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px;">
+          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td align="center">
+                <table width="600" border="0" cellspacing="0" cellpadding="20" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                  <tr>
+                    <td align="center" style="border-bottom: 1px solid #e0e0e0; padding-bottom: 20px;">
+                      <h1 style="color: #0056b3; margin: 0;">¡Bienvenido/a, ${emailInfo.name}!</h1>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding-top: 20px;">
+                      <p style="color: #333333; line-height: 1.6;">Estamos encantados de tenerte en <strong>Balanza Web</strong>.</p>
+                      <p style="color: #333333; line-height: 1.6;">Aquí tienes tus credenciales para acceder a la plataforma:</p>
+                      <div style="background-color: #eef5ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                        <p style="margin: 5px 0; color: #333;"><strong>Correo Electrónico:</strong> ${emailInfo.to}</p>
+                        <p style="margin: 5px 0; color: #333;"><strong>Contraseña Temporal:</strong> ${emailInfo.password}</p>
+                      </div>
+                      <p style="color: #555555; line-height: 1.6;"><strong>Importante:</strong> Por tu seguridad, te recomendamos encarecidamente que cambies tu contraseña la primera vez que inicies sesión.</p>
+                      <p style="color: #555555; line-height: 1.6;">Puedes hacerlo fácilmente:</p>
+                      <ol style="color: #555555; line-height: 1.6; padding-left: 20px;">
+                        <li>Inicia sesión con las credenciales proporcionadas.</li>
+                        <li>Haz clic en tu <strong>Perfil</strong> (ubicado en la esquina inferior izquierda).</li>
+                        <li>Selecciona la opción de <strong>Configuración</strong></li>
+                        <li>Desplaza el cursor hacia abajo y encontrarás la opción para poder cambiar tu contraseña.</li>
+                      </ol>
+                      <p style="color: #333333; line-height: 1.6;">Si tienes alguna pregunta o necesitas ayuda, no dudes en contactar a soporte.</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #888888;">
+                      <p>Saludos cordiales,<br>El equipo de Consultorios Jurídicos PUCE</p>
+                      <p>&copy; ${new Date().getFullYear()} Balanza Web. Todos los derechos reservados.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
+      `,
+        };
       
             try {
               await transporter.sendMail(mailOptions);

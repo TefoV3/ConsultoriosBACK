@@ -38,7 +38,8 @@ export class PeriodController {
 
   static async createPeriod(req, res) {
     try {
-      const newPeriod = await PeriodModel.create(req.body);
+      const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+      const newPeriod = await PeriodModel.create(req.body, internalId); // Pasar el Internal_ID al modelo
       return res.status(201).json(newPeriod);
     } catch (error) {
       console.error(`❌ Error creating period: ${error.message}`);
@@ -52,7 +53,8 @@ export class PeriodController {
   static async update(req, res) {
     try {
       const { id } = req.params;
-      const updatedPeriod = await PeriodModel.update(id, req.body);
+      const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+      const updatedPeriod = await PeriodModel.update(id, req.body, internalId); // Pasar el Internal_ID al modelo
 
       if (!updatedPeriod) return res.status(404).json({ message: "Period not found" });
 
@@ -68,7 +70,8 @@ export class PeriodController {
   static async delete(req, res) {
     try {
       const { id } = req.params;
-      const deletedPeriod = await PeriodModel.delete(id);
+      const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+      const deletedPeriod = await PeriodModel.delete(id, internalId); // Pasar el Internal_ID al modelo
 
       if (!deletedPeriod) return res.status(404).json({ message: "Period not found" });
       return res.json({ message: "Period logically deleted", period: deletedPeriod });

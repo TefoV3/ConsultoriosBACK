@@ -8,6 +8,8 @@ import { Weekly_Tracking } from "../../schemas/schedules_tables/Weekly_Tracking.
 import { Weekly_Hours_Summary } from "../../schemas/schedules_tables/Weekly_Hours_Summary.js";
 import { Op } from "sequelize";
 import { sequelize } from "../../database/database.js";
+import { AuditModel } from "../AuditModel.js";
+import { getUserId } from "../../sessionData.js";
 
 // Reusable constant
 const MAX_HOURS = 500;
@@ -50,42 +52,135 @@ export class Attendance_RecordModel {
   }
 
   // Create attendance record only
-  static async create(data) {
+  static async create(data, internalUser) {
+    const t = await sequelize.transaction();
     try {
-      return await Attendance_Record.create(data);
+      const internalId = internalUser || getUserId();
+      
+      const newRecord = await Attendance_Record.create(data, { transaction: t });
+
+      // Get detailed user information for audit
+      const userXPeriodRecord = await UserXPeriodModel.getByUserXPeriodId(data.UserXPeriod_ID);
+      const studentId = userXPeriodRecord?.user?.Internal_ID || 'Desconocido';
+      const studentName = userXPeriodRecord?.user ? 
+        `${userXPeriodRecord.user.Internal_Name} ${userXPeriodRecord.user.Internal_LastName}` : 
+        'Usuario Desconocido';
+      const studentArea = userXPeriodRecord?.user?.Internal_Area || 'Área no especificada';
+      const periodName = userXPeriodRecord?.period?.Period_Name || 'Período no especificado';
+
+      // Format times for detailed audit message
+      const entryTime = data.Attendance_Entry ? new Date(data.Attendance_Entry).toLocaleString('es-ES') : 'Sin registrar';
+      const exitTime = data.Attendance_Exit ? new Date(data.Attendance_Exit).toLocaleString('es-ES') : 'Sin registrar';
+      const attendanceType = data.Attendance_Type || 'No especificado';
+
+      // Register detailed audit
+      await AuditModel.registerAudit(
+        internalId,
+        "INSERT",
+        "Attendance_Record",
+        `El usuario interno ${internalId} creó un registro de asistencia ID ${newRecord.Attendance_ID} para el estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Entrada: ${entryTime}, Salida: ${exitTime}, Tipo: ${attendanceType}`
+      );
+
+      await t.commit();
+      return newRecord;
     } catch (error) {
-      console.error("Create error:", error);
+      await t.rollback();
+      console.error("Error en Attendance_RecordModel.create:", error);
       throw new Error(`Error creating attendance record: ${error.message}`);
     }
   }
 
   // Soft delete record
-  static async delete(id) {
+  static async delete(id, internalUser) {
+    const t = await sequelize.transaction();
     try {
+      const internalId = internalUser || getUserId();
       const record = await this.getById(id);
       if (!record) return null;
 
       const [updated] = await Attendance_Record.update(
         { Attendance_IsDeleted: true },
-        { where: { Attendance_ID: id, Attendance_IsDeleted: false } }
+        { 
+          where: { Attendance_ID: id, Attendance_IsDeleted: false },
+          transaction: t,
+        }
       );
-      return updated > 0;
+
+      if (updated > 0) {
+        // Get detailed user information for audit
+        const userXPeriodRecord = await UserXPeriodModel.getByUserXPeriodId(record.UserXPeriod_ID);
+        const studentId = userXPeriodRecord?.user?.Internal_ID || 'Desconocido';
+        const studentName = userXPeriodRecord?.user ? 
+          `${userXPeriodRecord.user.Internal_Name} ${userXPeriodRecord.user.Internal_LastName}` : 
+          'Usuario Desconocido';
+        const studentArea = userXPeriodRecord?.user?.Internal_Area || 'Área no especificada';
+        const periodName = userXPeriodRecord?.period?.Period_Name || 'Período no especificado';
+
+        // Format times for detailed audit
+        const entryTime = record.Attendance_Entry ? new Date(record.Attendance_Entry).toLocaleString('es-ES') : 'Sin entrada';
+        const exitTime = record.Attendance_Exit ? new Date(record.Attendance_Exit).toLocaleString('es-ES') : 'Sin salida';
+
+        // Register detailed audit
+        await AuditModel.registerAudit(
+          internalId,
+          "DELETE",
+          "Attendance_Record",
+          `El usuario interno ${internalId} eliminó el registro de asistencia ID ${id} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Registro eliminado: Entrada ${entryTime}, Salida ${exitTime}`
+        );
+
+        await t.commit();
+        return true;
+      } else {
+        await t.rollback();
+        return false;
+      }
     } catch (error) {
+      await t.rollback();
+      console.error("Error en Attendance_RecordModel.delete:", error);
       throw new Error(`Error deleting attendance record: ${error.message}`);
     }
   }
 
   // Update basic fields
-  static async update(id, data) {
+  static async update(id, data, internalUser) {
+    const t = await sequelize.transaction();
     try {
+      const internalId = internalUser || getUserId();
       const record = await this.getById(id);
       if (!record) return null;
 
       const [updated] = await Attendance_Record.update(data, {
         where: { Attendance_ID: id, Attendance_IsDeleted: false },
+        transaction: t,
       });
-      return updated > 0 ? await this.getById(id) : null;
+
+      if (updated > 0) {
+        // Get detailed user information for audit
+        const userXPeriodRecord = await UserXPeriodModel.getByUserXPeriodId(record.UserXPeriod_ID);
+        const studentId = userXPeriodRecord?.user?.Internal_ID || 'Desconocido';
+        const studentName = userXPeriodRecord?.user ? 
+          `${userXPeriodRecord.user.Internal_Name} ${userXPeriodRecord.user.Internal_LastName}` : 
+          'Usuario Desconocido';
+        const studentArea = userXPeriodRecord?.user?.Internal_Area || 'Área no especificada';
+        const periodName = userXPeriodRecord?.period?.Period_Name || 'Período no especificado';
+
+        // Register detailed audit
+        await AuditModel.registerAudit(
+          internalId,
+          "UPDATE",
+          "Attendance_Record",
+          `El usuario interno ${internalId} actualizó el registro de asistencia ID ${id} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName}`
+        );
+
+        await t.commit();
+        return await this.getById(id);
+      } else {
+        await t.rollback();
+        return null;
+      }
     } catch (error) {
+      await t.rollback();
+      console.error("Error en Attendance_RecordModel.update:", error);
       throw new Error(`Error updating attendance record: ${error.message}`);
     }
   }
@@ -173,9 +268,11 @@ export class Attendance_RecordModel {
   }
 }
 
-static async updateClosedWithSummary(recordId, newData) {
+static async updateClosedWithSummary(recordId, newData, internalUser) {
   const t = await sequelize.transaction();
   try {
+    const internalId = internalUser || getUserId();
+    
     const record = await Attendance_Record.findOne({
       where: { Attendance_ID: recordId, Attendance_IsDeleted: false },
       transaction: t,
@@ -215,11 +312,15 @@ static async updateClosedWithSummary(recordId, newData) {
       throw new Error("User Internal_ID not found");
 
     const studentId = userXPeriodRecord.user.Internal_ID;
+    const studentName = `${userXPeriodRecord.user.Internal_Name} ${userXPeriodRecord.user.Internal_LastName}`;
+    const studentArea = userXPeriodRecord.user.Internal_Area || 'Área no especificada';
+    const periodName = userXPeriodRecord.period?.Period_Name || 'Período no especificado';
     const generalSummary = await Student_Hours_SummaryModel.getByCedula(studentId);
 
     if (!generalSummary) throw new Error("Student summary not found");
 
-    const newTotal = parseFloat(generalSummary.Summary_Total_Hours) - oldDiffHours + newDiffHours;
+    const previousTotalHours = parseFloat(generalSummary.Summary_Total_Hours);
+    const newTotal = previousTotalHours - oldDiffHours + newDiffHours;
     if (newTotal < 0) throw new Error("Update would result in negative total hours");
 
     const fields = checkCompletionFields(newTotal);
@@ -234,10 +335,24 @@ static async updateClosedWithSummary(recordId, newData) {
     const diffForWeekly = newDiffHours - oldDiffHours;
     await this.updateWeeklySummary(periodId, newEntry, diffForWeekly, t, generalSummary.Summary_ID);
 
+    // Register detailed audit with before/after comparison
+    const oldEntryTime = oldEntry.toLocaleString('es-ES');
+    const oldExitTime = oldExit.toLocaleString('es-ES');
+    const newEntryTime = newEntry.toLocaleString('es-ES');
+    const newExitTime = newExit.toLocaleString('es-ES');
+    const attendanceType = updatedRecord.Attendance_Type || 'No especificado';
+    await AuditModel.registerAudit(
+      internalId,
+      "UPDATE",
+      "Attendance_Record",
+      `El usuario interno ${internalId} modificó el registro cerrado de asistencia ID ${recordId} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - ANTERIOR: Entrada ${oldEntryTime}, Salida ${oldExitTime} (${oldDiffHours.toFixed(2)}h) → NUEVO: Entrada ${newEntryTime}, Salida ${newExitTime} (${newDiffHours.toFixed(2)}h), Tipo: ${attendanceType}. Total de horas actualizado: ${previousTotalHours.toFixed(2)} → ${newTotal.toFixed(2)} horas`
+    );
+
     await t.commit();
     return updatedRecord;
   } catch (error) {
     await t.rollback();
+    console.error("Error en updateClosedWithSummary:", error);
     throw new Error(`Error updating closed attendance record: ${error.message}`);
   }
 }
@@ -278,9 +393,11 @@ static async getOpenRecordsWithUser({ entryRange = null } = {}) {
 }
 
 
-static async deleteWithAdjustment(recordId) {
+static async deleteWithAdjustment(recordId, internalUser) {
   const t = await sequelize.transaction();
   try {
+    const internalId = internalUser || getUserId();
+    
     const record = await Attendance_Record.findOne({
       where: { Attendance_ID: recordId, Attendance_IsDeleted: false },
       transaction: t,
@@ -328,6 +445,25 @@ static async deleteWithAdjustment(recordId) {
     if (!periodId) throw new Error("Could not determine period");
 
     await this.updateWeeklySummary(periodId, entry, -diffHours, t, generalSummary.Summary_ID);
+
+    // Get detailed user information for audit
+    const studentName = userXPeriod.user ? 
+      `${userXPeriod.user.Internal_Name} ${userXPeriod.user.Internal_LastName}` : 
+      'Usuario Desconocido';
+    const studentArea = userXPeriod.user.Internal_Area || 'Área no especificada';
+    const periodName = userXPeriod.period?.Period_Name || 'Período no especificado';
+    const entryTime = entry.toLocaleString('es-ES');
+    const exitTime = exit.toLocaleString('es-ES');
+    const previousHours = parseFloat(generalSummary.Summary_Total_Hours).toFixed(2);
+    const newHours = finalTotal.toFixed(2);
+
+    // Register detailed audit
+    await AuditModel.registerAudit(
+      internalId,
+      "DELETE",
+      "Attendance_Record",
+      `El usuario interno ${internalId} eliminó con ajuste el registro de asistencia ID ${recordId} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Entrada: ${entryTime}, Salida: ${exitTime}, Duración: ${diffHours.toFixed(2)} horas. Horas totales actualizadas de ${previousHours} a ${newHours}`
+    );
 
     await t.commit();
     return true;
@@ -394,9 +530,11 @@ static async updateWeeklySummary(periodId, attendanceDate, diffHours, transactio
   }
 }
 
-static async createWithSummary(data) {
+static async createWithSummary(data, internalUser) {
   const t = await sequelize.transaction();
   try {
+    const internalId = internalUser || getUserId();
+    
     const newRecord = await Attendance_Record.create(data, { transaction: t });
 
     if (!newRecord.Attendance_Entry || !newRecord.Attendance_Exit) {
@@ -416,31 +554,48 @@ static async createWithSummary(data) {
     }
 
     const studentId = userXPeriodRecord.user.Internal_ID;
+    const studentName = `${userXPeriodRecord.user.Internal_Name} ${userXPeriodRecord.user.Internal_LastName}`;
+    const studentArea = userXPeriodRecord.user.Internal_Area || 'Área no especificada';
     const periodId = userXPeriodRecord.period ? userXPeriodRecord.period.Period_ID : null;
+    const periodName = userXPeriodRecord.period?.Period_Name || 'Período no especificado';
     if (!periodId) throw new Error("Unable to determine period ID.");
 
     let generalSummary = await Student_Hours_SummaryModel.getByUser(studentId);
+    let previousTotalHours = 0;
+    let newTotalHours = diffHours;
+
     if (generalSummary) {
-      const newTotal = parseFloat(generalSummary.Summary_Total_Hours) + diffHours;
-      const fields = checkCompletionFields(newTotal);
+      previousTotalHours = parseFloat(generalSummary.Summary_Total_Hours);
+      newTotalHours = previousTotalHours + diffHours;
+      const fields = checkCompletionFields(newTotalHours);
       await Student_Hours_SummaryModel.update(generalSummary.Summary_ID, {
-        Summary_Total_Hours: newTotal,
+        Summary_Total_Hours: newTotalHours,
         ...fields
       }, { transaction: t });
 
-      generalSummary.Summary_Total_Hours = newTotal;
+      generalSummary.Summary_Total_Hours = newTotalHours;
     } else {
-      const newTotal = diffHours; // <- aquí ahora sí defines correctamente
-      const fields = checkCompletionFields(newTotal);
+      const fields = checkCompletionFields(newTotalHours);
       generalSummary = await Student_Hours_SummaryModel.create({
         Internal_ID: studentId,
-        Summary_Start: entry, // ✅ Campo correcto según el schema: entry,
-        Summary_Total_Hours: newTotal,
+        Summary_Start: entry,
+        Summary_Total_Hours: newTotalHours,
         ...fields
       }, { transaction: t });
     }
 
     await this.updateWeeklySummary(periodId, entry, diffHours, t, generalSummary.Summary_ID);
+
+    // Register detailed audit with summary information
+    const entryTime = entry.toLocaleString('es-ES');
+    const exitTime = exit.toLocaleString('es-ES');
+    const attendanceType = data.Attendance_Type || 'No especificado';
+    await AuditModel.registerAudit(
+      internalId,
+      "INSERT",
+      "Attendance_Record",
+      `El usuario interno ${internalId} creó un registro de asistencia completo ID ${newRecord.Attendance_ID} para el estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Entrada: ${entryTime}, Salida: ${exitTime}, Horas registradas: ${diffHours.toFixed(2)}, Tipo: ${attendanceType}. Total de horas actualizado: ${previousTotalHours.toFixed(2)} → ${newTotalHours.toFixed(2)} horas`
+    );
 
     await t.commit();
     return newRecord;
@@ -451,9 +606,11 @@ static async createWithSummary(data) {
   }
 }
 
-static async updateExitWithSummary(recordId, data) {
+static async updateExitWithSummary(recordId, data, internalUser) {
   const t = await sequelize.transaction();
   try {
+    const internalId = internalUser || getUserId();
+    
     const record = await Attendance_Record.findOne({
       where: { Attendance_ID: recordId, Attendance_IsDeleted: false },
       transaction: t,
@@ -480,36 +637,54 @@ static async updateExitWithSummary(recordId, data) {
     }
 
     const studentId = userXPeriodRecord.user.Internal_ID;
+    const studentName = `${userXPeriodRecord.user.Internal_Name} ${userXPeriodRecord.user.Internal_LastName}`;
+    const studentArea = userXPeriodRecord.user.Internal_Area || 'Área no especificada';
     const periodId = userXPeriodRecord.period ? userXPeriodRecord.period.Period_ID : null;
+    const periodName = userXPeriodRecord.period?.Period_Name || 'Período no especificado';
     if (!periodId) throw new Error("Unable to determine period");
 
     let generalSummary = await Student_Hours_SummaryModel.getByUser(studentId);
+    let previousTotalHours = 0;
+    let newTotalHours = diffHours;
+
     if (generalSummary) {
-      const newTotal = parseFloat(generalSummary.Summary_Total_Hours) + diffHours;
-      const fields = checkCompletionFields(newTotal);
+      previousTotalHours = parseFloat(generalSummary.Summary_Total_Hours);
+      newTotalHours = previousTotalHours + diffHours;
+      const fields = checkCompletionFields(newTotalHours);
       await Student_Hours_SummaryModel.update(generalSummary.Summary_ID, {
-        Summary_Total_Hours: newTotal,
+        Summary_Total_Hours: newTotalHours,
         ...fields
       }, { transaction: t });
 
-      generalSummary.Summary_Total_Hours = newTotal;
+      generalSummary.Summary_Total_Hours = newTotalHours;
     } else {
-      const newTotal = diffHours;
-      const fields = checkCompletionFields(newTotal);
+      const fields = checkCompletionFields(newTotalHours);
       generalSummary = await Student_Hours_SummaryModel.create({
         Internal_ID: studentId,
-        Summary_Start: entry, // ✅ Campo correcto según el schema: entry,
-        Summary_Total_Hours: newTotal,
+        Summary_Start: entry,
+        Summary_Total_Hours: newTotalHours,
         ...fields
       }, { transaction: t });
     }
 
     await this.updateWeeklySummary(periodId, entry, diffHours, t, generalSummary.Summary_ID);
 
+    // Register detailed audit with exit information
+    const entryTime = entry.toLocaleString('es-ES');
+    const exitTime = exit.toLocaleString('es-ES');
+    const attendanceType = record.Attendance_Type || 'No especificado';
+    await AuditModel.registerAudit(
+      internalId,
+      "UPDATE",
+      "Attendance_Record",
+      `El usuario interno ${internalId} registró la salida del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} en el registro ID ${recordId} - Entrada: ${entryTime}, Salida: ${exitTime}, Horas trabajadas: ${diffHours.toFixed(2)}, Tipo: ${attendanceType}. Total de horas actualizado: ${previousTotalHours.toFixed(2)} → ${newTotalHours.toFixed(2)} horas`
+    );
+
     await t.commit();
     return await this.getById(recordId);
   } catch (error) {
     await t.rollback();
+    console.error("Error en updateExitWithSummary:", error);
     throw new Error(`Error updating attendance with exit: ${error.message}`);
   }
 }

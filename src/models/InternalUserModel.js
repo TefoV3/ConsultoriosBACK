@@ -122,14 +122,29 @@ export class InternalUserModel {
         }
     }
 
-    static async bulkCreateUsers(data, options = {}) {
+    static async bulkCreateUsers(data, internalUser, options = {}) {
         try {
+          const internalId = internalUser || getUserId();
           const entries = Array.isArray(data) ? data : [data];
           if (entries.length === 0) {
             throw new Error("No hay usuarios para crear.");
           }
       
           const createdUsers = await InternalUser.bulkCreate(entries, options);
+
+          // Registrar auditoría para la creación masiva
+          const userIds = createdUsers.map(user => user.Internal_ID).join(', ');
+          //Si es un solo usuario, el mensaje es singular, si son varios, es plural
+          const action = createdUsers.length === 1 ? "créo al usuario interno con ID" : "creó masivamente a los usuarios internos con IDs";
+            // Registrar en auditoría la creación masiva
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "InternalUser",
+                `El usuario interno ${internalId} ${action} : ${userIds}`
+            );
+
+
       
           return createdUsers;
         } catch (error) {
@@ -309,8 +324,9 @@ export class InternalUserModel {
     }
 
      /** 🔹 Actualizar la huella del usuario */
-     static async updateHuella(cedula, huellaBase64) {
+     static async updateHuella(cedula, huellaBase64, internalUser) {
         try {
+            const internalId = internalUser || getUserId();
             const usuario = await this.getById(cedula);
             if (!usuario) return null; // 🔹 Usuario no encontrado
 
@@ -325,6 +341,15 @@ export class InternalUserModel {
             );
 
             if (rowsUpdated === 0) return null; // 🔹 Si no se actualizó nada
+
+            // 🔹 Registrar en auditoría la actualización de huella
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "InternalUser",
+                `El usuario interno ${internalId} actualizó la huella dactilar del usuario interno ${cedula}`
+            );
+
             return await this.getById(cedula); // ✅ Retorna el usuario actualizado
         } catch (error) {
             throw new Error(`Error al actualizar huella: ${error.message}`);
