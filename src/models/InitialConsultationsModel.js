@@ -1245,7 +1245,10 @@ if (newConsultation.Init_SocialWork === true) {
         x: 420, y: 668, size: fontSize
       });
       
-      drawTextSafely(userData.User_Profession, {
+      // Truncar profesión si es muy larga
+      const profession = userData.User_Profession ? String(userData.User_Profession).trim() : '';
+      const truncatedProfession = profession.length > 15 ? profession.substring(0, 26) + '(...)' : profession;
+      drawTextSafely(truncatedProfession, {
         x: 420, y: 646, size: fontSize
       });
       
