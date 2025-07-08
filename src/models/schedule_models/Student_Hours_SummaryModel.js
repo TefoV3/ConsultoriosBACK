@@ -4,6 +4,24 @@ import { AuditModel } from "../AuditModel.js";
 import { getUserId } from "../../sessionData.js";
 import { sequelize } from "../../database/database.js";
 
+// Helper function to get user information for audit
+async function getUserInfo(internalId) {
+  try {
+    const admin = await InternalUser.findOne({
+      where: { Internal_ID: internalId },
+      attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+    });
+    
+    if (admin) {
+      return `${admin.Internal_Name} ${admin.Internal_LastName} (${admin.Internal_Type || 'Sin rol'} - ${admin.Internal_Area || 'Sin área'})`;
+    }
+    return `Usuario ID ${internalId} (Información no disponible)`;
+  } catch (err) {
+    console.warn("No se pudo obtener información del usuario para auditoría:", err.message);
+    return `Usuario ID ${internalId} (Error al obtener información)`;
+  }
+}
+
 export class Student_Hours_SummaryModel {
   static async getAll() {
     try {
@@ -67,12 +85,15 @@ export class Student_Hours_SummaryModel {
 
         const creationType = isAutomatic ? 'automáticamente' : 'manualmente';
         
+        // Get user information for audit
+        const userInfo = await getUserInfo(internalUser);
+        
         // Register detailed audit
         await AuditModel.registerAudit(
           internalUser,
           "INSERT",
           "Student_Hours_Summary",
-          `El usuario interno ${internalUser} creó ${creationType} un resumen de horas ID ${newRecord.Summary_ID} para el estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area}) - Inicio: ${summaryStart}, Horas totales: ${totalHours}, Horas extra: ${extraHours}, Horas reducidas: ${reducedHours}, Completado: ${isComplete}`
+          `${userInfo} creó ${creationType} un resumen de horas ID ${newRecord.Summary_ID} para el estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area}) - Inicio: ${summaryStart}, Horas totales: ${totalHours}, Horas extra: ${extraHours}, Horas reducidas: ${reducedHours}, Completado: ${isComplete}`
         );
       }
 
@@ -158,15 +179,18 @@ export class Student_Hours_SummaryModel {
           changeDetails.push(`Completado: ${oldComplete} → ${newComplete}`);
         }
 
-        const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+        const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : ' - Sin cambios detectados';
         const updateType = isAutomatic ? 'automáticamente' : 'manualmente';
+
+        // Get user information for audit
+        const userInfo = await getUserInfo(internalUser);
 
         // Register detailed audit
         await AuditModel.registerAudit(
           internalUser,
           "UPDATE",
           "Student_Hours_Summary",
-          `El usuario interno ${internalUser} actualizó ${updateType} el resumen de horas ID ${id} del estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area})${changeDescription}`
+          `${userInfo} modificó ${updateType} el resumen de horas ID ${id} del estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area})${changeDescription}`
         );
       }
 
@@ -222,12 +246,15 @@ export class Student_Hours_SummaryModel {
       const reducedHours = exists.Summary_Reduced_Hours || 0;
       const isComplete = exists.Summary_IsComplete ? 'Sí' : 'No';
 
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "DELETE",
         "Student_Hours_Summary",
-        `El usuario interno ${internalId} eliminó el resumen de horas ID ${id} del estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area}) - Inicio: ${summaryStart}, Horas totales: ${totalHours}, Horas extra: ${extraHours}, Horas reducidas: ${reducedHours}, Completado: ${isComplete}`
+        `${userInfo} eliminó el resumen de horas ID ${id} del estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area}) - Inicio: ${summaryStart}, Horas totales: ${totalHours}, Horas extra: ${extraHours}, Horas reducidas: ${reducedHours}, Completado: ${isComplete}`
       );
 
       await t.commit();

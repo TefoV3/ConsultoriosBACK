@@ -1,9 +1,28 @@
 import { Weekly_Tracking } from "../../schemas/schedules_tables/Weekly_Tracking.js";
 import { Period } from "../../schemas/schedules_tables/Period.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 import { Op } from "sequelize";
 import { AuditModel } from "../AuditModel.js";
 import { getUserId } from "../../sessionData.js";
 import { sequelize } from "../../database/database.js";
+
+// Helper function to get user information for audit
+async function getUserInfo(internalId) {
+  try {
+    const admin = await InternalUser.findOne({
+      where: { Internal_ID: internalId },
+      attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+    });
+    
+    if (admin) {
+      return `${admin.Internal_Name} ${admin.Internal_LastName} (${admin.Internal_Type || 'Sin rol'} - ${admin.Internal_Area || 'Sin área'})`;
+    }
+    return `Usuario ID ${internalId} (Información no disponible)`;
+  } catch (err) {
+    console.warn("No se pudo obtener información del usuario para auditoría:", err.message);
+    return `Usuario ID ${internalId} (Error al obtener información)`;
+  }
+}
 
 // Helper to calculate week blocks between two dates
 function calculateWeeks(periodId, start, end) {
@@ -104,12 +123,15 @@ export class Weekly_TrackingModel {
       const weekHoliday = data.Week_Holiday || 0;
       const weekNumber = data.Week_Number || 'No especificado';
 
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "INSERT",
         "Weekly_Tracking",
-        `El usuario interno ${internalId} creó un seguimiento semanal ID ${newRecord.Week_ID} para el período ${periodName} (ID: ${data.Period_ID}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}, Horas programadas: ${weekHours}, Horas feriado: ${weekHoliday}`
+        `${userInfo} creó un seguimiento semanal ID ${newRecord.Week_ID} para el período ${periodName} (ID: ${data.Period_ID}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}, Horas programadas: ${weekHours}, Horas feriado: ${weekHoliday}`
       );
 
       await t.commit();
@@ -139,12 +161,15 @@ export class Weekly_TrackingModel {
       const weekCount = data.length;
       const totalHours = data.reduce((sum, week) => sum + (parseFloat(week.Week_Hours) || 0), 0);
 
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "INSERT",
         "Weekly_Tracking",
-        `El usuario interno ${internalId} creó ${weekCount} seguimientos semanales en lote para el período ${periodName} (ID: ${periodId}) - Total de horas programadas: ${totalHours}`
+        `${userInfo} creó ${weekCount} seguimientos semanales en lote para el período ${periodName} (ID: ${periodId}) - Total de horas programadas: ${totalHours}`
       );
 
       await t.commit();
@@ -163,18 +188,32 @@ export class Weekly_TrackingModel {
       const old = await this.getById(id);
       if (!old) return null;
 
-      const oldHours = parseFloat(old.Week_Hours) || 0;
-      const oldHoliday = parseFloat(old.Week_Holiday) || 0;
+      // Store original values for comparison
+      const oldValues = {
+        Week_Hours: parseFloat(old.Week_Hours) || 0,
+        Week_Holiday: parseFloat(old.Week_Holiday) || 0,
+        Week_Comment: old.Week_Comment,
+        Week_Start: old.Week_Start,
+        Week_End: old.Week_End,
+        Week_Number: old.Week_Number
+      };
 
-      const newHours = "Week_Hours" in data ? parseFloat(data.Week_Hours) || 0 : oldHours;
-      const newHoliday = "Week_Holiday" in data ? parseFloat(data.Week_Holiday) || 0 : oldHoliday;
+      // Calculate new values
+      const newValues = {
+        Week_Hours: "Week_Hours" in data ? parseFloat(data.Week_Hours) || 0 : oldValues.Week_Hours,
+        Week_Holiday: "Week_Holiday" in data ? parseFloat(data.Week_Holiday) || 0 : oldValues.Week_Holiday,
+        Week_Comment: "Week_Comment" in data ? data.Week_Comment : oldValues.Week_Comment,
+        Week_Start: "Week_Start" in data ? data.Week_Start : oldValues.Week_Start,
+        Week_End: "Week_End" in data ? data.Week_End : oldValues.Week_End,
+        Week_Number: "Week_Number" in data ? data.Week_Number : oldValues.Week_Number
+      };
 
-      if (newHoliday > newHours) {
+      if (newValues.Week_Holiday > newValues.Week_Hours) {
         throw new Error("Holiday hours cannot exceed total week hours.");
       }
 
-      const oldNet = oldHours - oldHoliday;
-      const newNet = newHours - newHoliday;
+      const oldNet = oldValues.Week_Hours - oldValues.Week_Holiday;
+      const newNet = newValues.Week_Hours - newValues.Week_Holiday;
       const diff = newNet - oldNet;
 
       await Weekly_Tracking.update(data, {
@@ -203,24 +242,46 @@ export class Weekly_TrackingModel {
 
       // Build detailed change description
       let changeDetails = [];
-      if (oldHours !== newHours) {
-        changeDetails.push(`Horas: ${oldHours} → ${newHours}`);
+      
+      if (oldValues.Week_Hours !== newValues.Week_Hours) {
+        changeDetails.push(`Horas programadas: ${oldValues.Week_Hours} → ${newValues.Week_Hours}`);
       }
-      if (oldHoliday !== newHoliday) {
-        changeDetails.push(`Horas feriado: ${oldHoliday} → ${newHoliday}`);
+      if (oldValues.Week_Holiday !== newValues.Week_Holiday) {
+        changeDetails.push(`Horas feriado: ${oldValues.Week_Holiday} → ${newValues.Week_Holiday}`);
+      }
+      if (oldValues.Week_Comment !== newValues.Week_Comment) {
+        const oldComment = oldValues.Week_Comment || 'Sin comentario';
+        const newComment = newValues.Week_Comment || 'Sin comentario';
+        changeDetails.push(`Comentario: "${oldComment}" → "${newComment}"`);
+      }
+      if (oldValues.Week_Start !== newValues.Week_Start) {
+        const oldStart = oldValues.Week_Start ? new Date(oldValues.Week_Start).toLocaleDateString('es-ES') : 'Sin fecha';
+        const newStart = newValues.Week_Start ? new Date(newValues.Week_Start).toLocaleDateString('es-ES') : 'Sin fecha';
+        changeDetails.push(`Fecha inicio: ${oldStart} → ${newStart}`);
+      }
+      if (oldValues.Week_End !== newValues.Week_End) {
+        const oldEnd = oldValues.Week_End ? new Date(oldValues.Week_End).toLocaleDateString('es-ES') : 'Sin fecha';
+        const newEnd = newValues.Week_End ? new Date(newValues.Week_End).toLocaleDateString('es-ES') : 'Sin fecha';
+        changeDetails.push(`Fecha fin: ${oldEnd} → ${newEnd}`);
+      }
+      if (oldValues.Week_Number !== newValues.Week_Number) {
+        changeDetails.push(`Número de semana: ${oldValues.Week_Number} → ${newValues.Week_Number}`);
       }
       if (diff !== 0) {
         changeDetails.push(`Horas netas del período: ${diff > 0 ? '+' : ''}${diff.toFixed(2)}`);
       }
 
-      const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
+      const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : ' - Sin cambios detectados';
 
       // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "UPDATE",
         "Weekly_Tracking",
-        `El usuario interno ${internalId} actualizó el seguimiento semanal ID ${id} del período ${periodName} (ID: ${old.Period_ID}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}${changeDescription}`
+        `${userInfo} modificó el seguimiento semanal ID ${id} del período ${periodName} (ID: ${old.Period_ID}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}${changeDescription}`
       );
 
       await t.commit();
@@ -321,12 +382,15 @@ export class Weekly_TrackingModel {
       const newEndStr = endDate.toLocaleDateString('es-ES');
       const newWeekCount = finalWeeks.length;
 
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "UPDATE",
         "Weekly_Tracking",
-        `El usuario interno ${internalId} recalculó los seguimientos semanales del período ${periodName} (ID: ${periodId}) - Nuevas fechas: ${newStartStr} - ${newEndStr}, Semanas: ${oldWeekCount} → ${newWeekCount}, Total horas: ${total}`
+        `${userInfo} recalculó los seguimientos semanales del período ${periodName} (ID: ${periodId}) - Nuevas fechas: ${newStartStr} - ${newEndStr}, Semanas: ${oldWeekCount} → ${newWeekCount}, Total horas: ${total}`
       );
 
       await t.commit();
@@ -366,12 +430,15 @@ export class Weekly_TrackingModel {
       const weekHours = week.Week_Hours || 0;
       const weekHoliday = week.Week_Holiday || 0;
 
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "DELETE",
         "Weekly_Tracking",
-        `El usuario interno ${internalId} eliminó el seguimiento semanal ID ${id} del período ${periodName} (ID: ${week.Period_ID}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}, Horas programadas: ${weekHours}, Horas feriado: ${weekHoliday}`
+        `${userInfo} eliminó el seguimiento semanal ID ${id} del período ${periodName} (ID: ${week.Period_ID}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}, Horas programadas: ${weekHours}, Horas feriado: ${weekHoliday}`
       );
 
       await t.commit();

@@ -6,6 +6,24 @@ import { getUserId } from "../../sessionData.js";
 import { Student_Hours_SummaryModel } from "./Student_Hours_SummaryModel.js";
 import { InternalUser } from "../../schemas/Internal_User.js";
 
+// Helper function to get user information for audit
+async function getUserInfo(internalId) {
+  try {
+    const admin = await InternalUser.findOne({
+      where: { Internal_ID: internalId },
+      attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+    });
+    
+    if (admin) {
+      return `${admin.Internal_Name} ${admin.Internal_LastName} (${admin.Internal_Type || 'Sin rol'} - ${admin.Internal_Area || 'Sin área'})`;
+    }
+    return `Usuario ID ${internalId} (Información no disponible)`;
+  } catch (err) {
+    console.warn("No se pudo obtener información del usuario para auditoría:", err.message);
+    return `Usuario ID ${internalId} (Error al obtener información)`;
+  }
+}
+
 export class Weekly_Hours_SummaryModel {
   // 🔹 Get all active weekly summaries
   static async getAll() {
@@ -109,12 +127,15 @@ export class Weekly_Hours_SummaryModel {
 
         const creationType = isAutomatic ? 'automáticamente' : 'manualmente';
         
+        // Get user information for audit
+        const userInfo = await getUserInfo(internalUser);
+        
         // Register detailed audit
         await AuditModel.registerAudit(
           internalUser,
           "INSERT",
           "Weekly_Hours_Summary",
-          `El usuario interno ${internalUser} creó ${creationType} un resumen semanal de horas ID ${newRecord.WeeklySummary_ID} para el estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}, Horas de asistencia: ${attendanceHours}`
+          `${userInfo} creó ${creationType} un resumen semanal de horas ID ${newRecord.WeeklySummary_ID} para el estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}, Horas de asistencia: ${attendanceHours}`
         );
       }
 
@@ -181,24 +202,44 @@ export class Weekly_Hours_SummaryModel {
         const weekEnd = existingRecord.Week_End ? new Date(existingRecord.Week_End).toLocaleDateString('es-ES') : 'Sin fecha';
         const weekNumber = existingRecord.Week_Number || 'No especificado';
         
-        // Build change description
+        // Build detailed change description
         let changeDetails = [];
-        const oldHours = existingRecord.Attendance_Hours || 0;
-        const newHours = data.Attendance_Hours !== undefined ? data.Attendance_Hours : oldHours;
         
-        if (oldHours !== newHours) {
+        // Compare all possible fields
+        if (data.Summary_ID !== undefined && data.Summary_ID !== existingRecord.Summary_ID) {
+          changeDetails.push(`ID Resumen General: ${existingRecord.Summary_ID} → ${data.Summary_ID}`);
+        }
+        if (data.Week_Number !== undefined && data.Week_Number !== existingRecord.Week_Number) {
+          changeDetails.push(`Número de semana: ${existingRecord.Week_Number} → ${data.Week_Number}`);
+        }
+        if (data.Week_Start !== undefined && data.Week_Start !== existingRecord.Week_Start) {
+          const oldStart = existingRecord.Week_Start ? new Date(existingRecord.Week_Start).toLocaleDateString('es-ES') : 'Sin fecha';
+          const newStart = data.Week_Start ? new Date(data.Week_Start).toLocaleDateString('es-ES') : 'Sin fecha';
+          changeDetails.push(`Inicio de semana: ${oldStart} → ${newStart}`);
+        }
+        if (data.Week_End !== undefined && data.Week_End !== existingRecord.Week_End) {
+          const oldEnd = existingRecord.Week_End ? new Date(existingRecord.Week_End).toLocaleDateString('es-ES') : 'Sin fecha';
+          const newEnd = data.Week_End ? new Date(data.Week_End).toLocaleDateString('es-ES') : 'Sin fecha';
+          changeDetails.push(`Fin de semana: ${oldEnd} → ${newEnd}`);
+        }
+        if (data.Attendance_Hours !== undefined && data.Attendance_Hours !== existingRecord.Attendance_Hours) {
+          const oldHours = existingRecord.Attendance_Hours || 0;
+          const newHours = data.Attendance_Hours || 0;
           changeDetails.push(`Horas de asistencia: ${oldHours} → ${newHours}`);
         }
 
-        const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+        const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : ' - Sin cambios detectados';
         const updateType = isAutomatic ? 'automáticamente' : 'manualmente';
+
+        // Get user information for audit
+        const userInfo = await getUserInfo(internalUser);
 
         // Register detailed audit
         await AuditModel.registerAudit(
           internalUser,
           "UPDATE",
           "Weekly_Hours_Summary",
-          `El usuario interno ${internalUser} actualizó ${updateType} el resumen semanal de horas ID ${id} del estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}${changeDescription}`
+          `${userInfo} modificó ${updateType} el resumen semanal de horas ID ${id} del estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}${changeDescription}`
         );
       }
 
@@ -264,12 +305,15 @@ export class Weekly_Hours_SummaryModel {
       const weekNumber = existingRecord.Week_Number || 'No especificado';
       const attendanceHours = existingRecord.Attendance_Hours || 0;
 
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "DELETE",
         "Weekly_Hours_Summary",
-        `El usuario interno ${internalId} eliminó el resumen semanal de horas ID ${id} del estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}, Horas de asistencia: ${attendanceHours}`
+        `${userInfo} eliminó el resumen semanal de horas ID ${id} del estudiante ${studentInfo.name} (Cédula: ${studentInfo.studentId}, Área: ${studentInfo.area}) - Semana ${weekNumber}: ${weekStart} - ${weekEnd}, Horas de asistencia: ${attendanceHours}`
       );
 
       await t.commit();

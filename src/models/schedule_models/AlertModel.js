@@ -1,7 +1,26 @@
 import { Alert } from "../../schemas/schedules_tables/Alert.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 import { sequelize } from "../../database/database.js";
 import { AuditModel } from "../AuditModel.js";
 import { getUserId } from "../../sessionData.js";
+
+// Helper function to get user information for audit
+async function getUserInfo(internalId) {
+  try {
+    const admin = await InternalUser.findOne({
+      where: { Internal_ID: internalId },
+      attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+    });
+    
+    if (admin) {
+      return `${admin.Internal_Name} ${admin.Internal_LastName} (${admin.Internal_Type || 'Sin rol'} - ${admin.Internal_Area || 'Sin área'})`;
+    }
+    return `Usuario ID ${internalId} (Información no disponible)`;
+  } catch (err) {
+    console.warn("No se pudo obtener información del usuario para auditoría:", err.message);
+    return `Usuario ID ${internalId} (Error al obtener información)`;
+  }
+}
 
 export class AlertModel {
   // 1. Get all active alerts
@@ -37,16 +56,40 @@ export class AlertModel {
 
       // Solo auditar si se requiere
       if (!options.skipAudit) {
+        // Get user information for audit
+        const userInfo = await getUserInfo(internalUser);
+
+        // Get target user information for audit
+        let targetInfo = { name: 'Usuario Desconocido', area: 'Área no especificada', id: data.Internal_ID || 'Desconocido' };
+        if (data.Internal_ID) {
+          try {
+            const targetUser = await InternalUser.findOne({
+              where: { Internal_ID: data.Internal_ID },
+              attributes: ["Internal_Name", "Internal_LastName", "Internal_Area"]
+            });
+            
+            if (targetUser) {
+              targetInfo = {
+                name: `${targetUser.Internal_Name} ${targetUser.Internal_LastName}`,
+                area: targetUser.Internal_Area || 'Área no especificada',
+                id: data.Internal_ID
+              };
+            }
+          } catch (err) {
+            console.warn("No se pudo obtener información del usuario objetivo para auditoría:", err.message);
+          }
+        }
+
         const creationType = isAutomatic ? 'automáticamente' : 'manualmente';
         const alertType = data.Alert_Type || 'Tipo no especificado';
-        const targetUserId = data.Internal_ID || 'Usuario no especificado';
+        const alertMessage = data.Alert_Message ? data.Alert_Message.substring(0, 100) + (data.Alert_Message.length > 100 ? '...' : '') : 'Sin mensaje';
         
-        // Register audit
+        // Register detailed audit
         await AuditModel.registerAudit(
           internalUser,
           "INSERT",
           "Alert",
-          `El usuario interno ${internalUser} creó ${creationType} una alerta ID ${newAlert.Alert_ID} para el usuario interno ${targetUserId} - Tipo: ${alertType}`
+          `${userInfo} creó ${creationType} una alerta ID ${newAlert.Alert_ID} para ${targetInfo.name} (Cédula: ${targetInfo.id}, Área: ${targetInfo.area}) - Tipo: ${alertType}, Mensaje: "${alertMessage}"`
         );
       }
 
@@ -79,15 +122,56 @@ export class AlertModel {
       if (updated > 0) {
         // Solo auditar si se requiere
         if (!options.skipAudit) {
-          const updateType = isAutomatic ? 'automáticamente' : 'manualmente';
-          const targetUserId = alert.Internal_ID || 'Usuario no especificado';
+          // Get user information for audit
+          const userInfo = await getUserInfo(internalUser);
+
+          // Get target user information for audit
+          let targetInfo = { name: 'Usuario Desconocido', area: 'Área no especificada', id: alert.Internal_ID || 'Desconocido' };
+          if (alert.Internal_ID) {
+            try {
+              const targetUser = await InternalUser.findOne({
+                where: { Internal_ID: alert.Internal_ID },
+                attributes: ["Internal_Name", "Internal_LastName", "Internal_Area"]
+              });
+              
+              if (targetUser) {
+                targetInfo = {
+                  name: `${targetUser.Internal_Name} ${targetUser.Internal_LastName}`,
+                  area: targetUser.Internal_Area || 'Área no especificada',
+                  id: alert.Internal_ID
+                };
+              }
+            } catch (err) {
+              console.warn("No se pudo obtener información del usuario objetivo para auditoría:", err.message);
+            }
+          }
+
+          // Build change description
+          let changeDetails = [];
           
-          // Register audit
+          if (data.Alert_Type && data.Alert_Type !== alert.Alert_Type) {
+            changeDetails.push(`Tipo: "${alert.Alert_Type}" → "${data.Alert_Type}"`);
+          }
+
+          if (data.Alert_Message && data.Alert_Message !== alert.Alert_Message) {
+            const oldMsg = alert.Alert_Message ? alert.Alert_Message.substring(0, 50) + '...' : 'Sin mensaje';
+            const newMsg = data.Alert_Message.substring(0, 50) + '...';
+            changeDetails.push(`Mensaje: "${oldMsg}" → "${newMsg}"`);
+          }
+
+          if (data.Alert_Status && data.Alert_Status !== alert.Alert_Status) {
+            changeDetails.push(`Estado: "${alert.Alert_Status || 'Sin estado'}" → "${data.Alert_Status}"`);
+          }
+
+          const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+          const updateType = isAutomatic ? 'automáticamente' : 'manualmente';
+          
+          // Register detailed audit
           await AuditModel.registerAudit(
             internalUser,
             "UPDATE",
             "Alert",
-            `El usuario interno ${internalUser} actualizó ${updateType} la alerta ID ${id} del usuario interno ${targetUserId}`
+            `${userInfo} actualizó ${updateType} la alerta ID ${id} de ${targetInfo.name} (Cédula: ${targetInfo.id}, Área: ${targetInfo.area})${changeDescription}`
           );
         }
 
@@ -126,16 +210,40 @@ export class AlertModel {
 
       // Solo auditar si se requiere
       if (!options.skipAudit) {
+        // Get user information for audit
+        const userInfo = await getUserInfo(internalUser);
+
+        // Get target user information for audit
+        let targetInfo = { name: 'Usuario Desconocido', area: 'Área no especificada', id: alert.Internal_ID || 'Desconocido' };
+        if (alert.Internal_ID) {
+          try {
+            const targetUser = await InternalUser.findOne({
+              where: { Internal_ID: alert.Internal_ID },
+              attributes: ["Internal_Name", "Internal_LastName", "Internal_Area"]
+            });
+            
+            if (targetUser) {
+              targetInfo = {
+                name: `${targetUser.Internal_Name} ${targetUser.Internal_LastName}`,
+                area: targetUser.Internal_Area || 'Área no especificada',
+                id: alert.Internal_ID
+              };
+            }
+          } catch (err) {
+            console.warn("No se pudo obtener información del usuario objetivo para auditoría:", err.message);
+          }
+        }
+
         const deleteType = isAutomatic ? 'automáticamente' : 'manualmente';
-        const targetUserId = alert.Internal_ID || 'Usuario no especificado';
         const alertType = alert.Alert_Type || 'Tipo no especificado';
+        const alertMessage = alert.Alert_Message ? alert.Alert_Message.substring(0, 100) + (alert.Alert_Message.length > 100 ? '...' : '') : 'Sin mensaje';
         
-        // Register audit
+        // Register detailed audit
         await AuditModel.registerAudit(
           internalUser,
           "DELETE",
           "Alert",
-          `El usuario interno ${internalUser} eliminó ${deleteType} la alerta ID ${id} del usuario interno ${targetUserId} - Tipo: ${alertType}`
+          `${userInfo} eliminó ${deleteType} la alerta ID ${id} de ${targetInfo.name} (Cédula: ${targetInfo.id}, Área: ${targetInfo.area}) - Tipo: ${alertType}, Mensaje: "${alertMessage}"`
         );
       }
 

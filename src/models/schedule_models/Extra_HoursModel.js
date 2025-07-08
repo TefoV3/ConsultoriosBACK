@@ -5,6 +5,24 @@ import { AuditModel } from "../AuditModel.js";
 import { getUserId } from "../../sessionData.js";
 import { InternalUser } from "../../schemas/Internal_User.js";
 
+// Helper function to get user information for audit
+async function getUserInfo(internalId) {
+  try {
+    const admin = await InternalUser.findOne({
+      where: { Internal_ID: internalId },
+      attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+    });
+    
+    if (admin) {
+      return `${admin.Internal_Name} ${admin.Internal_LastName} (${admin.Internal_Type || 'Sin rol'} - ${admin.Internal_Area || 'Sin área'})`;
+    }
+    return `Usuario ID ${internalId} (Información no disponible)`;
+  } catch (err) {
+    console.warn("No se pudo obtener información del usuario para auditoría:", err.message);
+    return `Usuario ID ${internalId} (Error al obtener información)`;
+  }
+}
+
 // Reusable constant
 const MAX_HOURS = 500;
 
@@ -63,12 +81,15 @@ export class Extra_HoursModel {
       const hoursNum = data.Hours_Num || 0;
       const hoursReason = data.Hours_Comment || 'Sin razón especificada';
 
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "INSERT",
         "Extra_Hours",
-        `El usuario interno ${internalId} creó un ajuste de horas extra ID ${newRecord.Hours_ID} para el estudiante ${studentName} (Cédula: ${data.Internal_ID}, Área: ${studentArea}) - Fecha: ${hoursDate}, Tipo: ${hoursType}, Cantidad: ${hoursNum} horas, Motivo: ${hoursReason}`
+        `${userInfo} creó un ajuste de horas extra ID ${newRecord.Hours_ID} para el estudiante ${studentName} (Cédula: ${data.Internal_ID}, Área: ${studentArea}) - Fecha: ${hoursDate}, Tipo: ${hoursType}, Cantidad: ${hoursNum} horas, Motivo: ${hoursReason}`
       );
 
       await t.commit();
@@ -112,12 +133,15 @@ export class Extra_HoursModel {
       const hoursType = record.Hours_Type || 'No especificado';
       const hoursNum = record.Hours_Num || 0;
 
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "UPDATE",
         "Extra_Hours",
-        `El usuario interno ${internalId} actualizó el ajuste de horas extra ID ${id} del estudiante ${studentName} (Cédula: ${record.Internal_ID}, Área: ${studentArea}) - Fecha: ${hoursDate}, Tipo: ${hoursType}, Cantidad: ${hoursNum} horas`
+        `${userInfo} modificó el ajuste de horas extra ID ${id} del estudiante ${studentName} (Cédula: ${record.Internal_ID}, Área: ${studentArea}) - Fecha: ${hoursDate}, Tipo: ${hoursType}, Cantidad: ${hoursNum} horas`
       );
 
       await t.commit();
@@ -160,12 +184,15 @@ export class Extra_HoursModel {
       const hoursNum = record.Hours_Num || 0;
       const hoursReason = record.Hours_Comment || 'Sin razón especificada';
 
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "DELETE",
         "Extra_Hours",
-        `El usuario interno ${internalId} eliminó el ajuste de horas extra ID ${id} del estudiante ${studentName} (Cédula: ${record.Internal_ID}, Área: ${studentArea}) - Fecha: ${hoursDate}, Tipo: ${hoursType}, Cantidad: ${hoursNum} horas, Motivo: ${hoursReason}`
+        `${userInfo} eliminó el ajuste de horas extra ID ${id} del estudiante ${studentName} (Cédula: ${record.Internal_ID}, Área: ${studentArea}) - Fecha: ${hoursDate}, Tipo: ${hoursType}, Cantidad: ${hoursNum} horas, Motivo: ${hoursReason}`
       );
 
       await t.commit();
@@ -264,11 +291,14 @@ export class Extra_HoursModel {
         `Total de horas actualizado: ${previousTotalHours.toFixed(2)} → ${newTotalHours.toFixed(2)} horas` :
         `Nuevo resumen creado con ${newTotalHours.toFixed(2)} horas totales`;
 
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       await AuditModel.registerAudit(
         internalId,
         "INSERT",
         "Extra_Hours",
-        `El usuario interno ${internalId} creó un ajuste de horas extra completo ID ${adjustment.Hours_ID} para el estudiante ${studentName} (Cédula: ${data.Internal_ID}, Área: ${studentArea}) - Fecha: ${hoursDate}, Tipo: ${hoursType}, ${actionType} ${hoursNum} horas, Motivo: ${hoursReason}. ${summaryInfo}`
+        `${userInfo} creó un ajuste de horas extra completo ID ${adjustment.Hours_ID} para el estudiante ${studentName} (Cédula: ${data.Internal_ID}, Área: ${studentArea}) - Fecha: ${hoursDate}, Tipo: ${hoursType}, ${actionType} ${hoursNum} horas, Motivo: ${hoursReason}. ${summaryInfo}`
       );
 
       await t.commit();

@@ -1,9 +1,28 @@
 import { Period } from "../../schemas/schedules_tables/Period.js";
 import { Weekly_Tracking } from "../../schemas/schedules_tables/Weekly_Tracking.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 import { AuditModel } from "../AuditModel.js";
 import { sequelize } from "../../database/database.js";
 import { Op } from "sequelize";
-import { getUserId } from "../../sessionData.js"; // Adjust the import path as necessary
+import { getUserId } from "../../sessionData.js";
+
+// Helper function to get user information for audit
+async function getUserInfo(internalId) {
+  try {
+    const admin = await InternalUser.findOne({
+      where: { Internal_ID: internalId },
+      attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+    });
+    
+    if (admin) {
+      return `${admin.Internal_Name} ${admin.Internal_LastName} (${admin.Internal_Type || 'Sin rol'} - ${admin.Internal_Area || 'Sin área'})`;
+    }
+    return `Usuario ID ${internalId} (Información no disponible)`;
+  } catch (err) {
+    console.warn("No se pudo obtener información del usuario para auditoría:", err.message);
+    return `Usuario ID ${internalId} (Error al obtener información)`;
+  }
+}
 
 export class PeriodModel {
   /** 🔹 Get all active periods */
@@ -74,12 +93,38 @@ export class PeriodModel {
 
       const newPeriod = await Period.create(data, { transaction: t });
 
-      // Register audit
+      // Get admin user information for audit
+      let adminInfo = { name: 'Usuario Desconocido', area: 'Área no especificada' };
+      try {
+        const admin = await InternalUser.findOne({
+          where: { Internal_ID: internalId },
+          attributes: ["Internal_Name", "Internal_LastName", "Internal_Area"]
+        });
+        
+        if (admin) {
+          adminInfo = {
+            name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+            area: admin.Internal_Area || 'Área no especificada'
+          };
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+      }
+
+      const startDate = data.Period_Start ? new Date(data.Period_Start).toLocaleDateString('es-ES') : 'Sin fecha';
+      const endDate = data.Period_End ? new Date(data.Period_End).toLocaleDateString('es-ES') : 'Sin fecha';
+      const periodName = data.Period_Name || 'Sin nombre';
+      const status = data.Period_Status || 'Sin estado';
+
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
+      // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "INSERT",
         "Period",
-        `El usuario interno ${internalId} creó el período ${newPeriod.Period_ID}`
+        `${userInfo} creó el período "${periodName}" ID ${newPeriod.Period_ID} - Fechas: ${startDate} a ${endDate}, Estado: ${status}`
       );
 
       await t.commit(); // Commit transaction
@@ -128,12 +173,63 @@ export class PeriodModel {
         transaction: t
       });
 
-      // Register audit
+      // Get admin user information for audit
+      let adminInfo = { name: 'Usuario Desconocido', area: 'Área no especificada' };
+      try {
+        const admin = await InternalUser.findOne({
+          where: { Internal_ID: internalId },
+          attributes: ["Internal_Name", "Internal_LastName", "Internal_Area"]
+        });
+        
+        if (admin) {
+          adminInfo = {
+            name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+            area: admin.Internal_Area || 'Área no especificada'
+          };
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+      }
+
+      // Build change description
+      let changeDetails = [];
+      
+      if (data.Period_Name && data.Period_Name !== current.Period_Name) {
+        changeDetails.push(`Nombre: "${current.Period_Name}" → "${data.Period_Name}"`);
+      }
+
+      if (data.Period_Start) {
+        const oldStart = current.Period_Start ? new Date(current.Period_Start).toLocaleDateString('es-ES') : 'Sin fecha';
+        const newStart = new Date(data.Period_Start).toLocaleDateString('es-ES');
+        if (oldStart !== newStart) {
+          changeDetails.push(`Fecha inicio: ${oldStart} → ${newStart}`);
+        }
+      }
+
+      if (data.Period_End) {
+        const oldEnd = current.Period_End ? new Date(current.Period_End).toLocaleDateString('es-ES') : 'Sin fecha';
+        const newEnd = new Date(data.Period_End).toLocaleDateString('es-ES');
+        if (oldEnd !== newEnd) {
+          changeDetails.push(`Fecha fin: ${oldEnd} → ${newEnd}`);
+        }
+      }
+
+      if (data.Period_Status && data.Period_Status !== current.Period_Status) {
+        changeDetails.push(`Estado: "${current.Period_Status}" → "${data.Period_Status}"`);
+      }
+
+      const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : ' - Sin cambios detectados';
+      const periodName = current.Period_Name || `ID ${id}`;
+
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
+      // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "UPDATE",
         "Period",
-        `El usuario interno ${internalId} actualizó el período ${id}`
+        `${userInfo} modificó el período "${periodName}"${changeDescription}`
       );
 
       if (rowsUpdated === 0) {
@@ -167,11 +263,37 @@ export class PeriodModel {
         { where: { Period_ID: id, Period_IsDeleted: false } }
       );
 
+      // Get admin user information for audit
+      let adminInfo = { name: 'Usuario Desconocido', area: 'Área no especificada' };
+      try {
+        const admin = await InternalUser.findOne({
+          where: { Internal_ID: internalId },
+          attributes: ["Internal_Name", "Internal_LastName", "Internal_Area"]
+        });
+        
+        if (admin) {
+          adminInfo = {
+            name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+            area: admin.Internal_Area || 'Área no especificada'
+          };
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+      }
+
+      const periodName = period.Period_Name || `ID ${id}`;
+      const startDate = period.Period_Start ? new Date(period.Period_Start).toLocaleDateString('es-ES') : 'Sin fecha';
+      const endDate = period.Period_End ? new Date(period.Period_End).toLocaleDateString('es-ES') : 'Sin fecha';
+      const status = period.Period_Status || 'Sin estado';
+
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       await AuditModel.registerAudit(
         internalId,
         "DELETE",
         "Period",
-        `El usuario interno ${internalId} eliminó lógicamente el período ${id}`
+        `${userInfo} eliminó el período "${periodName}" - Fechas: ${startDate} a ${endDate}, Estado: ${status}`
       );
 
       return period;

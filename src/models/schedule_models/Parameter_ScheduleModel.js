@@ -1,8 +1,27 @@
 import { Parameter_Schedule } from "../../schemas/schedules_tables/Parameter_Schedule.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 import { sequelize } from "../../database/database.js";
 import { QueryTypes } from "sequelize";
 import { AuditModel } from "../AuditModel.js";
 import { getUserId } from "../../sessionData.js";
+
+// Helper function to get user information for audit
+async function getUserInfo(internalId) {
+  try {
+    const admin = await InternalUser.findOne({
+      where: { Internal_ID: internalId },
+      attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+    });
+    
+    if (admin) {
+      return `${admin.Internal_Name} ${admin.Internal_LastName} (${admin.Internal_Type || 'Sin rol'} - ${admin.Internal_Area || 'Sin área'})`;
+    }
+    return `Usuario ID ${internalId} (Información no disponible)`;
+  } catch (err) {
+    console.warn("No se pudo obtener información del usuario para auditoría:", err.message);
+    return `Usuario ID ${internalId} (Error al obtener información)`;
+  }
+}
 
 export class Parameter_ScheduleModel {
   // 1. Get all active records
@@ -90,12 +109,38 @@ export class Parameter_ScheduleModel {
 
       const newParameterSchedule = await Parameter_Schedule.create(data, { transaction: t });
 
-      // Register audit
+      // Get admin user information for audit
+      let adminInfo = { name: 'Usuario Desconocido', area: 'Área no especificada' };
+      try {
+        const admin = await InternalUser.findOne({
+          where: { Internal_ID: internalId },
+          attributes: ["Internal_Name", "Internal_LastName", "Internal_Area"]
+        });
+        
+        if (admin) {
+          adminInfo = {
+            name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+            area: admin.Internal_Area || 'Área no especificada'
+          };
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+      }
+
+      const scheduleType = data.Parameter_Schedule_Type || 'Tipo no especificado';
+      const startTime = data.Parameter_Schedule_Start_Time || 'Sin hora inicio';
+      const endTime = data.Parameter_Schedule_End_Time || 'Sin hora fin';
+      const area = data.Parameter_Schedule_Area || 'Sin área';
+
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
+      // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "INSERT",
         "Parameter_Schedule",
-        `El usuario interno ${internalId} creó el parámetro de horario ${newParameterSchedule.Parameter_Schedule_ID} - ${data.Parameter_Schedule_Type} (${data.Parameter_Schedule_Start_Time} - ${data.Parameter_Schedule_End_Time})`
+        `${userInfo} creó el parámetro de horario ID ${newParameterSchedule.Parameter_Schedule_ID} - Tipo: ${scheduleType}, Horario: ${startTime} a ${endTime}, Área: ${area}`
       );
 
       await t.commit(); // Commit transaction
@@ -123,12 +168,54 @@ export class Parameter_ScheduleModel {
         transaction: t
       });
 
-      // Register audit
+      // Get admin user information for audit
+      let adminInfo = { name: 'Usuario Desconocido', area: 'Área no especificada' };
+      try {
+        const admin = await InternalUser.findOne({
+          where: { Internal_ID: internalId },
+          attributes: ["Internal_Name", "Internal_LastName", "Internal_Area"]
+        });
+        
+        if (admin) {
+          adminInfo = {
+            name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+            area: admin.Internal_Area || 'Área no especificada'
+          };
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+      }
+
+      // Build change description
+      let changeDetails = [];
+      
+      if (data.Parameter_Schedule_Type && data.Parameter_Schedule_Type !== current.Parameter_Schedule_Type) {
+        changeDetails.push(`Tipo: "${current.Parameter_Schedule_Type}" → "${data.Parameter_Schedule_Type}"`);
+      }
+
+      if (data.Parameter_Schedule_Start_Time && data.Parameter_Schedule_Start_Time !== current.Parameter_Schedule_Start_Time) {
+        changeDetails.push(`Hora inicio: "${current.Parameter_Schedule_Start_Time}" → "${data.Parameter_Schedule_Start_Time}"`);
+      }
+
+      if (data.Parameter_Schedule_End_Time && data.Parameter_Schedule_End_Time !== current.Parameter_Schedule_End_Time) {
+        changeDetails.push(`Hora fin: "${current.Parameter_Schedule_End_Time}" → "${data.Parameter_Schedule_End_Time}"`);
+      }
+
+      if (data.Parameter_Schedule_Area && data.Parameter_Schedule_Area !== current.Parameter_Schedule_Area) {
+        changeDetails.push(`Área: "${current.Parameter_Schedule_Area}" → "${data.Parameter_Schedule_Area}"`);
+      }
+
+      const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : ' - Sin cambios detectados';
+
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
+      // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "UPDATE",
         "Parameter_Schedule",
-        `El usuario interno ${internalId} actualizó el parámetro de horario ${id}`
+        `${userInfo} modificó el parámetro de horario ID ${id}${changeDescription}`
       );
 
       if (rowsUpdated === 0) {
@@ -162,11 +249,37 @@ export class Parameter_ScheduleModel {
         { where: { Parameter_Schedule_ID: id } }
       );
 
+      // Get admin user information for audit
+      let adminInfo = { name: 'Usuario Desconocido', area: 'Área no especificada' };
+      try {
+        const admin = await InternalUser.findOne({
+          where: { Internal_ID: internalId },
+          attributes: ["Internal_Name", "Internal_LastName", "Internal_Area"]
+        });
+        
+        if (admin) {
+          adminInfo = {
+            name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+            area: admin.Internal_Area || 'Área no especificada'
+          };
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+      }
+
+      const scheduleType = parameterSchedule.Parameter_Schedule_Type || 'Tipo no especificado';
+      const startTime = parameterSchedule.Parameter_Schedule_Start_Time || 'Sin hora inicio';
+      const endTime = parameterSchedule.Parameter_Schedule_End_Time || 'Sin hora fin';
+      const area = parameterSchedule.Parameter_Schedule_Area || 'Sin área';
+
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       await AuditModel.registerAudit(
         internalId,
         "DELETE",
         "Parameter_Schedule",
-        `El usuario interno ${internalId} eliminó lógicamente el parámetro de horario ${id} - ${parameterSchedule.Parameter_Schedule_Type}`
+        `${userInfo} eliminó el parámetro de horario ID ${id} - Tipo: ${scheduleType}, Horario: ${startTime} a ${endTime}, Área: ${area}`
       );
 
       return parameterSchedule;

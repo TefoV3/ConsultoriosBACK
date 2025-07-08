@@ -11,6 +11,24 @@ import { sequelize } from "../../database/database.js";
 import { AuditModel } from "../AuditModel.js";
 import { getUserId } from "../../sessionData.js";
 
+// Helper function to get user information for audit
+async function getUserInfo(internalId) {
+  try {
+    const admin = await InternalUser.findOne({
+      where: { Internal_ID: internalId },
+      attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+    });
+    
+    if (admin) {
+      return `${admin.Internal_Name} ${admin.Internal_LastName} (${admin.Internal_Type || 'Sin rol'} - ${admin.Internal_Area || 'Sin área'})`;
+    }
+    return `Usuario ID ${internalId} (Información no disponible)`;
+  } catch (err) {
+    console.warn("No se pudo obtener información del usuario para auditoría:", err.message);
+    return `Usuario ID ${internalId} (Error al obtener información)`;
+  }
+}
+
 // Reusable constant
 const MAX_HOURS = 500;
 
@@ -73,12 +91,15 @@ export class Attendance_RecordModel {
       const exitTime = data.Attendance_Exit ? new Date(data.Attendance_Exit).toLocaleString('es-ES') : 'Sin registrar';
       const attendanceType = data.Attendance_Type || 'No especificado';
 
+      // Get user information for audit
+      const userInfo = await getUserInfo(internalId);
+
       // Register detailed audit
       await AuditModel.registerAudit(
         internalId,
         "INSERT",
         "Attendance_Record",
-        `El usuario interno ${internalId} creó un registro de asistencia ID ${newRecord.Attendance_ID} para el estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Entrada: ${entryTime}, Salida: ${exitTime}, Tipo: ${attendanceType}`
+        `${userInfo} creó un registro de asistencia ID ${newRecord.Attendance_ID} para el estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Entrada: ${entryTime}, Salida: ${exitTime}, Tipo: ${attendanceType}`
       );
 
       await t.commit();
@@ -120,12 +141,15 @@ export class Attendance_RecordModel {
         const entryTime = record.Attendance_Entry ? new Date(record.Attendance_Entry).toLocaleString('es-ES') : 'Sin entrada';
         const exitTime = record.Attendance_Exit ? new Date(record.Attendance_Exit).toLocaleString('es-ES') : 'Sin salida';
 
+        // Get user information for audit
+        const userInfo = await getUserInfo(internalId);
+
         // Register detailed audit
         await AuditModel.registerAudit(
           internalId,
           "DELETE",
           "Attendance_Record",
-          `El usuario interno ${internalId} eliminó el registro de asistencia ID ${id} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Registro eliminado: Entrada ${entryTime}, Salida ${exitTime}`
+          `${userInfo} eliminó el registro de asistencia ID ${id} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Registro eliminado: Entrada ${entryTime}, Salida ${exitTime}`
         );
 
         await t.commit();
@@ -164,12 +188,37 @@ export class Attendance_RecordModel {
         const studentArea = userXPeriodRecord?.user?.Internal_Area || 'Área no especificada';
         const periodName = userXPeriodRecord?.period?.Period_Name || 'Período no especificado';
 
+        // Get user information for audit
+        const userInfo = await getUserInfo(internalId);
+
+        // Track field changes for detailed audit
+        const updatedRecord = await this.getById(id);
+        const changes = [];
+        
+        if (data.Attendance_Entry && new Date(data.Attendance_Entry).getTime() !== new Date(record.Attendance_Entry).getTime()) {
+          const oldEntry = record.Attendance_Entry ? new Date(record.Attendance_Entry).toLocaleString('es-ES') : 'Sin entrada';
+          const newEntry = new Date(data.Attendance_Entry).toLocaleString('es-ES');
+          changes.push(`Entrada: ${oldEntry} → ${newEntry}`);
+        }
+        
+        if (data.Attendance_Exit && new Date(data.Attendance_Exit).getTime() !== new Date(record.Attendance_Exit).getTime()) {
+          const oldExit = record.Attendance_Exit ? new Date(record.Attendance_Exit).toLocaleString('es-ES') : 'Sin salida';
+          const newExit = new Date(data.Attendance_Exit).toLocaleString('es-ES');
+          changes.push(`Salida: ${oldExit} → ${newExit}`);
+        }
+        
+        if (data.Attendance_Type && data.Attendance_Type !== record.Attendance_Type) {
+          changes.push(`Tipo: ${record.Attendance_Type || 'No especificado'} → ${data.Attendance_Type}`);
+        }
+
+        const changeDetails = changes.length > 0 ? ` - Cambios: ${changes.join(', ')}` : '';
+
         // Register detailed audit
         await AuditModel.registerAudit(
           internalId,
           "UPDATE",
           "Attendance_Record",
-          `El usuario interno ${internalId} actualizó el registro de asistencia ID ${id} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName}`
+          `${userInfo} actualizó el registro de asistencia ID ${id} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName}${changeDetails}`
         );
 
         await t.commit();
@@ -335,6 +384,9 @@ static async updateClosedWithSummary(recordId, newData, internalUser) {
     const diffForWeekly = newDiffHours - oldDiffHours;
     await this.updateWeeklySummary(periodId, newEntry, diffForWeekly, t, generalSummary.Summary_ID);
 
+    // Get user information for audit
+    const userInfo = await getUserInfo(internalId);
+
     // Register detailed audit with before/after comparison
     const oldEntryTime = oldEntry.toLocaleString('es-ES');
     const oldExitTime = oldExit.toLocaleString('es-ES');
@@ -345,7 +397,7 @@ static async updateClosedWithSummary(recordId, newData, internalUser) {
       internalId,
       "UPDATE",
       "Attendance_Record",
-      `El usuario interno ${internalId} modificó el registro cerrado de asistencia ID ${recordId} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - ANTERIOR: Entrada ${oldEntryTime}, Salida ${oldExitTime} (${oldDiffHours.toFixed(2)}h) → NUEVO: Entrada ${newEntryTime}, Salida ${newExitTime} (${newDiffHours.toFixed(2)}h), Tipo: ${attendanceType}. Total de horas actualizado: ${previousTotalHours.toFixed(2)} → ${newTotal.toFixed(2)} horas`
+      `${userInfo} modificó el registro cerrado de asistencia ID ${recordId} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - ANTERIOR: Entrada ${oldEntryTime}, Salida ${oldExitTime} (${oldDiffHours.toFixed(2)}h) → NUEVO: Entrada ${newEntryTime}, Salida ${newExitTime} (${newDiffHours.toFixed(2)}h), Tipo: ${attendanceType}. Total de horas actualizado: ${previousTotalHours.toFixed(2)} → ${newTotal.toFixed(2)} horas`
     );
 
     await t.commit();
@@ -457,12 +509,15 @@ static async deleteWithAdjustment(recordId, internalUser) {
     const previousHours = parseFloat(generalSummary.Summary_Total_Hours).toFixed(2);
     const newHours = finalTotal.toFixed(2);
 
+    // Get user information for audit
+    const userInfo = await getUserInfo(internalId);
+
     // Register detailed audit
     await AuditModel.registerAudit(
       internalId,
       "DELETE",
       "Attendance_Record",
-      `El usuario interno ${internalId} eliminó con ajuste el registro de asistencia ID ${recordId} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Entrada: ${entryTime}, Salida: ${exitTime}, Duración: ${diffHours.toFixed(2)} horas. Horas totales actualizadas de ${previousHours} a ${newHours}`
+      `${userInfo} eliminó con ajuste el registro de asistencia ID ${recordId} del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Entrada: ${entryTime}, Salida: ${exitTime}, Duración: ${diffHours.toFixed(2)} horas. Horas totales actualizadas de ${previousHours} a ${newHours}`
     );
 
     await t.commit();
@@ -586,6 +641,9 @@ static async createWithSummary(data, internalUser) {
 
     await this.updateWeeklySummary(periodId, entry, diffHours, t, generalSummary.Summary_ID);
 
+    // Get user information for audit
+    const userInfo = await getUserInfo(internalId);
+
     // Register detailed audit with summary information
     const entryTime = entry.toLocaleString('es-ES');
     const exitTime = exit.toLocaleString('es-ES');
@@ -594,7 +652,7 @@ static async createWithSummary(data, internalUser) {
       internalId,
       "INSERT",
       "Attendance_Record",
-      `El usuario interno ${internalId} creó un registro de asistencia completo ID ${newRecord.Attendance_ID} para el estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Entrada: ${entryTime}, Salida: ${exitTime}, Horas registradas: ${diffHours.toFixed(2)}, Tipo: ${attendanceType}. Total de horas actualizado: ${previousTotalHours.toFixed(2)} → ${newTotalHours.toFixed(2)} horas`
+      `${userInfo} creó un registro de asistencia completo ID ${newRecord.Attendance_ID} para el estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} - Entrada: ${entryTime}, Salida: ${exitTime}, Horas registradas: ${diffHours.toFixed(2)}, Tipo: ${attendanceType}. Total de horas actualizado: ${previousTotalHours.toFixed(2)} → ${newTotalHours.toFixed(2)} horas`
     );
 
     await t.commit();
@@ -669,6 +727,9 @@ static async updateExitWithSummary(recordId, data, internalUser) {
 
     await this.updateWeeklySummary(periodId, entry, diffHours, t, generalSummary.Summary_ID);
 
+    // Get user information for audit
+    const userInfo = await getUserInfo(internalId);
+
     // Register detailed audit with exit information
     const entryTime = entry.toLocaleString('es-ES');
     const exitTime = exit.toLocaleString('es-ES');
@@ -677,7 +738,7 @@ static async updateExitWithSummary(recordId, data, internalUser) {
       internalId,
       "UPDATE",
       "Attendance_Record",
-      `El usuario interno ${internalId} registró la salida del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} en el registro ID ${recordId} - Entrada: ${entryTime}, Salida: ${exitTime}, Horas trabajadas: ${diffHours.toFixed(2)}, Tipo: ${attendanceType}. Total de horas actualizado: ${previousTotalHours.toFixed(2)} → ${newTotalHours.toFixed(2)} horas`
+      `${userInfo} registró la salida del estudiante ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) del período ${periodName} en el registro ID ${recordId} - Entrada: ${entryTime}, Salida: ${exitTime}, Horas trabajadas: ${diffHours.toFixed(2)}, Tipo: ${attendanceType}. Total de horas actualizado: ${previousTotalHours.toFixed(2)} → ${newTotalHours.toFixed(2)} horas`
     );
 
     await t.commit();
