@@ -2,8 +2,48 @@ import { InitialConsultationsModel } from "../models/InitialConsultationsModel.j
 import { AssignmentModel } from "../models/AssignmentModel.js";
 import { UserModel } from "../models/UserModel.js";
 import nodemailer from "nodemailer";
-import { EMAIL_USER, EMAIL_PASS } from "../config.js"; 
+import { EMAIL_SERVICE, EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER, EMAIL_PASS, EMAIL_TLS_REJECT_UNAUTHORIZED } from "../config.js";
 import moment from 'moment-timezone'; // Import moment-timezone
+
+// Función helper para crear transporter de correo multiplataforma
+function createEmailTransporter() {
+  // Configuración basada en el servicio especificado
+  if (EMAIL_SERVICE && EMAIL_SERVICE !== 'custom') {
+    // Usar servicio predefinido
+    return nodemailer.createTransport({
+      service: EMAIL_SERVICE, // 'gmail', 'hotmail', 'outlook'
+      auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+      }
+    });
+  } else {
+    // Usar configuración SMTP personalizada
+    const config = {
+      host: EMAIL_HOST,
+      port: parseInt(EMAIL_PORT),
+      secure: EMAIL_SECURE === 'true' || EMAIL_SECURE === true,
+      auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+      }
+    };
+
+    // Agregar configuración TLS si es necesario
+    if (!config.secure) {
+      config.tls = {
+        rejectUnauthorized: EMAIL_TLS_REJECT_UNAUTHORIZED === 'true' || EMAIL_TLS_REJECT_UNAUTHORIZED === true
+      };
+      
+      // Configuraciones específicas para Outlook/Office365
+      if (EMAIL_HOST.includes('outlook') || EMAIL_HOST.includes('office365')) {
+        config.tls.ciphers = 'SSLv3';
+      }
+    }
+
+    return nodemailer.createTransport(config);
+  }
+}
 
 export class FirstConsultationsController {
     static async getFirstConsultations(req, res) {
@@ -232,12 +272,7 @@ export class FirstConsultationsController {
                 return res.status(400).json({ message: "El correo electrónico del destinatario no es válido." });
             }
     
-            const transporter = nodemailer.createTransport({
-                host: "smtp.gmail.com",
-                port: 465,
-                secure: true,
-                auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-            });
+            const transporter = createEmailTransporter();
     
             const alertNote = consultation.Init_AlertNote || "";
             const strongTagsContent = alertNote.match(/<strong>(.*?)<\/strong>/gi)?.map(tag =>
@@ -254,7 +289,7 @@ export class FirstConsultationsController {
             
 
             const mailOptions = {
-                from: EMAIL_USER,
+                from: `"Notificaciones CJG" <${EMAIL_USER}>`,
                 to: mail,
                 subject: "Notificación de Rechazo - Consulta Inicial",
                 html: `

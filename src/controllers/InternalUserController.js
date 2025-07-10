@@ -1,8 +1,7 @@
 import { InternalUserModel } from "../models/InternalUserModel.js";
 import { Profiles } from "../schemas/parameter_tables/Profiles.js";
 import { z } from "zod";
-import { SALT_ROUNDS } from "../config.js";
-import { EMAIL_USER, EMAIL_PASS } from "../config.js";
+import { SALT_ROUNDS, EMAIL_SERVICE, EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER, EMAIL_PASS, EMAIL_TLS_REJECT_UNAUTHORIZED } from "../config.js";
 import { cloudinary } from "../cloudinary.js";
 import { UserXPeriodModel } from "../models/schedule_models/User_PeriodModel.js"; // Modelo de asignaciones a períodos
 import { sequelize } from "../database/database.js";
@@ -25,6 +24,46 @@ function generateRandomPassword(length = 8) {
     password += charset[randomIndex];
   }
   return password;
+}
+
+// Función helper para crear transporter de correo multiplataforma
+function createEmailTransporter() {
+  // Configuración basada en el servicio especificado
+  if (EMAIL_SERVICE && EMAIL_SERVICE !== 'custom') {
+    // Usar servicio predefinido
+    return nodemailer.createTransport({
+      service: EMAIL_SERVICE, // 'gmail', 'hotmail', 'outlook'
+      auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+      }
+    });
+  } else {
+    // Usar configuración SMTP personalizada
+    const config = {
+      host: EMAIL_HOST,
+      port: parseInt(EMAIL_PORT),
+      secure: EMAIL_SECURE === 'true' || EMAIL_SECURE === true,
+      auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+      }
+    };
+
+    // Agregar configuración TLS si es necesario
+    if (!config.secure) {
+      config.tls = {
+        rejectUnauthorized: EMAIL_TLS_REJECT_UNAUTHORIZED === 'true' || EMAIL_TLS_REJECT_UNAUTHORIZED === true
+      };
+      
+      // Configuraciones específicas para Outlook/Office365
+      if (EMAIL_HOST.includes('outlook') || EMAIL_HOST.includes('office365')) {
+        config.tls.ciphers = 'SSLv3';
+      }
+    }
+
+    return nodemailer.createTransport(config);
+  }
 }
 
 export class InternalUserController {
@@ -209,18 +248,12 @@ export class InternalUserController {
 
       // --- Send welcome email ---
       try {
-        // Configurar el transporte de correo
-        const transporter = nodemailer.createTransport({
-          service: 'hotmail', // Usar servicio predefinido
-          auth: {
-            user: EMAIL_USER,
-            pass: EMAIL_PASS
-          }
-        });
+        // Configurar el transporte de correo usando la función helper
+        const transporter = createEmailTransporter();
 
         // Enviar el correo con las credenciales
         const mailOptions = {
-          from: '"Support Balanza Web" <cjgpuce.system@gmail.com>', // Use your system email
+          from: `"Support Balanza Web" <${EMAIL_USER}>`, // Usar EMAIL_USER dinámicamente
           to: data.Internal_Email,
           subject: "¡Bienvenido/a a Balanza Web! Tus Credenciales de Acceso",
           html: `
@@ -344,16 +377,11 @@ export class InternalUserController {
         try {
 
           // Configure nodemailer transporter
-          const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-          });
+          const transporter = createEmailTransporter();
 
           // Email options
           const mailOptions = {
-            from: '"Support Balanza Web" <cjgpuce.system@gmail.com>',
+            from: `"Support Balanza Web" <${EMAIL_USER}>`,
             to: newEmail, // Send to the new email address
             subject: "📧 Tu correo electrónico ha sido actualizado en Balanza Web",
             html: `
@@ -521,16 +549,11 @@ export class InternalUserController {
       await InternalUserModel.saveResetCode(user.Internal_ID, code);
 
       // Configurar el transporte de correo
-      const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-      });
+      const transporter = createEmailTransporter();
 
       // Enviar el correo con el código
       const mailOptions = {
-        from: '"Support Balanza Web" <anakin7456@gmail.com>',
+        from: `"Support Balanza Web" <${EMAIL_USER}>`,
         to: email,
         subject: "🔒 Código para reiniciar contraseña",
         html: `
@@ -789,16 +812,11 @@ export class InternalUserController {
       await transaction.commit(); // Confirmamos
 
       // 🔹 2. Enviar correos después de confirmar la transacción
-      const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-      });
+      const transporter = createEmailTransporter();
 
       for (const emailInfo of emailsToSend) {
         const mailOptions = {
-          from: '"Support Balanza Web" <cjgpuce.system@gmail.com>',
+          from: `"Support Balanza Web" <${EMAIL_USER}>`,
           to: emailInfo.to,
           subject: "¡Bienvenido/a a Balanza Web! Tus Credenciales de Acceso",
           html: `
@@ -891,15 +909,10 @@ export class InternalUserController {
 
       
           // Enviar correo con las nuevas credenciales
-          const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: { user: EMAIL_USER, pass: EMAIL_PASS }
-          });
+          const transporter = createEmailTransporter();
       
           const mailOptions = {
-            from: '"Soporte Balanza Web" <cjgpuce.system@gmail.com>',
+            from: `"Soporte Balanza Web" <${EMAIL_USER}>`,
             to: newEmail,
             subject: "Tus nuevas credenciales",
             html: `
