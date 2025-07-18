@@ -12,3 +12,12 @@ export const{
     EMAIL_PASS = "contraseña de desarrollador", // Contraseña de aplicación para el correo electrónico
     EMAIL_TLS_REJECT_UNAUTHORIZED = false, // Para certificados auto-firmados o desarrollo
 } = process.env;
+
+//EMAIL_SERVICE = "outlook365", // Servicio de correo: 'gmail', 'hotmail', 'outlook', 'outlook365'
+/*
+    EMAIL_HOST = "smtp.office365.com", // Servidor SMTP - smtp.office365.com para Outlook 365
+    EMAIL_PORT = 587, // Puerto SMTP: 587 (TLS) para Outlook 365
+    EMAIL_SECURE = false, // false para puerto 587 (TLS)
+    EMAIL_USER = "email@outlook.com", // Correo electrónico de Outlook 365
+    EMAIL_PASS = "contraseña de desarrollador", // Contraseña de aplicación para el correo electrónico
+*/
