@@ -120,12 +120,30 @@ export class AssignmentModel {
             const newAssignment = await Assignment.create(data);
             const internalId = internalUser || getUserId();
 
-            // 🔹 Registrar en Audit que un usuario interno creó una asignación
+                // Obtener información del usuario interno para auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Registrar auditoría detallada
             await AuditModel.registerAudit(
                 internalId, 
                 "INSERT",
                 "Assignment",
-                `El usuario interno ${internalId} creó la asignación con ID ${newAssignment.Assignment_ID}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó la asignación con ID ${newAssignment.Assignment_ID} (Caso: ${data.Init_Code}, Estudiante: ${data.Internal_User_ID_Student})`
             );
 
             return newAssignment;
@@ -247,13 +265,33 @@ export class AssignmentModel {
             );
 
             // 7. Registrar Auditoría
-            await AuditModel.registerAudit(
-                loggedInUserId,
-                "BULK_ASSIGN_EQU", // Acción específica para asignación masiva EQUITATIVA
-                "Assignment/InitialConsultations",
-                `El usuario interno ${loggedInUserId} asignó ${caseCodes.length} casos del área ${area} equitativamente (nivelando carga).`,
-                { transaction: t }
-            );
+            // Obtener información del usuario interno para auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: loggedInUserId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"],
+                    transaction: t
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+        // Registrar auditoría detallada
+        await AuditModel.registerAudit(
+            loggedInUserId,
+            "BULK_ASSIGN_EQU",
+            "Assignment/InitialConsultations",
+            `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) asignó ${caseCodes.length} casos del área ${area} equitativamente (nivelando carga).`,
+            { transaction: t }
+        );
 
             // 8. Confirmar la transacción
             await t.commit();
@@ -286,12 +324,38 @@ export class AssignmentModel {
 
             const updatedAssignment = await this.getById(id);
 
-            // 🔹 Registrar en Audit que un usuario interno actualizó una asignación
+            // Obtener información del usuario interno para auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios relevantes
+            let changeDetails = [];
+            for (const key in data) {
+                if (data.hasOwnProperty(key) && data[key] !== originalValues[key]) {
+                    changeDetails.push(`${key}: "${originalValues[key] ?? ''}" → "${data[key] ?? ''}"`);
+                }
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
             await AuditModel.registerAudit(
                 internalId, 
                 "UPDATE",
                 "Assignment",
-                `El usuario interno ${internalId} actualizó la asignación con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la asignación con ID ${id}${changeDescription}`
             );
 
             return updatedAssignment;
@@ -341,12 +405,38 @@ export class AssignmentModel {
             const updatedAssignment = await AssignmentModel.getByInitCode(initCode); // <--- CORRECCIÓN AQUÍ
 
             // 7. Registrar en auditoría si tenemos el ID del usuario
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios relevantes
+            let changeDetails = [];
+            for (const key in data) {
+                if (data.hasOwnProperty(key) && data[key] !== originalValues[key]) {
+                    changeDetails.push(`${key}: "${originalValues[key] ?? ''}" → "${data[key] ?? ''}"`);
+                }
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
             if (internalId) {
                 await AuditModel.registerAudit(
                     internalId,
                     "UPDATE",
                     "Assignment",
-                    `El usuario interno ${internalId} actualizó la asignación asociada al caso ${initCode} (ID Asignación: ${assignment.Assignment_ID})`
+                    `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la asignación asociada al caso ${initCode} (ID Asignación: ${assignment.Assignment_ID})${changeDescription}`
                 );
             }
 
@@ -368,14 +458,30 @@ export class AssignmentModel {
 
             const internalId = internalUser || getUserId();
             
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await Assignment.destroy({ where: { Assignment_Id: id } });
 
-            // 🔹 Registrar en Audit que un usuario interno eliminó una asignación
             await AuditModel.registerAudit(
                 internalId, 
                 "DELETE",
                 "Assignment",
-                `El usuario interno ${internalId} eliminó la asignación con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó la asignación con ID ${id} (Caso: ${assignment.Init_Code}, Estudiante: ${assignment.Internal_User_ID_Student})`
             );
 
             return assignment;

@@ -8,6 +8,7 @@ import { getUserId } from '../sessionData.js'; // Adjust the import path as nece
 import { InitialConsultations } from "../schemas/Initial_Consultations.js";
 import { Assignment } from "../schemas/Assignment.js"; 
 import { User } from '../schemas/User.js';
+import { InternalUser } from "../schemas/Internal_User.js";
 
 export class ActivityModel {
 
@@ -151,11 +152,30 @@ export class ActivityModel {
             console.log("✅ Actividad creada con ID:", newActivity.Activity_ID);
     
             // Registrar auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"],
+                    transaction: t
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Registrar auditoría detallada
             await AuditModel.registerAudit(
                 internalId,
                 "INSERT",
                 "Activity",
-                `El usuario interno ${internalId} creó la actividad con ID ${newActivity.Activity_ID}`,
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó la actividad con ID ${newActivity.Activity_ID} para el caso ${data.Init_Code} - Tipo: ${data.Activity_Type}, Descripción: ${data.Activity_Description}, Fecha: ${data.Activity_Date}, Estado: ${data.Activity_Status}`,
                 { transaction: t }
             );
     
@@ -176,35 +196,68 @@ export class ActivityModel {
                 transaction: t
             });
 
-            
             if (!existingActivity) {
                 await t.rollback();
                 return null; // Activity not found
             }
 
-            // Update the activity data
+            // Guardar valores originales para comparación
+            const originalValues = { ...existingActivity.get() };
+
+            // Actualizar los datos de la actividad
             await existingActivity.update(activityData, { transaction: t });
 
-            // Check if a file was uploaded
+            // Si hay archivo, actualizar documento
             if (file) {
-                // Update the document information
                 await existingActivity.update({
                     Activity_Document: file.buffer
                 }, { transaction: t });
             }
 
             const internalId = internalUser || getUserId();
-            // Register audit
+
+            // Obtener información del usuario interno para auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await User.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"],
+                    transaction: t
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios relevantes
+            let changeDetails = [];
+            for (const key in activityData) {
+                if (activityData.hasOwnProperty(key) && activityData[key] !== originalValues[key]) {
+                    changeDetails.push(`${key}: "${originalValues[key] ?? ''}" → "${activityData[key] ?? ''}"`);
+                }
+            }
+            if (file) {
+                changeDetails.push('Documento adjunto actualizado');
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
+            // Registrar auditoría detallada
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Activity",
-                `El usuario interno ${internalId} actualizó la actividad con ID ${id}`,
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la actividad con ID ${id}${changeDescription}`,
                 { transaction: t }
             );
 
             await t.commit();
-            return existingActivity; // Return the updated activity
+            return existingActivity;
         } catch (error) {
             await t.rollback();
             console.error("Error updating activity in model:", error);

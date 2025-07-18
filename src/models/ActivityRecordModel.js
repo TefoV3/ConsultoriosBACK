@@ -3,6 +3,7 @@ import { Activity } from "../schemas/Activity.js";
 import { ActivityRecord } from "../schemas/Activity_Record.js";
 import { sequelize } from "../database/database.js";
 import { getUserId } from '../sessionData.js';
+import { InternalUser } from "../schemas/Internal_User.js";
 
 export class ActivityRecordModel {
     static async getAll() {
@@ -78,14 +79,30 @@ export class ActivityRecordModel {
                 console.log(`🔄 Estado de actividad actualizado a '${nuevoEstado}'`);
             }
 
-            console.log("🔄 Estado de actividad actualizado a 'iniciado'");
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"],
+                    transaction: t
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
 
-            // Auditar creación
+            // Auditar creación detallada
             await AuditModel.registerAudit(
                 internalId,
                 "INSERT",
                 "Activity_Record",
-                `El usuario interno ${internalId} creó el registro ${newRecord.Record_ID} y actualizó estado a 'iniciado'`,
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó el registro de actividad ${newRecord.Record_ID} para la actividad ${data.Activity_ID} (Tipo: ${data.Activity_Record_Type}, Observación: ${data.Activity_Record_Observation || 'N/A'})`,
                 { transaction: t }
             );
 
@@ -121,12 +138,38 @@ export class ActivityRecordModel {
             }
 
             const updatedRecord = await this.getById(id);
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"],
+                    transaction: t
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios relevantes
+            let changeDetails = [];
+            for (const key in data) {
+                if (data.hasOwnProperty(key) && data[key] !== originalValues[key]) {
+                    changeDetails.push(`${key}: "${originalValues[key] ?? ''}" → "${data[key] ?? ''}"`);
+                }
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
 
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Activity_Record",
-                `User ${internalId} updated activity record ${id}`,
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el registro de actividad ${id}${changeDescription}`,
                 { transaction: t }
             );
 
@@ -154,11 +197,30 @@ export class ActivityRecordModel {
                 transaction: t
             });
 
+            // Obtener información del usuario interno para auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"],
+                    transaction: t
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Activity_Record",
-                `User ${internalId} deleted activity record ${id}`,
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó el registro de actividad ${id} (Actividad asociada: ${record.Activity_ID})`,
                 { transaction: t }
             );
 
