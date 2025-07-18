@@ -266,7 +266,7 @@ export class Social_WorkModel {
           throw new Error(`Error updating social work record: ${error.message}`);
         }
       }
-    static async updateStatus(social_WorkId, status, status_observations) { // Parameter is socialWorkId
+    static async updateStatus(social_WorkId, status, status_observations, internalUser) { // Parameter is socialWorkId
         try {
             // First check if the record exists
             const record = await this.getById(social_WorkId); // <-- Using social_WorkId here (with underscore) - This is line 221
@@ -274,7 +274,8 @@ export class Social_WorkModel {
             if (!record) {
                 return false;
             }
-            
+            const internalId = internalUser || getUserId();
+
             // Fix: Corrected parameter name from status_obvervations to status_observations
             const [rowsUpdated] = await Social_Work.update(
                 {
@@ -285,7 +286,42 @@ export class Social_WorkModel {
                     where: { SW_ProcessNumber: social_WorkId } // <-- Using social_WorkId here (with underscore)
                 }
             );
-    
+
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios relevantes
+            let changeDetails = [];
+            if (status !== record.SW_Status) {
+                changeDetails.push(`SW_Status: "${record.SW_Status ?? ''}" → "${status ?? ''}"`);
+            }
+            if (status_observations !== record.SW_Status_Observations) {
+                changeDetails.push(`SW_Status_Observations: "${record.SW_Status_Observations ?? ''}" → "${status_observations ?? ''}"`);
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Social_Work",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el estado del registro de trabajo social con ID ${social_WorkId}${changeDescription}`
+            );
+
             return rowsUpdated > 0; // Return true if at least one row was updated
         } catch (error) {
             console.error("Error updating social work status:", error);

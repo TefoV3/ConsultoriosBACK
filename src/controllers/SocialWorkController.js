@@ -95,6 +95,7 @@ export class SocialWorkController {
     static async updateStatus(req, res) {
         try {
             const { id } = req.params; // Extract SocialWork_ID from the request parameters
+            const internalId = req.headers["internal-id"]
             const { status, observations } = req.body; // Extract the new status from the request body
     
             if (!status) {
@@ -102,7 +103,7 @@ export class SocialWorkController {
             }
     
             // Update the status in the SocialWork table
-            const isUpdated = await Social_WorkModel.updateStatus(id, status, observations);
+            const isUpdated = await Social_WorkModel.updateStatus(id, status, observations, internalId);
     
             if (!isUpdated) {
                 return res.status(404).json({ message: "Social work record not found or not updated" });

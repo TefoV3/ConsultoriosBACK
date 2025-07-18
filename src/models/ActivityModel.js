@@ -175,10 +175,10 @@ export class ActivityModel {
                 internalId,
                 "INSERT",
                 "Activity",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó la actividad con ID ${newActivity.Activity_ID} para el caso ${data.Init_Code} - Tipo: ${data.Activity_Type}, Descripción: ${data.Activity_Description}, Fecha: ${data.Activity_Date}, Estado: ${data.Activity_Status}`,
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó la actividad con ID ${newActivity.Activity_ID} para el caso ${data.Init_Code} - Tipo: ${data.Activity_Type}, Descripción: ${data.Activity_Description}, Fecha: ${newActivity.Activity_Date}, Estado: ${data.Activity_Status}`,
                 { transaction: t }
             );
-    
+
             await t.commit();
             return { message: "Actividad creada con éxito", data: newActivity };
         } catch (error) {
@@ -219,7 +219,7 @@ export class ActivityModel {
             // Obtener información del usuario interno para auditoría
             let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
             try {
-                const admin = await User.findOne({
+                const admin = await InternalUser.findOne({
                     where: { Internal_ID: internalId },
                     attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"],
                     transaction: t

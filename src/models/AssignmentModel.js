@@ -5,7 +5,7 @@ import { User } from "../schemas/User.js";
 import { InternalUser } from "../schemas/Internal_User.js";
 import { sequelize } from "../database/database.js"; // Necesario para transacciones
 import { Op } from 'sequelize'; // Necesario para operadores como 'in'
-import { InternalUser } from "../schemas/Internal_User.js";
+
 
 export class AssignmentModel {
 
