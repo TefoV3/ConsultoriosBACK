@@ -1,5 +1,6 @@
 import { Type_Of_Attention } from "../../schemas/parameter_tables/Type_Of_Attention.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class TypeOfAttentionModel {
 
@@ -35,13 +36,30 @@ export class TypeOfAttentionModel {
                 throw new Error(`Ya existe un registro de Type_Of_Attention con el nombre ${data.Type_Of_Attention_Name}`);
             }
             const newRecord = await Type_Of_Attention.create(data);
-            
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Type_Of_Attention",
-                            `El usuario interno ${internalId} creó un nuevo registro de Type_Of_Attention con ID ${newRecord.Type_Of_Attention_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Type_Of_Attention",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de Type_Of_Attention con ID ${newRecord.Type_Of_Attention_ID} - Nombre: ${newRecord.Type_Of_Attention_Name}`
+            );
             
                         return newRecord;
         } catch (error) {
@@ -52,12 +70,29 @@ export class TypeOfAttentionModel {
         try {
             const createdRecords = await Type_Of_Attention.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Type_Of_Attention",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Type_Of_Attention.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Type_Of_Attention",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de Type_Of_Attention.`
+            );
             
                         return createdRecords;
         } catch (error) {
@@ -75,14 +110,41 @@ export class TypeOfAttentionModel {
 
              if (rowsUpdated === 0) return null;
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "UPDATE",
-                            "Type_Of_Attention",
-                            `El usuario interno ${internalId} actualizó la Type_Of_Attention con ID ${id}`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios
+            let changeDetails = [];
+            if (data.hasOwnProperty('Type_Of_Attention_Name') && data.Type_Of_Attention_Name !== originalValues.Type_Of_Attention_Name) {
+                changeDetails.push(`Nombre: "${originalValues.Type_Of_Attention_Name}" → "${data.Type_Of_Attention_Name}"`);
+            }
+            if (data.hasOwnProperty('Type_Of_Attention_Status') && data.Type_Of_Attention_Status !== originalValues.Type_Of_Attention_Status) {
+                changeDetails.push(`Estado: "${originalValues.Type_Of_Attention_Status}" → "${data.Type_Of_Attention_Status}"`);
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Type_Of_Attention",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Type_Of_Attention con ID ${id} - Nombre: ${typeOfAttentionRecord.Type_Of_Attention_Name}${changeDescription}`
+            );
             
-                        return await this.getById(id);
+            return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating type of attention: ${error.message}`);
         }
@@ -98,12 +160,29 @@ export class TypeOfAttentionModel {
                 { where: { Type_Of_Attention_ID: id, Type_Of_Attention_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
-                            internalId,
-                            "DELETE",
-                            "Type_Of_Attention",
-                            `El usuario interno ${internalId} eliminó lógicamente Type_Of_Attention con ID ${id}`
-                        );
+                internalId,
+                "DELETE",
+                "Type_Of_Attention",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente Type_Of_Attention con ID ${id} - Nombre: ${typeOfAttentionRecord.Type_Of_Attention_Name}`
+            );
             return typeOfAttentionRecord;
         } catch (error) {
             throw new Error(`Error deleting type of attention: ${error.message}`);

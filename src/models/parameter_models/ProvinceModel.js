@@ -1,6 +1,7 @@
 import { Province } from "../../schemas/parameter_tables/Province.js";
 import { Country } from "../../schemas/parameter_tables/Country.js"; // Importar City para incluir la relación
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class ProvinceModel {
 
@@ -36,12 +37,30 @@ export class ProvinceModel {
         try {
             const newRecord = await Province.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Province",
-                            `El usuario interno ${internalId} creó un nuevo registro Province con ID ${newRecord.Province_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Province",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro Province con ID ${newRecord.Province_ID} - Nombre: ${newRecord.Province_Name}`
+            );
             
                         return newRecord;
         } catch (error) {
@@ -52,14 +71,31 @@ export class ProvinceModel {
         try {
             const createdRecords = await Province.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Province",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Province.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Province",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de Province.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Province: ${error.message}`);
         }
@@ -75,11 +111,41 @@ export class ProvinceModel {
 
             if (rowsUpdated === 0) return null;
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios
+            let changeDetails = [];
+            if (data.hasOwnProperty('Province_Name') && data.Province_Name !== originalValues.Province_Name) {
+                changeDetails.push(`Nombre: "${originalValues.Province_Name}" → "${data.Province_Name}"`);
+            }
+            if (data.hasOwnProperty('Province_Status') && data.Province_Status !== originalValues.Province_Status) {
+                changeDetails.push(`Estado: "${originalValues.Province_Status}" → "${data.Province_Status}"`);
+            }
+            if (data.hasOwnProperty('Country_FK') && data.Country_FK !== originalValues.Country_FK) {
+                changeDetails.push(`Country_FK: "${originalValues.Country_FK}" → "${data.Country_FK}"`);
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Province",
-                `El usuario interno ${internalId} actualizó la Province con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Province con ID ${id} - Nombre: ${provinceRecord.Province_Name}${changeDescription}`
             );
 
             return await this.getById(id);
@@ -98,11 +164,28 @@ export class ProvinceModel {
                 { where: { Province_ID: id, Province_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Province",
-                `El usuario interno ${internalId} eliminó lógicamente Province con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente Province con ID ${id} - Nombre: ${provinceRecord.Province_Name}`
             );
 
             return provinceRecord;

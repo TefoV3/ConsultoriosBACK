@@ -1,5 +1,6 @@
 import { Subject } from "../../schemas/parameter_tables/Subject.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class SubjectModel {
 
@@ -33,14 +34,32 @@ export class SubjectModel {
             // Crear el nuevo registro
             const newRecord = await Subject.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Subject",
-                            `El usuario interno ${internalId} creó un nuevo registro de Subject con ID ${newRecord.Subject_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Subject",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de Subject con ID ${newRecord.Subject_ID} - Nombre: ${newRecord.Subject_Name}`
+            );
             
-                        return newRecord;
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating subject: ${error.message}`);
         }
@@ -49,14 +68,31 @@ export class SubjectModel {
         try {
             const createdRecords = await Subject.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Subject",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Subject.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Subject",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de Subject.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Subject: ${error.message}`);
         }
@@ -72,14 +108,41 @@ export class SubjectModel {
 
             if (rowsUpdated === 0) return null;
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "UPDATE",
-                            "Subject",
-                            `El usuario interno ${internalId} actualizó la Subject con ID ${id}`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios
+            let changeDetails = [];
+            if (data.hasOwnProperty('Subject_Name') && data.Subject_Name !== originalValues.Subject_Name) {
+                changeDetails.push(`Nombre: "${originalValues.Subject_Name}" → "${data.Subject_Name}"`);
+            }
+            if (data.hasOwnProperty('Subject_Status') && data.Subject_Status !== originalValues.Subject_Status) {
+                changeDetails.push(`Estado: "${originalValues.Subject_Status}" → "${data.Subject_Status}"`);
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Subject",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Subject con ID ${id} - Nombre: ${subjectRecord.Subject_Name}${changeDescription}`
+            );
             
-                        return await this.getById(id);
+            return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating subject: ${error.message}`);
         }
@@ -95,12 +158,29 @@ export class SubjectModel {
                 { where: { Subject_ID: id, Subject_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
-                            internalId,
-                            "DELETE",
-                            "Subject",
-                            `El usuario interno ${internalId} eliminó lógicamente la Subject con ID ${id}`
-                        );
+                internalId,
+                "DELETE",
+                "Subject",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente la Subject con ID ${id} - Nombre: ${subjectRecord.Subject_Name}`
+            );
             return subjectRecord;
         } catch (error) {
             throw new Error(`Error deleting subject: ${error.message}`);

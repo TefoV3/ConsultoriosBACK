@@ -1,6 +1,7 @@
 import { Sector } from "../../schemas/parameter_tables/Sector.js";
 import { Zone } from "../../schemas/parameter_tables/Zone.js"; // Importar Zone
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class SectorModel {
 
@@ -47,22 +48,36 @@ static async getAll() {
         }
     }
 
-
-
-
-
     static async create(data, internalId) {
         try {
             const newRecord = await Sector.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Sector",
-                            `El usuario interno ${internalId} creó un nuevo registro de Sector con ID ${newRecord.Sector_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Sector",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de Sector con ID ${newRecord.Sector_ID} - Nombre: ${newRecord.Sector_Name}`
+            );
             
-                        return newRecord;
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating sector: ${error.message}`);
         }
@@ -72,14 +87,31 @@ static async getAll() {
         try {
             const createdRecords = await Sector.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Sector",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Sector.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Sector",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de Sector.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
         } catch (error) {
             throw new Error(`Error creating sectors: ${error.message}`);
         }
@@ -95,11 +127,41 @@ static async getAll() {
 
             if (rowsUpdated === 0) return null;
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios
+            let changeDetails = [];
+            if (data.hasOwnProperty('Sector_Name') && data.Sector_Name !== originalValues.Sector_Name) {
+                changeDetails.push(`Nombre: "${originalValues.Sector_Name}" → "${data.Sector_Name}"`);
+            }
+            if (data.hasOwnProperty('Sector_Status') && data.Sector_Status !== originalValues.Sector_Status) {
+                changeDetails.push(`Estado: "${originalValues.Sector_Status}" → "${data.Sector_Status}"`);
+            }
+            if (data.hasOwnProperty('Zone_FK') && data.Zone_FK !== originalValues.Zone_FK) {
+                changeDetails.push(`Zone_FK: "${originalValues.Zone_FK}" → "${data.Zone_FK}"`);
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Sector",
-                `El usuario interno ${internalId} actualizó la Sector con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Sector con ID ${id} - Nombre: ${sectorRecord.Sector_Name}${changeDescription}`
             );
 
             return await this.getById(id);
@@ -118,11 +180,28 @@ static async getAll() {
                 { where: { Sector_ID: id, Sector_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Sector",
-                `El usuario interno ${internalId} eliminó lógicamente la Sector con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente la Sector con ID ${id} - Nombre: ${sectorRecord.Sector_Name}`
             );
             return sectorRecord;
         } catch (error) {

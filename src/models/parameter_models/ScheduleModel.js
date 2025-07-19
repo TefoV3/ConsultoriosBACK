@@ -1,5 +1,6 @@
 import { Schedule } from "../../schemas/parameter_tables/Schedule.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class ScheduleModel {
 
@@ -25,15 +26,32 @@ export class ScheduleModel {
     static async create(data, internalId) {
         try {
             const newRecord = await Schedule.create(data);
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Schedule",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro Schedule con ID ${newRecord.Schedule_ID}`
+            );
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Schedule",
-                            `El usuario interno ${internalId} creó un nuevo registro Schedule con ID ${newRecord.Schedule_ID}`
-                        );
-            
-                        return newRecord;
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating schedule: ${error.message}`);
         }
@@ -42,14 +60,31 @@ export class ScheduleModel {
         try {
             const createdRecords = await Schedule.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Schedule",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Schedule.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Schedule",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de Schedule.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Schedule: ${error.message}`);
         }
@@ -65,11 +100,38 @@ export class ScheduleModel {
 
             if (rowsUpdated === 0) return null;
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios
+            let changeDetails = [];
+            if (data.hasOwnProperty('Schedule_Name') && data.Schedule_Name !== originalValues.Schedule_Name) {
+                changeDetails.push(`Nombre: "${originalValues.Schedule_Name}" → "${data.Schedule_Name}"`);
+            }
+            if (data.hasOwnProperty('Schedule_Status') && data.Schedule_Status !== originalValues.Schedule_Status) {
+                changeDetails.push(`Estado: "${originalValues.Schedule_Status}" → "${data.Schedule_Status}"`);
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Schedule",
-                `El usuario interno ${internalId} actualizó Schedule con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó Schedule con ID ${scheduleRecord.Schedule_ID}${changeDescription}`
             );
 
             return await this.getById(id);
@@ -88,11 +150,28 @@ export class ScheduleModel {
                 { where: { Schedule_ID: id, Schedule_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Schedule",
-                `El usuario interno ${internalId} eliminó lógicamente Schedule con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente Schedule con ID ${id} - Nombre: ${scheduleRecord.Schedule_Name}`
             );
             return scheduleRecord;
         } catch (error) {
