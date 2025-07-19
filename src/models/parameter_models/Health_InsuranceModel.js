@@ -1,5 +1,6 @@
 import { Health_Insurance } from "../../schemas/parameter_tables/Health_Insurance.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class HealthInsuranceModel {
     
@@ -36,14 +37,32 @@ export class HealthInsuranceModel {
             data.Health_Insurance_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Health_Insurance.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Health_Insurance",
-                            `El usuario interno ${internalId} creó un nuevo registro de Health_Insurance con ID ${newRecord.Health_Insurance_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Health_Insurance",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de seguro de salud con ID ${newRecord.Health_Insurance_ID} - Nombre: ${newRecord.Health_Insurance_Name}`
+            );
             
-                        return newRecord;
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
@@ -52,22 +71,40 @@ export class HealthInsuranceModel {
         try {
              const createdRecords = await Health_Insurance.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Health_Insurance",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Health_Insurance.`
-                        );
+             let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Health_Insurance",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de seguro de salud.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
+
         } catch (error) {
             throw new Error(`Error creating Health Insurance: ${error.message}`);
         }
     }
     static async update(id, data, internalId) {
         try {
-            const caseStatusRecord = await this.getById(id);
-            if (!caseStatusRecord) return null;
+            const healthInsuranceRecord = await this.getById(id);
+            if (!healthInsuranceRecord) return null;
 
             const [rowsUpdated] = await Health_Insurance.update(data, {
                 where: { Health_Insurance_ID: id, Health_Insurance_Status: true }
@@ -75,12 +112,30 @@ export class HealthInsuranceModel {
 
             if (rowsUpdated === 0) return null;
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Health_Insurance",
-                `El usuario interno ${internalId} actualizó Health_Insurance con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el seguro de salud con ID ${id} - Nombre: ${healthInsuranceRecord.Health_Insurance_Name}`
             );
+
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating case Status: ${error.message}`);
@@ -89,22 +144,39 @@ export class HealthInsuranceModel {
 
     static async delete(id, internalId) {
         try {
-            const caseStatusRecord = await this.getById(id);
-            if (!caseStatusRecord) return null;
+            const healthInsuranceRecord = await this.getById(id);
+            if (!healthInsuranceRecord) return null;
 
             await Health_Insurance.update(
                 { Health_Insurance_Status: false },
                 { where: { Health_Insurance_ID: id, Health_Insurance_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Health_Insurance",
-                `El usuario interno ${internalId} eliminó lógicamente Health_Insurance con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente el seguro de salud con ID ${id} - Nombre: ${healthInsuranceRecord.Health_Insurance_Name}`
             );
 
-            return caseStatusRecord;
+            return healthInsuranceRecord;
         } catch (error) {
             throw new Error(`Error deleting case Status: ${error.message}`);
         }

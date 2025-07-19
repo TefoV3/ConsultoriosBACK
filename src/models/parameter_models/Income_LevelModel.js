@@ -1,5 +1,6 @@
 import { Income_Level } from "../../schemas/parameter_tables/Income_Level.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class IncomeLevelModel {
     
@@ -36,14 +37,32 @@ export class IncomeLevelModel {
             data.Income_Level_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Income_Level.create(data);
            
-                       await AuditModel.registerAudit(
-                           internalId,
-                           "INSERT",
-                           "Income_Level",
-                           `El usuario interno ${internalId} creó un nuevo registro de Income_Level con ID ${newRecord.Academic_Instruction_ID}`
-                       );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Income_Level",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de nivel de ingreso con ID ${newRecord.Income_Level_ID} - Nombre: ${newRecord.Income_Level_Name}`
+            );
            
-                       return newRecord;
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
@@ -52,14 +71,33 @@ export class IncomeLevelModel {
         try {
             const createdRecords = await Academic_Instruction.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Income_Level",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Income_Level.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Income_Level",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de nivel de ingreso.`
+            );
+
             
-                        return createdRecords;
+            return createdRecords;
+
         } catch (error) {
             throw new Error(`Error creating Income_Level: ${error.message}`);
         }
@@ -75,14 +113,31 @@ export class IncomeLevelModel {
 
             if (rowsUpdated === 0) return null;
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "UPDATE",
-                            "Income_Level",
-                            `El usuario interno ${internalId} actualizó la Income_Level con ID ${id}`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Income_Level",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el nivel de ingreso con ID ${id} - Nombre: ${Income_LevelRecord.Income_Level_Name}`
+            );
             
-                        return await this.getById(id);
+            return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating case Status: ${error.message}`);
         }
@@ -98,12 +153,29 @@ export class IncomeLevelModel {
                 { where: { Income_Level_ID: id, Income_Level_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
-                            internalId,
-                            "DELETE",
-                            "Income_Level",
-                            `El usuario interno ${internalId} eliminó lógicamente Income_Level con ID ${id}`
-                        );
+                internalId,
+                "DELETE",
+                "Income_Level",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente el nivel de ingreso con ID ${id} - Nombre: ${Income_LevelRecord.Income_Level_Name}`
+            );
             return Income_LevelRecord;
         } catch (error) {
             throw new Error(`Error deleting case Status: ${error.message}`);

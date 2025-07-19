@@ -2,6 +2,7 @@ import { Field_Of_Activity } from "../../schemas/parameter_tables/Field_Of_Activ
 // Corregido: Importar Type_Of_Activity en lugar de Subject
 import { Type_Of_Activity } from "../../schemas/parameter_tables/Type_Of_Activity.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class Field_Of_Activity_Model {
 
@@ -50,14 +51,32 @@ export class Field_Of_Activity_Model {
             data.Field_Of_Activity_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Field_Of_Activity.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Field_Of_Activity",
-                            `El usuario interno ${internalId} creó un nuevo registro de Field_Of_Activity con ID ${newRecord.Field_Of_Activity_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Field_Of_Activity",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de campo de actividad con ID ${newRecord.Field_Of_Activity_ID} - Nombre: ${newRecord.Field_Of_Activity_Name}`
+            );
             
-                        return newRecord;
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating Field Of Activity: ${error.message}`);
         }
@@ -66,14 +85,31 @@ export class Field_Of_Activity_Model {
         try {
             const createdRecords = await Field_Of_Activity.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Field_Of_Activity",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Field_Of_Activity.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Field_Of_Activity",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de campo de actividad.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
         } catch (error) {
             throw new Error(`Error bulk creating Fields Of Activity: ${error.message}`);
         }
@@ -127,11 +163,28 @@ export class Field_Of_Activity_Model {
                  return null; // O re-obtener para confirmar el estado actual
             }
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Field_Of_Activity",
-                `El usuario interno ${internalId} actualizó la Field_Of_Activity con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el campo de actividad con ID ${id} - Nombre: ${record.Field_Of_Activity_Name}`
             );
 
             // Devuelve el registro actualizado con la relación incluida
@@ -159,11 +212,28 @@ export class Field_Of_Activity_Model {
                  return null;
             }
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Field_Of_Activity",
-                `El usuario interno ${internalId} eliminó lógicamente Field_Of_Activity con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente el campo de actividad con ID ${id} - Nombre: ${record.Field_Of_Activity_Name}`
             );
             // Retorna el registro como estaba *antes* de marcarse como inactivo
             // Opcionalmente, podrías re-consultar si necesitas confirmar el cambio,
