@@ -130,21 +130,11 @@ export class TypeOfActivityModel {
                 console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
             }
 
-            // Describir cambios
-            let changeDetails = [];
-            if (data.hasOwnProperty('Type_Of_Activity_Name') && data.Type_Of_Activity_Name !== originalValues.Type_Of_Activity_Name) {
-                changeDetails.push(`Nombre: "${originalValues.Type_Of_Activity_Name}" → "${data.Type_Of_Activity_Name}"`);
-            }
-            if (data.hasOwnProperty('Type_Of_Activity_Status') && data.Type_Of_Activity_Status !== originalValues.Type_Of_Activity_Status) {
-                changeDetails.push(`Estado: "${originalValues.Type_Of_Activity_Status}" → "${data.Type_Of_Activity_Status}"`);
-            }
-            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
-
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Type_Of_Activity",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Type_Of_Activity con ID ${id} - Nombre: ${typeOfActivityRecord.Type_Of_Activity_Name}${changeDescription}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Type_Of_Activity con ID ${id} - Nombre: ${typeOfActivityRecord.Type_Of_Activity_Name}`
             );
 
             return await this.getById(id);

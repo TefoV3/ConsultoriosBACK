@@ -127,21 +127,13 @@ export class TypeOfAttentionModel {
                 console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
             }
 
-            // Describir cambios
-            let changeDetails = [];
-            if (data.hasOwnProperty('Type_Of_Attention_Name') && data.Type_Of_Attention_Name !== originalValues.Type_Of_Attention_Name) {
-                changeDetails.push(`Nombre: "${originalValues.Type_Of_Attention_Name}" → "${data.Type_Of_Attention_Name}"`);
-            }
-            if (data.hasOwnProperty('Type_Of_Attention_Status') && data.Type_Of_Attention_Status !== originalValues.Type_Of_Attention_Status) {
-                changeDetails.push(`Estado: "${originalValues.Type_Of_Attention_Status}" → "${data.Type_Of_Attention_Status}"`);
-            }
-            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+            
 
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Type_Of_Attention",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Type_Of_Attention con ID ${id} - Nombre: ${typeOfAttentionRecord.Type_Of_Attention_Name}${changeDescription}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Type_Of_Attention con ID ${id} - Nombre: ${typeOfAttentionRecord.Type_Of_Attention_Name}`
             );
             
             return await this.getById(id);

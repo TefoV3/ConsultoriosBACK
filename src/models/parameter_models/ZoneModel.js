@@ -124,21 +124,21 @@ export class ZoneModel {
                 console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
             }
 
-            // Describir cambios
-            let changeDetails = [];
-            if (data.hasOwnProperty('Zone_Name') && data.Zone_Name !== originalValues.Zone_Name) {
-                changeDetails.push(`Nombre: "${originalValues.Zone_Name}" → "${data.Zone_Name}"`);
-            }
-            if (data.hasOwnProperty('Zone_Status') && data.Zone_Status !== originalValues.Zone_Status) {
-                changeDetails.push(`Estado: "${originalValues.Zone_Status}" → "${data.Zone_Status}"`);
-            }
-            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+            // // Describir cambios
+            // let changeDetails = [];
+            // if (data.hasOwnProperty('Zone_Name') && data.Zone_Name !== originalValues.Zone_Name) {
+            //     changeDetails.push(`Nombre: "${originalValues.Zone_Name}" → "${data.Zone_Name}"`);
+            // }
+            // if (data.hasOwnProperty('Zone_Status') && data.Zone_Status !== originalValues.Zone_Status) {
+            //     changeDetails.push(`Estado: "${originalValues.Zone_Status}" → "${data.Zone_Status}"`);
+            // }
+            // const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
 
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Zone",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la zona con ID ${id} - Nombre: ${zoneRecord.Zone_Name}${changeDescription}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la zona con ID ${id} - Nombre: ${zoneRecord.Zone_Name}`
             );
 
             return await this.getById(id);

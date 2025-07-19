@@ -128,24 +128,12 @@ export class ProvinceModel {
                 console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
             }
 
-            // Describir cambios
-            let changeDetails = [];
-            if (data.hasOwnProperty('Province_Name') && data.Province_Name !== originalValues.Province_Name) {
-                changeDetails.push(`Nombre: "${originalValues.Province_Name}" → "${data.Province_Name}"`);
-            }
-            if (data.hasOwnProperty('Province_Status') && data.Province_Status !== originalValues.Province_Status) {
-                changeDetails.push(`Estado: "${originalValues.Province_Status}" → "${data.Province_Status}"`);
-            }
-            if (data.hasOwnProperty('Country_FK') && data.Country_FK !== originalValues.Country_FK) {
-                changeDetails.push(`Country_FK: "${originalValues.Country_FK}" → "${data.Country_FK}"`);
-            }
-            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
 
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Province",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Province con ID ${id} - Nombre: ${provinceRecord.Province_Name}${changeDescription}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Province con ID ${id} - Nombre: ${provinceRecord.Province_Name}`
             );
 
             return await this.getById(id);

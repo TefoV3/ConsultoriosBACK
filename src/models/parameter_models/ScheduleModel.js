@@ -117,21 +117,11 @@ export class ScheduleModel {
                 console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
             }
 
-            // Describir cambios
-            let changeDetails = [];
-            if (data.hasOwnProperty('Schedule_Name') && data.Schedule_Name !== originalValues.Schedule_Name) {
-                changeDetails.push(`Nombre: "${originalValues.Schedule_Name}" → "${data.Schedule_Name}"`);
-            }
-            if (data.hasOwnProperty('Schedule_Status') && data.Schedule_Status !== originalValues.Schedule_Status) {
-                changeDetails.push(`Estado: "${originalValues.Schedule_Status}" → "${data.Schedule_Status}"`);
-            }
-            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
-
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Schedule",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó Schedule con ID ${scheduleRecord.Schedule_ID}${changeDescription}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó Schedule con ID ${scheduleRecord.Schedule_ID} - Nombre: ${scheduleRecord.Schedule_Name}`
             );
 
             return await this.getById(id);

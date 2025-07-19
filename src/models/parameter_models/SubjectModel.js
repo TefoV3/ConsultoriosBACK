@@ -125,21 +125,11 @@ export class SubjectModel {
                 console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
             }
 
-            // Describir cambios
-            let changeDetails = [];
-            if (data.hasOwnProperty('Subject_Name') && data.Subject_Name !== originalValues.Subject_Name) {
-                changeDetails.push(`Nombre: "${originalValues.Subject_Name}" → "${data.Subject_Name}"`);
-            }
-            if (data.hasOwnProperty('Subject_Status') && data.Subject_Status !== originalValues.Subject_Status) {
-                changeDetails.push(`Estado: "${originalValues.Subject_Status}" → "${data.Subject_Status}"`);
-            }
-            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
-
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Subject",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Subject con ID ${id} - Nombre: ${subjectRecord.Subject_Name}${changeDescription}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Subject con ID ${id} - Nombre: ${subjectRecord.Subject_Name}`
             );
             
             return await this.getById(id);

@@ -151,24 +151,12 @@ export class TopicModel {
                 console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
             }
 
-            // Describir cambios
-            let changeDetails = [];
-            if (data.hasOwnProperty('Topic_Name') && data.Topic_Name !== originalValues.Topic_Name) {
-                changeDetails.push(`Nombre: "${originalValues.Topic_Name}" → "${data.Topic_Name}"`);
-            }
-            if (data.hasOwnProperty('Topic_Status') && data.Topic_Status !== originalValues.Topic_Status) {
-                changeDetails.push(`Estado: "${originalValues.Topic_Status}" → "${data.Topic_Status}"`);
-            }
-            if (data.hasOwnProperty('Subject_FK') && data.Subject_FK !== originalValues.Subject_FK) {
-                changeDetails.push(`Subject_FK: "${originalValues.Subject_FK}" → "${data.Subject_FK}"`);
-            }
-            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
 
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Topic",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Topic con ID ${id} - Nombre: ${topicRecord.Topic_Name}${changeDescription}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Topic con ID ${id} - Nombre: ${topicRecord.Topic_Name}`
             );
 
             return await this.getById(id);

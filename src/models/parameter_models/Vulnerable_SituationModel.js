@@ -128,21 +128,13 @@ export class VulnerableSituationModel {
                 console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
             }
 
-            // Describir cambios
-            let changeDetails = [];
-            if (data.hasOwnProperty('Vulnerable_Situation_Name') && data.Vulnerable_Situation_Name !== originalValues.Vulnerable_Situation_Name) {
-                changeDetails.push(`Nombre: "${originalValues.Vulnerable_Situation_Name}" → "${data.Vulnerable_Situation_Name}"`);
-            }
-            if (data.hasOwnProperty('Vulnerable_Situation_Status') && data.Vulnerable_Situation_Status !== originalValues.Vulnerable_Situation_Status) {
-                changeDetails.push(`Estado: "${originalValues.Vulnerable_Situation_Status}" → "${data.Vulnerable_Situation_Status}"`);
-            }
-            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+            
 
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Vulnerable_Situation",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Vulnerable_Situation con ID ${id} - Nombre: ${vulnerableSituationRecord.Vulnerable_Situation_Name}${changeDescription}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Vulnerable_Situation con ID ${id} - Nombre: ${vulnerableSituationRecord.Vulnerable_Situation_Name}`
             );
             return await this.getById(id);
         } catch (error) {

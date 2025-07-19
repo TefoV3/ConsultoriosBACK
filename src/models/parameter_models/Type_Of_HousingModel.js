@@ -128,21 +128,12 @@ export class TypeOfHousingModel {
                 console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
             }
 
-            // Describir cambios
-            let changeDetails = [];
-            if (data.hasOwnProperty('Type_Of_Housing_Name') && data.Type_Of_Housing_Name !== originalValues.Type_Of_Housing_Name) {
-                changeDetails.push(`Nombre: "${originalValues.Type_Of_Housing_Name}" → "${data.Type_Of_Housing_Name}"`);
-            }
-            if (data.hasOwnProperty('Type_Of_Housing_Status') && data.Type_Of_Housing_Status !== originalValues.Type_Of_Housing_Status) {
-                changeDetails.push(`Estado: "${originalValues.Type_Of_Housing_Status}" → "${data.Type_Of_Housing_Status}"`);
-            }
-            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
 
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Type_Of_Housing",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Type_Of_Housing con ID ${id} - Nombre: ${Type_Of_HousingRecord.Type_Of_Housing_Name}${changeDescription}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Type_Of_Housing con ID ${id} - Nombre: ${Type_Of_HousingRecord.Type_Of_Housing_Name}`
             );
             return await this.getById(id);
         } catch (error) {

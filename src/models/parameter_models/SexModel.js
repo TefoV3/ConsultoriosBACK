@@ -130,21 +130,11 @@ export class SexModel {
                 console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
             }
 
-            // Describir cambios
-            let changeDetails = [];
-            if (data.hasOwnProperty('Sex_Name') && data.Sex_Name !== originalValues.Sex_Name) {
-                changeDetails.push(`Nombre: "${originalValues.Sex_Name}" → "${data.Sex_Name}"`);
-            }
-            if (data.hasOwnProperty('Sex_Status') && data.Sex_Status !== originalValues.Sex_Status) {
-                changeDetails.push(`Estado: "${originalValues.Sex_Status}" → "${data.Sex_Status}"`);
-            }
-            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
-
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Sex",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó Sex con ID ${id} - Nombre: ${sexRecord.Sex_Name}${changeDescription}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó Sex con ID ${id} - Nombre: ${sexRecord.Sex_Name}`
             );
 
             
