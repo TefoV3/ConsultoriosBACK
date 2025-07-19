@@ -27,8 +27,14 @@ export class OccupationsController {
 
     static async create(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
+            if (Array.isArray(req.body)) {
+                const createdoccupation = await OccupationsModel.bulkCreate(req.body, internalId);
+                return res.status(201).json(createdoccupation);
+            }
+            // Si es un objeto, usa create normal
             const occupation = req.body;
-            const newOccupation = await OccupationsModel.create(occupation);
+            const newOccupation = await OccupationsModel.create(occupation, internalId);
             res.status(201).json(newOccupation);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -37,8 +43,9 @@ export class OccupationsController {
 
     static async update(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const updatedOccupation = await OccupationsModel.update(id, req.body);
+            const updatedOccupation = await OccupationsModel.update(id, req.body, internalId);
             if (!updatedOccupation) {
                 res.status(404).json({ error: 'Occupation not found' });
             } else {
@@ -51,8 +58,9 @@ export class OccupationsController {
 
     static async delete(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const deletedOccupation = await OccupationsModel.delete(id);
+            const deletedOccupation = await OccupationsModel.delete(id, internalId);
             if (!deletedOccupation) {
                 res.status(404).json({ error: 'Occupations not found' });
             } else {

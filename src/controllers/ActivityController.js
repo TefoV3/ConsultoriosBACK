@@ -1,6 +1,8 @@
 import { ActivityModel } from "../models/ActivityModel.js";
 import { AuditModel } from "../models/AuditModel.js";
 import { InternalUserModel } from "../models/InternalUserModel.js";
+import { getUserId } from '../sessionData.js';
+import moment from "moment-timezone";
 
 export class ActivityController {
     static async getActivities(req, res) {
@@ -33,13 +35,26 @@ export class ActivityController {
             res.status(500).json(error);
         }
     }
+        
+    static async getAllById(req, res) {
+        const { internalId } = req.params;
+        try {
+            const activities = await ActivityModel.getAllById(internalId);
+            if (activities && activities.length > 0) {
+                return res.json(activities);
+            }
+            res.status(404).json({ message: "Activities not found" });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 
     static async getDocumentById(req, res) {
         const { id } = req.params;
         try {
             const documentResult = await ActivityModel.getDocumentById(id);
     
-            if (!documentResult || !documentResult.Documents) {
+            if (!documentResult || !documentResult.Activity_Document) {
                 return res.status(404).json({ message: "Document not found" });
             }
     
@@ -48,7 +63,7 @@ export class ActivityController {
             res.setHeader('Content-Disposition', 'inline; filename=documento.pdf');
     
             // Envía el documento como respuesta binaria
-            res.send(documentResult.Documents);
+            res.send(documentResult.Activity_Document);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -62,12 +77,6 @@ export class ActivityController {
             const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
     
             console.log("🔍 Internal_ID obtenido:", internalId);
-    
-            if (!internalId) {
-                console.error("❌ Internal_ID no proporcionado.");
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-    
             // Verificar que el Internal_ID exista en la tabla internal_users
             const internalUser = await InternalUserModel.getById(internalId);
             if (!internalUser) {
@@ -75,21 +84,13 @@ export class ActivityController {
                 return res.status(400).json({ error: `El Internal_ID ${internalId} no existe en la tabla internal_users` });
             }
     
-            let fileBuffer = null;
-            if (req.file) {
-                console.log("✅ Archivo recibido:", req.file.originalname);
-                fileBuffer = req.file.buffer;
-            } else {
-                console.log("⚠️ No se recibió archivo, se procederá sin documento.");
-            }
-    
-            // Llamar al modelo y pasar `fileBuffer` y `internalId`
-            const newActivity = await ActivityModel.create({ ...req.body, Internal_ID: internalId }, fileBuffer);
+            // Llamar al modelo y pasar `file` y `internalId`
+            const newActivity = await ActivityModel.create({ ...req.body }, req.file, internalId); // Pass req.file
     
             console.log("📝 Registrando auditoría...");
     
             // Registrar en Audit
-            await AuditModel.registerAudit(internalId, "INSERT", "Activity", `El usuario interno ${internalId} creó la actividad con ID ${newActivity.Activity_Id}`);
+            //await AuditModel.registerAudit(internalId, "INSERT", "Activity", `El usuario interno ${internalId} creó la actividad con ID ${newActivity.Activity_Id}`);
     
             console.log("✅ Actividad creada con éxito.");
     
@@ -103,38 +104,90 @@ export class ActivityController {
     static async update(req, res) {
         try {
             const { id } = req.params;
+            const internalId = req.headers["internal-id"];
 
-            const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
-
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
+            // Check if the internal user exists
+            const internalUser = await InternalUserModel.getById(internalId);
+            if (!internalUser) {
+                return res.status(400).json({ error: `El Internal_ID ${internalId} no existe en la tabla internal_users` });
             }
 
-            const updatedActivity = await ActivityModel.update(id, req.body, internalId);
-            if (!updatedActivity) return res.status(404).json({ message: "Activity not found" });
+            // Prepare the data for the update
+            const activityData = { ...req.body }; 
 
-            return res.json(updatedActivity);
+            // Check if a file was uploaded
+            const file = req.file;
+
+            // Update the activity and document (if a file was uploaded)
+            const updatedActivity = await ActivityModel.update(id, activityData, file, internalId); 
+
+            if (!updatedActivity) {
+                return res.status(404).json({ message: "Activity not found" });
+            }
+
+            return res.json({ message: "Activity updated successfully", data: updatedActivity });
         } catch (error) {
+            console.error("Error updating activity:", error);
             return res.status(500).json({ error: error.message });
         }
     }
 
-    static async delete(req, res) {
+    static async generateExcelReport(req, res) {
         try {
-            const { id } = req.params;
-
-            const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
-
-            if (!internalId) {
-                return res.status(400).json({ error: "El Internal_ID es obligatorio para registrar la acción" });
-            }
-
-            const deletedActivity = await ActivityModel.delete(id, internalId);
-            if (!deletedActivity) return res.status(404).json({ message: "Activity not found" });
-
-            return res.json({ message: "Activity deleted", activity: deletedActivity });
+          const { startDate, endDate } = req.query;
+          const userTimezone = "America/Guayaquil"; // Zona horaria específica
+    
+          // Validar fechas usando moment con formato estricto
+          if (
+            !startDate ||
+            !endDate ||
+            !moment(startDate, "YYYY-MM-DD", true).isValid() ||
+            !moment(endDate, "YYYY-MM-DD", true).isValid()
+          ) {
+            return res
+              .status(400)
+              .json({ message: "Fechas de inicio y fin son requeridas en formato YYYY-MM-DD." });
+          }
+    
+          // --- Corrección de zona horaria ---
+          const queryStartDate = moment
+            .tz(startDate, "YYYY-MM-DD", userTimezone)
+            .startOf("day")
+            .utc()
+            .toDate();
+          const queryEndDate = moment
+            .tz(endDate, "YYYY-MM-DD", userTimezone)
+            .endOf("day")
+            .utc()
+            .toDate();
+    
+          // Llamar al modelo para generar el buffer del Excel
+          const excelBuffer = await ActivityModel.generateExcelReportForActivities(
+            queryStartDate,
+            queryEndDate
+          );
+    
+          // Configurar headers para la descarga del archivo Excel
+          res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          );
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="Reporte_Actividades_${startDate}_a_${endDate}.xlsx"`
+          );
+          res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+    
+          // Enviar el buffer del archivo Excel
+          res.send(excelBuffer);
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+          console.error("Error generando el reporte Excel:", error);
+          // Asegurar que la respuesta de error sea siempre JSON
+          if (!res.headersSent) {
+            res
+              .status(500)
+              .json({ message: "Error interno al generar el reporte Excel.", error: error.message });
+          }
         }
-    }
+      }
 }

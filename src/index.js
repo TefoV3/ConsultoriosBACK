@@ -1,7 +1,7 @@
 import app from "./app.js";
 import { sequelize } from "./database/database.js";
 import { PORT } from "./config.js";
-
+import { InternalUser } from "./schemas/Internal_User.js";
 
 // async function main(){
 //    try {
@@ -24,7 +24,7 @@ import "./schemas/schedules_tables/associations.js";
 
 async function main(){
    try { 
-      await sequelize.sync(/*{force: true}*/);
+      await sequelize.sync(/*{alter: true}*/);
       app.listen(3000, () => {
          console.log("Server running on port 3000")
       })

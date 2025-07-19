@@ -1,5 +1,6 @@
 import { Province } from "../../schemas/parameter_tables/Province.js";
-import { City } from "../../schemas/parameter_tables/City.js"; // Importar City para incluir la relación
+import { Country } from "../../schemas/parameter_tables/Country.js"; // Importar City para incluir la relación
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class ProvinceModel {
 
@@ -8,8 +9,8 @@ export class ProvinceModel {
             return await Province.findAll({
                 where: { Province_Status: true },
                 include: {
-                    model: City, // Incluir la información de la ciudad asociada
-                    attributes: ["City_Name"]
+                    model: Country, // Incluir la información de la ciudad asociada
+                    attributes: ["Country_Name"]
                 }
             });
         } catch (error) {
@@ -22,8 +23,8 @@ export class ProvinceModel {
             return await Province.findOne({
                 where: { Province_ID: id, Province_Status: true },
                 include: {
-                    model: City, // Incluir la información de la ciudad asociada
-                    attributes: ["City_Name"]
+                    model: Country, // Incluir la información de la ciudad asociada
+                    attributes: ["Country_Name"]
                 }
             });
         } catch (error) {
@@ -31,15 +32,39 @@ export class ProvinceModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Province.create(data);
+            const newRecord = await Province.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Province",
+                            `El usuario interno ${internalId} creó un nuevo registro Province con ID ${newRecord.Province_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating province: ${error.message}`);
         }
     }
-
-    static async update(id, data) {
+    static async bulkCreate(data, internalId) {
+        try {
+            const createdRecords = await Province.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Province",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Province.`
+                        );
+            
+                        return createdRecords;
+        } catch (error) {
+            throw new Error(`Error creating Province: ${error.message}`);
+        }
+    }
+    static async update(id, data, internalId) {
         try {
             const provinceRecord = await this.getById(id);
             if (!provinceRecord) return null;
@@ -49,13 +74,21 @@ export class ProvinceModel {
             });
 
             if (rowsUpdated === 0) return null;
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Province",
+                `El usuario interno ${internalId} actualizó la Province con ID ${id}`
+            );
+
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating province: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const provinceRecord = await this.getById(id);
             if (!provinceRecord) return null;
@@ -64,6 +97,14 @@ export class ProvinceModel {
                 { Province_Status: false },
                 { where: { Province_ID: id, Province_Status: true } }
             );
+
+            await AuditModel.registerAudit(
+                internalId,
+                "DELETE",
+                "Province",
+                `El usuario interno ${internalId} eliminó lógicamente Province con ID ${id}`
+            );
+
             return provinceRecord;
         } catch (error) {
             throw new Error(`Error deleting province: ${error.message}`);

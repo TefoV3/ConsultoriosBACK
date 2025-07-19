@@ -27,8 +27,14 @@ export class PensionerController {
 
     static async create(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
+            if (Array.isArray(req.body)) {
+                const createdPensioner = await PensionerModel.bulkCreate(req.body, internalId);
+                return res.status(201).json(createdPensioner);
+            }
+            // Si es un objeto, usa create normal
             const Pensioner = req.body;
-            const newPensioner = await PensionerModel.create(Pensioner);
+            const newPensioner = await PensionerModel.create(Pensioner, internalId);
             res.status(201).json(newPensioner);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -37,8 +43,9 @@ export class PensionerController {
 
     static async update(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const updatedPensioner = await PensionerModel.update(id, req.body);
+            const updatedPensioner = await PensionerModel.update(id, req.body, internalId);
             if (!updatedPensioner) {
                 res.status(404).json({ error: 'Pensioner not found' });
             } else {
@@ -51,8 +58,9 @@ export class PensionerController {
 
     static async delete(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const deletedPensioner = await PensionerModel.delete(id);
+            const deletedPensioner = await PensionerModel.delete(id, internalId);
             if (!deletedPensioner) {
                 res.status(404).json({ error: 'Pensioner not found' });
             } else {

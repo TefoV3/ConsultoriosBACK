@@ -1,4 +1,5 @@
 import { Complexity } from "../../schemas/parameter_tables/Complexity.js";
+import { AuditModel } from "../../models/AuditModel.js";
 
 export class ComplexityModel {
 
@@ -22,15 +23,49 @@ export class ComplexityModel {
         }
     }
 
-    static async create(data) {
+    static async create(data, internalId) {
         try {
-            return await Complexity.create(data);
+            // Validar que el nombre de la complejidad no exista
+            const existingComplexity = await Complexity.findOne({
+                where: { Complexity_Name: data.Complexity_Name, Complexity_Status: true }
+            });
+            if (existingComplexity) {
+                throw new Error(`Complexity with name "${data.Complexity_Name}" already exists.`);
+            }
+            // Aseguramos que el estado esté activo al crear
+            data.Complexity_Status = true; // Aseguramos que la complejidad esté activa al crearlo
+            data.Complexity_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
+            const newRecord = await Complexity.create(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Complexity",
+                            `El usuario interno ${internalId} creó un nuevo registro de Complexity con ID ${newRecord.Complexity_ID}`
+                        );
+            
+                        return newRecord;
         } catch (error) {
             throw new Error(`Error creating complexity: ${error.message}`);
         }
     }
-
-    static async update(id, data) {
+    static async bulkCreate(data, internalId) {
+        try {
+            const createdRecords = await Complexity.bulkCreate(data);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "INSERT",
+                            "Complexity",
+                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Complexity.`
+                        );
+            
+                        return createdRecords;
+        } catch (error) {
+            throw new Error(`Error creating Complexity: ${error.message}`);
+        }
+    }
+    static async update(id, data, internalId) {
         try {
             const complexityRecord = await this.getById(id);
             if (!complexityRecord) return null;
@@ -40,13 +75,21 @@ export class ComplexityModel {
             });
 
             if (rowsUpdated === 0) return null;
-            return await this.getById(id);
+            
+                        await AuditModel.registerAudit(
+                            internalId,
+                            "UPDATE",
+                            "Complexity",
+                            `El usuario interno ${internalId} actualizó la Complexity con ID ${id}`
+                        );
+            
+                        return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating complexity: ${error.message}`);
         }
     }
 
-    static async delete(id) {
+    static async delete(id, internalId) {
         try {
             const complexityRecord = await this.getById(id);
             if (!complexityRecord) return null;
@@ -55,6 +98,12 @@ export class ComplexityModel {
                 { Complexity_Status: false },
                 { where: { Complexity_ID: id, Complexity_Status: true } }
             );
+            await AuditModel.registerAudit(
+                            internalId,
+                            "DELETE",
+                            "Complexity",
+                            `El usuario interno ${internalId} eliminó lógicamente la Complexity con ID ${id}`
+                        );
             return complexityRecord;
         } catch (error) {
             throw new Error(`Error deleting complexity: ${error.message}`);

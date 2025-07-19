@@ -9,4 +9,7 @@ ActivityRouter.get('/activity/case/:codeCase', ActivityController.getAllByCodeCa
 ActivityRouter.get('/activity/:id', ActivityController.getById);
 ActivityRouter.get('/activity/document/:id', ActivityController.getDocumentById); 
 ActivityRouter.post('/activity', upload.single("file"), ActivityController.createActivity);
-ActivityRouter.put('/activity/:id', ActivityController.update);
+ActivityRouter.put('/activity/:id', upload.single("file"), ActivityController.update);
+ActivityRouter.get('/activity/report/excel', ActivityController.generateExcelReport);
+ActivityRouter.get('/activity/internal/:internalId', ActivityController.getAllById);
+

@@ -50,7 +50,7 @@ export const User = sequelize.define('User', {
     User_Phone: DataTypes.STRING(10),
     User_Email: DataTypes.STRING(70),
     User_Address: DataTypes.STRING(250),
-    User_Sector: DataTypes.STRING(10),
+    User_Sector: DataTypes.STRING(50),
     User_Zone: DataTypes.STRING(15),
     User_ReferenceRelationship : DataTypes.STRING(50),
     User_ReferenceName: DataTypes.STRING(50),
@@ -58,12 +58,12 @@ export const User = sequelize.define('User', {
 
     User_SocialBenefit: DataTypes.BOOLEAN,
     User_EconomicDependence: DataTypes.BOOLEAN,
-    User_Academic_Instruction: DataTypes.STRING(50),
-    User_Profession: DataTypes.STRING(50),
+    User_AcademicInstruction: DataTypes.STRING(50),
+    User_Profession: DataTypes.STRING(120),
     User_MaritalStatus: DataTypes.STRING(20),
     User_Dependents: DataTypes.INTEGER,
-    User_IncomeLevel: DataTypes.STRING(5),
-    User_FamilyIncome: DataTypes.STRING(5),
+    User_IncomeLevel: DataTypes.STRING(10),
+    User_FamilyIncome: DataTypes.STRING(10),
     User_FamilyGroup: {
         type: DataTypes.JSON,
         allowNull: true,  // Opcional, si puede ser nulo
@@ -80,12 +80,11 @@ export const User = sequelize.define('User', {
     User_Pensioner: DataTypes.STRING(50),
     User_HealthInsurance: DataTypes.STRING(50),
     User_VulnerableSituation: DataTypes.STRING(50),
-    User_SupportingDocuments: DataTypes.STRING(150),
-    User_Disability:DataTypes.STRING(50),
+    User_Disability:DataTypes.STRING(150),
     User_DisabilityPercentage: DataTypes.INTEGER,
-    User_CatastrophicIllness: DataTypes.STRING(50),
+    User_CatastrophicIllness: DataTypes.STRING(300),
     User_HealthDocuments: DataTypes.BLOB("long"),
-    
+    User_HealthDocumentsName: DataTypes.STRING(150),
     User_IsDeleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false

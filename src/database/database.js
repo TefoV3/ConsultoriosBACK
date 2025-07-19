@@ -31,72 +31,61 @@ import dotenv from "dotenv";
 
 //USO LOCAL
 
-/*
-export const sequelize = new Sequelize(
-      'prueba', 
-       'root', 
-      '12345', 
-      {
-         host: 'localhost',
-          dialect: 'mysql'
-     }
-    )
-*/
 
-/*
-export const sequelize = new Sequelize(
-    'prueba', 
-    'root', 
-    '12345678', 
-    {
-        host: 'localhost',
-        dialect: 'mysql'
-    }
-);
-*/
+// export const sequelize = new Sequelize(
+//       'prueba', 
+//        'root', 
+//       '123456', 
+//       {
+//          host: 'localhost',
+//           dialect: 'mysql'
+//      }
+//     )
+
+
+
+// export const sequelize = new Sequelize(
+//     'prueba', 
+//     'root', 
+//     '12345678', 
+//     {
+//         host: 'localhost',
+//         dialect: 'mysql'
+//     }
+// );
+
 
 
 //TefoVirtual
-/*export const sequelize = new Sequelize(
+export const sequelize = new Sequelize(
     'ConsultoriosJuridicosevi', 
     'Cliente', 
     '2444', 
     {
-        host: '192.168.56.101', 
+        host: '192.168.100.105', 
         dialect: 'mysql'
     }
-);*/
+);
 
-// //Francis
-// export const sequelize = new Sequelize(
-//     'consultoriosjuridicos', 
-//     'fvelasco', 
-//     'ltic', 
-//     {
-//        host: '192.168.56.102',
-//        dialect: 'mysql'
-//     }
-// );
 
-// Francis
+//Francis
 // export const sequelize = new Sequelize(
 //     'consultoriosjuridicos2', 
 //     'fvelasco', 
 //     'ltic', 
 //     {
-//        host: '192.168.56.102',
+//         host: '192.168.161.3',
 //        dialect: 'mysql'
 //     }
 // );
 
-export const sequelize = new Sequelize(
-    'seguimiento_final2', 
-    'user_control', 
-    'ltic', 
-    {
-        host: 'localhost',
-        dialect: 'mysql',
-        timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
-    }
-);
-
+// export const sequelize = new Sequelize(
+//     'seguimiento_final3', 
+//     'user_control', 
+//     'ltic', 
+//     {
+//         host: 'localhost',
+//         dialect: 'mysql',
+//         timezone: 'America/Guayaquil' // Para Ecuador (Guayaquil, Quito, etc.)
+//     }
+// );

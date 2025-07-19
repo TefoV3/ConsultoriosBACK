@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../database/database.js";
 
-export const Zone = sequelize.define('Zone_Sector', {
-    Zone_Sector_ID: {
+export const Zone = sequelize.define('Zone', {
+    Zone_ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true

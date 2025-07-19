@@ -38,14 +38,32 @@ export const InitialConsultations = sequelize.define('Initial_Consultations', {
     Init_Service: DataTypes.STRING(100),
     Init_Referral: DataTypes.STRING(100),
     Init_Status: DataTypes.STRING(100),
+    Init_CaseStatus: DataTypes.STRING(100),
     Init_Notes: DataTypes.TEXT,
     Init_Complexity: DataTypes.CHAR(10),
     Init_Type: DataTypes.STRING(30),
     Init_SocialWork: DataTypes.BOOLEAN,
+    Init_MandatorySW: DataTypes.BOOLEAN,
+    Init_AttentionSheet: {
+        type: DataTypes.BLOB('long'),
+        allowNull: true,
+    },
+    Init_AlertNote: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
     User_ID: {  
         type: DataTypes.CHAR(10),
         allowNull: false
-    }
+    },
+    Init_EndCaseReason: {
+        type: DataTypes.STRING(100),
+        allowNull: true
+    },
+    Init_EndCaseDescription: {
+        type: DataTypes.STRING(250),
+        allowNull: true
+    },
 
 }, { timestamps: false });
 

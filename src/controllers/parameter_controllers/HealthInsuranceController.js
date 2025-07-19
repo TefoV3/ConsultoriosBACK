@@ -1,4 +1,4 @@
-import { HealthInsuranceModel } from "../../models/parameter_models/HealthInsuranceModel.js";
+import { HealthInsuranceModel } from "../../models/parameter_models/Health_InsuranceModel.js";
 
 export class HealthInsuranceController {
 
@@ -27,8 +27,14 @@ export class HealthInsuranceController {
 
     static async create(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
+            if (Array.isArray(req.body)) {
+                const createdHealthInsurance = await HealthInsuranceModel.bulkCreate(req.body, internalId);
+                return res.status(201).json(createdHealthInsurance);
+            }
+            // Si es un objeto, usa create normal
             const HealthInsurance = req.body;
-            const newHealthInsurance = await HealthInsuranceModel.create(HealthInsurance);
+            const newHealthInsurance = await HealthInsuranceModel.create(HealthInsurance, internalId);
             res.status(201).json(newHealthInsurance);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -37,8 +43,9 @@ export class HealthInsuranceController {
 
     static async update(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const updatedHealthInsurance = await HealthInsuranceModel.update(id, req.body);
+            const updatedHealthInsurance = await HealthInsuranceModel.update(id, req.body, internalId);
             if (!updatedHealthInsurance) {
                 res.status(404).json({ error: 'Health Insurance not found' });
             } else {
@@ -51,8 +58,9 @@ export class HealthInsuranceController {
 
     static async delete(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const deletedHealthInsurance = await HealthInsuranceModel.delete(id);
+            const deletedHealthInsurance = await HealthInsuranceModel.delete(id, internalId);
             if (!deletedHealthInsurance) {
                 res.status(404).json({ error: 'Health Insurance not found' });
             } else {

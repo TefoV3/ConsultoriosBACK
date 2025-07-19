@@ -13,6 +13,11 @@ export class DisabilityController {
 
     static async getById(req, res) {
         try {
+            if (Array.isArray(req.body)) {
+                const createddisability = await DisabilityModel.bulkCreate(req.body);
+                return res.status(201).json(createddisability);
+            }
+            // Si es un objeto, usa create normal
             const id = req.params.id;
             const disability = await DisabilityModel.getById(id);
             if (!disability) {
@@ -27,8 +32,9 @@ export class DisabilityController {
 
     static async create(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const disability = req.body;
-            const newDisability = await DisabilityModel.create(disability);
+            const newDisability = await DisabilityModel.create(disability, internalId);
             res.status(201).json(newDisability);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -37,8 +43,9 @@ export class DisabilityController {
 
     static async update(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const updatedDisability = await DisabilityModel.update(id, req.body);
+            const updatedDisability = await DisabilityModel.update(id, req.body, internalId);
             if (!updatedDisability) {
                 res.status(404).json({ error: 'Disability not found' });
             } else {
@@ -51,8 +58,9 @@ export class DisabilityController {
 
     static async delete(req, res) {
         try {
+            const internalId = req.headers["internal-id"]
             const id = req.params.id;
-            const deletedDisability = await DisabilityModel.delete(id);
+            const deletedDisability = await DisabilityModel.delete(id, internalId);
             if (!deletedDisability) {
                 res.status(404).json({ error: 'Disability not found' });
             } else {

@@ -1,105 +1,117 @@
+// schedules_tables/associations.js
+
 import { InternalUser } from "../Internal_User.js";
-import { Periodo } from "./Periodo_schema.js";
-import { UsuarioXPeriodo } from "./UsuarioXPeriodo_schema.js";
-import { Resumen_Horas_Estudiantes } from "./Resumen_Horas_Estudiantes_schema.js";
-import { Horas_Extraordinarias } from "./Horas_Extraordinarias_schema.js";
-import { Seguimiento_Semanal } from "./Seguimiento_Semanal_schema.js";
-import { Horarios } from "./Horario_schema.js";
-import { Registro_Asistencia } from "./Registro_Asistencia_Schema.js";
-/* 🔹 Relación N:M entre InternalUser y Periodo a través de UsuarioXPeriodo */
-InternalUser.belongsToMany(Periodo, { 
-    through: UsuarioXPeriodo, 
-    foreignKey: "Internal_ID",
-    as: "periodos"
+import { Period } from "./Period.js";
+import { UserXPeriod } from "./UserXPeriod.js";
+import { Student_Hours_Summary } from "./Student_Hours_Summary.js";
+import { Extra_Hours } from "./Extra_Hours.js";
+import { Weekly_Tracking } from "./Weekly_Tracking.js";
+import { Schedule_Students } from "./Schedule_Students.js"; // ✅ nombre correcto
+import { Attendance_Record } from "./Attendance_Record.js";
+import { Weekly_Hours_Summary } from "./Weekly_Hours_Summary.js";
+import { Alert } from "./Alert.js";
+
+// 🔹 N:M - InternalUser <-> Period through UserXPeriod
+InternalUser.belongsToMany(Period, {
+  through: UserXPeriod,
+  foreignKey: "Internal_ID",
+  as: "periods"
+});
+Period.belongsToMany(InternalUser, {
+  through: UserXPeriod,
+  foreignKey: "Period_ID",
+  as: "users"
 });
 
-Periodo.belongsToMany(InternalUser, { 
-    through: UsuarioXPeriodo, 
-    foreignKey: "Periodo_ID",
-    as: "usuarios"
+// 🔹 1:N - InternalUser -> UserXPeriod
+InternalUser.hasMany(UserXPeriod, {
+  foreignKey: "Internal_ID",
+  as: "userPeriods"
+});
+UserXPeriod.belongsTo(InternalUser, {
+  foreignKey: "Internal_ID",
+  as: "user"
 });
 
-/* 🔹 Relación 1:N entre InternalUser y UsuarioXPeriodo */
-InternalUser.hasMany(UsuarioXPeriodo, { 
-    foreignKey: "Internal_ID",
-    as: "usuarioPeriodos"
+// 🔹 1:N - Period -> UserXPeriod
+Period.hasMany(UserXPeriod, {
+  foreignKey: "Period_ID",
+  as: "periodUsers"
+});
+UserXPeriod.belongsTo(Period, {
+  foreignKey: "Period_ID",
+  as: "period"
 });
 
-UsuarioXPeriodo.belongsTo(InternalUser, { 
-    foreignKey: "Internal_ID",
-    as: "usuario"
+// 🔹 1:N - InternalUser -> Student_Hours_Summary
+InternalUser.hasMany(Student_Hours_Summary, {
+  foreignKey: "Internal_ID",
+  as: "hoursSummary"
+});
+Student_Hours_Summary.belongsTo(InternalUser, {
+  foreignKey: "Internal_ID",
+  as: "userSummary"
 });
 
-/* 🔹 Relación 1:N entre Periodo y UsuarioXPeriodo */
-Periodo.hasMany(UsuarioXPeriodo, { 
-    foreignKey: "Periodo_ID",
-    as: "periodoUsuarios"
+// 🔹 1:N - InternalUser -> Extra_Hours
+InternalUser.hasMany(Extra_Hours, {
+  foreignKey: "Internal_ID",
+  as: "extraHours"
+});
+Extra_Hours.belongsTo(InternalUser, {
+  foreignKey: "Internal_ID",
+  as: "userExtraHours"
 });
 
-UsuarioXPeriodo.belongsTo(Periodo, { 
-    foreignKey: "Periodo_ID",
-    as: "periodo"
+// 🔹 1:N - Period -> Weekly_Tracking
+Period.hasMany(Weekly_Tracking, {
+  foreignKey: "Period_ID",
+  as: "trackings"
+});
+Weekly_Tracking.belongsTo(Period, {
+  foreignKey: "Period_ID",
+  as: "trackingPeriod"
 });
 
-/* 🔹 Relación 1:N entre InternalUser y Resumen_Horas_Estudiantes */
-InternalUser.hasMany(Resumen_Horas_Estudiantes, { 
-    foreignKey: "Internal_ID",
-    as: "resumenHoras"
+// 🔹 1:N - UserXPeriod -> Schedule_Students
+UserXPeriod.hasMany(Schedule_Students, {
+  foreignKey: "UserXPeriod_ID",
+  as: "schedules"
+});
+Schedule_Students.belongsTo(UserXPeriod, {
+  foreignKey: "UserXPeriod_ID",
+  as: "userPeriodSchedule"
 });
 
-Resumen_Horas_Estudiantes.belongsTo(InternalUser, { 
-    foreignKey: "Internal_ID",
-    as: "usuarioResumen"
+
+// 🔹 UserXPeriod -> Attendance_Record
+UserXPeriod.hasMany(Attendance_Record, {
+    foreignKey: "UserXPeriod_ID",
+    as: "attendance"
+  });
+  Attendance_Record.belongsTo(UserXPeriod, {
+    foreignKey: "UserXPeriod_ID",
+    as: "userXPeriod"
+  });
+
+// 🔹 1:N - Student_Hours_Summary -> Weekly_Hours_Summary
+Student_Hours_Summary.hasMany(Weekly_Hours_Summary, {
+  foreignKey: "Summary_ID",
+  as: "weeklySummaries"
+});
+Weekly_Hours_Summary.belongsTo(Student_Hours_Summary, {
+  foreignKey: "Summary_ID",
+  as: "generalSummary"
 });
 
-/* 🔹 Relación 1:N entre InternalUser y Horas_Extraordinarias */
-InternalUser.hasMany(Horas_Extraordinarias, { 
-    foreignKey: "Internal_ID",
-    as: "horasExtraordinarias"
+// 🔹 1:N - InternalUser -> Alert
+InternalUser.hasMany(Alert, {
+  foreignKey: "Internal_ID",
+  as: "alerts"
+});
+Alert.belongsTo(InternalUser, {
+  foreignKey: "Internal_ID",
+  as: "userAlerts"
 });
 
-Horas_Extraordinarias.belongsTo(InternalUser, { 
-    foreignKey: "Internal_ID",
-    as: "usuarioHorasExtra"
-});
-
-/* 🔹 Relación 1:N entre Periodo y Seguimiento_Semanal */
-Periodo.hasMany(Seguimiento_Semanal, {
-    foreignKey: "Periodo_ID",
-    as: "seguimientos"
-});
-
-Seguimiento_Semanal.belongsTo(Periodo, {
-    foreignKey: "Periodo_ID",
-    as: "periodoSeguimiento"
-});
-
-/* 🔹 Un `UsuarioXPeriodo` puede tener muchos `Horarios` */
-UsuarioXPeriodo.hasMany(Horarios, { 
-    foreignKey: "UsuarioXPeriodo_ID",
-    as: "horarios"
-});
-
-/* 🔹 Un `Horario` pertenece a un `UsuarioXPeriodo` */
-Horarios.belongsTo(UsuarioXPeriodo, { 
-    foreignKey: "UsuarioXPeriodo_ID",
-    as: "usuarioXPeriodo",
-    onDelete: 'RESTRICT',
-    onUpdate: 'CASCADE'
-});
-
-/* 🔹 Un `UsuarioXPeriodo` puede tener muchos `Registros_Asistencia` */
-UsuarioXPeriodo.hasMany(Registro_Asistencia, { 
-    foreignKey: "UsuarioXPeriodo_ID",
-    as: "registrosAsistencia"
-});
-
-/* 🔹 Un `Registro_Asistencia` pertenece a un `UsuarioXPeriodo` */
-Registro_Asistencia.belongsTo(UsuarioXPeriodo, { 
-    foreignKey: "UsuarioXPeriodo_ID",
-    as: "usuarioXPeriodo",
-    onDelete: 'RESTRICT',
-    onUpdate: 'CASCADE'
-});
-
-console.log("📌 Relaciones de Sequelize con InternalUser establecidas correctamente.");
+console.log("📌 Sequelize associations with InternalUser established correctly.");
