@@ -30,7 +30,8 @@ export class Attendance_Record_Controller {
   static async create(req, res) {
     try {
       const data = req.body;
-      const record = await Attendance_RecordModel.create(data);
+      const internalId = req.headers["internal-id"];
+      const record = await Attendance_RecordModel.create(data, internalId);
       res.status(201).json(record);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -41,7 +42,8 @@ export class Attendance_Record_Controller {
   static async createWithSummary(req, res) {
     try {
       const data = req.body;
-      const record = await Attendance_RecordModel.createWithSummary(data);
+      const internalId = req.headers["internal-id"];
+      const record = await Attendance_RecordModel.createWithSummary(data, internalId);
       res.status(201).json(record);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -53,7 +55,8 @@ export class Attendance_Record_Controller {
     try {
       const id = req.params.id;
       const data = req.body;
-      const record = await Attendance_RecordModel.update(id, data);
+      const internalId = req.headers["internal-id"];
+      const record = await Attendance_RecordModel.update(id, data, internalId);
       if (!record) {
         res.status(404).json({ message: "Attendance record not found" });
       } else {
@@ -69,7 +72,8 @@ export class Attendance_Record_Controller {
     try {
       const id = req.params.id;
       const data = req.body;
-      const record = await Attendance_RecordModel.updateExitWithSummary(id, data);
+      const internalId = req.headers["internal-id"];
+      const record = await Attendance_RecordModel.updateExitWithSummary(id, data, internalId);
       if (!record) {
         res.status(404).json({ message: "Attendance record not found" });
       } else {
@@ -84,7 +88,8 @@ export class Attendance_Record_Controller {
   static async delete(req, res) {
     try {
       const id = req.params.id;
-      const deleted = await Attendance_RecordModel.delete(id);
+      const internalId = req.headers["internal-id"];
+      const deleted = await Attendance_RecordModel.delete(id, internalId);
       if (!deleted) {
         res.status(404).json({ message: "Attendance record not found" });
       } else {
@@ -154,7 +159,8 @@ export class Attendance_Record_Controller {
     try {
       const id = req.params.id;
       const data = req.body;
-      const record = await Attendance_RecordModel.updateClosedWithSummary(id, data);
+      const internalId = req.headers["internal-id"];
+      const record = await Attendance_RecordModel.updateClosedWithSummary(id, data, internalId);
       if (!record) {
         res.status(404).json({ message: "Closed record not found" });
       } else {
@@ -169,7 +175,8 @@ export class Attendance_Record_Controller {
   static async deleteWithAdjustment(req, res) {
     try {
       const id = req.params.id;
-      const result = await Attendance_RecordModel.deleteWithAdjustment(id);
+      const internalId = req.headers["internal-id"];
+      const result = await Attendance_RecordModel.deleteWithAdjustment(id, internalId);
       if (!result) {
         res.status(404).json({ message: "Record not found or could not be deleted" });
       } else {

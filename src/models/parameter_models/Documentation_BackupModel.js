@@ -1,5 +1,6 @@
 import { Documentation_Backup } from "../../schemas/parameter_tables/Documentation_Backup.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class DocumentationBackupModel {
 
@@ -37,14 +38,33 @@ export class DocumentationBackupModel {
             data.Documentation_Backup_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Documentation_Backup.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Documentation_Backup",
-                            `El usuario interno ${internalId} creó un nuevo registro de documentosd de respaldo con ID ${newRecord.Documentation_Backup_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Documentation_Backup",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de documentos de respaldo con ID ${newRecord.Documentation_Backup_ID} - Nombre: ${newRecord.Documentation_Backup_Name}`
+            );
             
-                        return newRecord;
+            return newRecord;
+
         } catch (error) {
             throw new Error(`Error creating documentation backup: ${error.message}`);
         }
@@ -53,14 +73,32 @@ export class DocumentationBackupModel {
         try {
             const createdRecords = await Documentation_Backup.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Documentation_Backup",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Documentation_Backup.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Documentation_Backup",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de documentos de respaldo.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
+
         } catch (error) {
             throw new Error(`Error creating Documentation Backup: ${error.message}`);
         }
@@ -76,11 +114,28 @@ export class DocumentationBackupModel {
 
              if (rowsUpdated === 0) return null;
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Documentation_Backup",
-                `El usuario interno ${internalId} actualizó Documentation_Backup con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el documento de respaldo con ID ${id} - Nombre: ${documentationBackupRecord.Documentation_Backup_Name}`
             );
 
             return await this.getById(id);
@@ -99,11 +154,28 @@ export class DocumentationBackupModel {
                 { where: { Documentation_Backup_ID: id, Documentation_Backup_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Documentation_Backup",
-                `El usuario interno ${internalId} eliminó lógicamente Documentation_Backup con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente el documento de respaldo con ID ${id} - Nombre: ${documentationBackupRecord.Documentation_Backup_Name}`
             );
             return documentationBackupRecord;
         } catch (error) {

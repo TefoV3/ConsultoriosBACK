@@ -45,7 +45,11 @@ export class Weekly_Hours_SummaryController {
   static async create(req, res) {
     try {
       const data = req.body;
-      const newSummary = await Weekly_Hours_SummaryModel.create(data);
+      const internalId = req.headers["internal-id"];
+      const newSummary = await Weekly_Hours_SummaryModel.create(data, { 
+        internalUser: internalId,
+        isAutomatic: false // Creación manual desde el controlador
+      });
       res.status(201).json(newSummary);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -57,7 +61,11 @@ export class Weekly_Hours_SummaryController {
     const { id } = req.params;
     try {
       const data = req.body;
-      const updated = await Weekly_Hours_SummaryModel.update(id, data);
+      const internalId = req.headers["internal-id"];
+      const updated = await Weekly_Hours_SummaryModel.update(id, data, { 
+        internalUser: internalId,
+        isAutomatic: false // Actualización manual desde el controlador
+      });
       if (updated) {
         res.status(200).json(updated);
       } else {
@@ -72,7 +80,8 @@ export class Weekly_Hours_SummaryController {
   static async delete(req, res) {
     const { id } = req.params;
     try {
-      const deleted = await Weekly_Hours_SummaryModel.delete(id);
+      const internalId = req.headers["internal-id"];
+      const deleted = await Weekly_Hours_SummaryModel.delete(id, internalId);
       if (deleted) {
         res.status(200).json({ message: "Weekly summary deleted successfully" });
       } else {

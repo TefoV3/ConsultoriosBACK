@@ -1,5 +1,6 @@
 import { Family_Income } from "../../schemas/parameter_tables/Family_Income.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class FamilyIncomeModel {
     

@@ -1,5 +1,6 @@
 import { Civil_Status } from "../../schemas/parameter_tables/Civil_Status.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class CivilStatusModel {
 
@@ -36,13 +37,31 @@ export class CivilStatusModel {
             data.Civil_Status_Status = true; // Aseguramos que el estado civil esté activo al crearlo
             data.Civil_Status_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Civil_Status.create(data);
-                                await AuditModel.registerAudit(
-                                    internalId,
-                                    "INSERT",
-                                    "Civil_Statusn",
-                                    `El usuario interno ${internalId} creó un nuevo registro de Civil Status con ID ${newRecord.Civil_Status_ID}`
-                                );
-                                    return newRecord
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Civil_Status",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de estado civil con ID ${newRecord.Civil_Status_ID} - Nombre: ${newRecord.Civil_Status_Name}`
+            );
+            return newRecord
         } catch (error) {
             throw new Error(`Error creating civil status: ${error.message}`);
         }
@@ -51,14 +70,32 @@ export class CivilStatusModel {
         try {
             const createdRecords = await Civil_Status.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Civil_Status",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Civil Status.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Civil_Status",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de estado civil.`
+            );
             
-                        return createdRecords; // Usa el bulkCreate de Sequelize
+            return createdRecords; // Usa el bulkCreate de Sequelize
+
         } catch (error) {
             throw new Error(`Error creating Civil Status: ${error.message}`);
         }
@@ -74,12 +111,30 @@ export class CivilStatusModel {
 
             if (rowsUpdated === 0) return null;
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Civil_Status",
-                `El usuario interno ${internalId} actualizó la Civil Status con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el estado civil con ID ${id} - Nombre: ${civilStatusRecord.Civil_Status_Name}`
             );
+
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating civil status: ${error.message}`);
@@ -96,11 +151,28 @@ export class CivilStatusModel {
                 { where: { Civil_Status_ID: id, Civil_Status_Status: true } }
             );
 
+           let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Civil_Status",
-                `El usuario interno ${internalId} eliminó lógicamente la Civil Status con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente el estado civil con ID ${id} - Nombre: ${civilStatusRecord.Civil_Status_Name}`
             );
 
             return civilStatusRecord;

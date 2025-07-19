@@ -6,6 +6,7 @@ import { getUserId } from '../sessionData.js';
 import ExcelJS from "exceljs";
 import { Op } from "sequelize";
 import { LivingGroup } from "../schemas/Living_Group.js"; // Assuming LivingGroup is defined in schemas
+import { InternalUser } from "../schemas/Internal_User.js";
 
 // Add these imports for Word document generation
 import { Document, Packer, Paragraph, HeadingLevel, AlignmentType, Table, TableRow, TableCell } from "docx";
@@ -182,11 +183,30 @@ export class Social_WorkModel {
             });
 
             // 🔹 Registrar en auditoría
+            // Obtener información del usuario interno para auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Registrar en auditoría
             await AuditModel.registerAudit(
                 internalId,
                 "INSERT",
                 "Social_Work",
-                `El usuario interno ${internalId} creó el registro de trabajo social con ID ${newRecord.SW_ProcessNumber}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó el registro de trabajo social con ID ${newRecord.SW_ProcessNumber}`
             );
 
             return newRecord;
@@ -206,12 +226,39 @@ export class Social_WorkModel {
 
             if (rowsUpdated === 0) return null;
             
-            // 🔹 Registrar en auditoría la actualización
+            // Obtener información del usuario interno para auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios relevantes
+            let changeDetails = [];
+            for (const key in data) {
+                if (data.hasOwnProperty(key) && data[key] !== originalValues[key]) {
+                    changeDetails.push(`${key}: "${originalValues[key] ?? ''}" → "${data[key] ?? ''}"`);
+                }
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
+            // Registrar en auditoría la actualización
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Social_Work",
-                `El usuario interno ${internalId} actualizó el registro de trabajo social con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el registro de trabajo social con ID ${id}${changeDescription}`
             );
 
             return await this.getById(id);
@@ -219,7 +266,7 @@ export class Social_WorkModel {
           throw new Error(`Error updating social work record: ${error.message}`);
         }
       }
-    static async updateStatus(social_WorkId, status, status_observations) { // Parameter is socialWorkId
+    static async updateStatus(social_WorkId, status, status_observations, internalUser) { // Parameter is socialWorkId
         try {
             // First check if the record exists
             const record = await this.getById(social_WorkId); // <-- Using social_WorkId here (with underscore) - This is line 221
@@ -227,7 +274,8 @@ export class Social_WorkModel {
             if (!record) {
                 return false;
             }
-            
+            const internalId = internalUser || getUserId();
+
             // Fix: Corrected parameter name from status_obvervations to status_observations
             const [rowsUpdated] = await Social_Work.update(
                 {
@@ -238,7 +286,42 @@ export class Social_WorkModel {
                     where: { SW_ProcessNumber: social_WorkId } // <-- Using social_WorkId here (with underscore)
                 }
             );
-    
+
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios relevantes
+            let changeDetails = [];
+            if (status !== record.SW_Status) {
+                changeDetails.push(`SW_Status: "${record.SW_Status ?? ''}" → "${status ?? ''}"`);
+            }
+            if (status_observations !== record.SW_Status_Observations) {
+                changeDetails.push(`SW_Status_Observations: "${record.SW_Status_Observations ?? ''}" → "${status_observations ?? ''}"`);
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Social_Work",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el estado del registro de trabajo social con ID ${social_WorkId}${changeDescription}`
+            );
+
             return rowsUpdated > 0; // Return true if at least one row was updated
         } catch (error) {
             console.error("Error updating social work status:", error);
@@ -256,12 +339,30 @@ export class Social_WorkModel {
             const internalId = internalUser || getUserId();
             await Social_Work.update({ SW_Status: false }, { where: { SW_ProcessNumber: id } });
 
-            // 🔹 Registrar en auditoría la eliminación (borrado lógico)
+            // Obtener información del usuario interno para auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Registrar en auditoría la eliminación (borrado lógico)
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Social_Work",
-                `El usuario interno ${internalId} eliminó lógicamente el registro de trabajo social con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente el registro de trabajo social con ID ${id}`
             );
 
             return record;

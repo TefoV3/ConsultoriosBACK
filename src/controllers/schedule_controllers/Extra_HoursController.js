@@ -23,7 +23,8 @@ export class Extra_HoursController {
 
   static async create(req, res) {
     try {
-      const newHour = await Extra_HoursModel.create(req.body);
+      const internalId = req.headers["internal-id"];
+      const newHour = await Extra_HoursModel.create(req.body, internalId);
       return res.status(201).json(newHour);
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -35,7 +36,8 @@ export class Extra_HoursController {
    */
   static async createWithSummary(req, res) {
     try {
-      const newHour = await Extra_HoursModel.createWithSummary(req.body);
+      const internalId = req.headers["internal-id"];
+      const newHour = await Extra_HoursModel.createWithSummary(req.body, internalId);
       return res.status(201).json(newHour);
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -45,7 +47,8 @@ export class Extra_HoursController {
   static async update(req, res) {
     try {
       const { id } = req.params;
-      const updated = await Extra_HoursModel.update(id, req.body);
+      const internalId = req.headers["internal-id"];
+      const updated = await Extra_HoursModel.update(id, req.body, internalId);
 
       if (!updated)
         return res.status(404).json({ message: "Extra hour not found" });
@@ -59,7 +62,8 @@ export class Extra_HoursController {
   static async delete(req, res) {
     try {
       const { id } = req.params;
-      const deleted = await Extra_HoursModel.delete(id);
+      const internalId = req.headers["internal-id"];
+      const deleted = await Extra_HoursModel.delete(id, internalId);
 
       if (!deleted)
         return res.status(404).json({ message: "Extra hour not found" });

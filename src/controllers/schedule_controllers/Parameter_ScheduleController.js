@@ -37,7 +37,8 @@ export class Parameter_ScheduleController {
   // 4. Create new parameter schedule
   static async create(req, res) {
     try {
-      const newSchedule = await Parameter_ScheduleModel.create(req.body);
+      const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+      const newSchedule = await Parameter_ScheduleModel.create(req.body, internalId); // Pasar el Internal_ID al modelo
       res.status(201).json(newSchedule);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -48,7 +49,8 @@ export class Parameter_ScheduleController {
   static async update(req, res) {
     const { parameterScheduleId } = req.params;
     try {
-      const updated = await Parameter_ScheduleModel.update(parameterScheduleId, req.body);
+      const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+      const updated = await Parameter_ScheduleModel.update(parameterScheduleId, req.body, internalId); // Pasar el Internal_ID al modelo
       if (!updated) return res.status(404).json({ message: "Parameter schedule not found" });
       res.json(updated);
     } catch (error) {
@@ -60,7 +62,8 @@ export class Parameter_ScheduleController {
   static async delete(req, res) {
     const { parameterScheduleId } = req.params;
     try {
-      const deleted = await Parameter_ScheduleModel.delete(parameterScheduleId);
+      const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+      const deleted = await Parameter_ScheduleModel.delete(parameterScheduleId, internalId); // Pasar el Internal_ID al modelo
       if (deleted) return res.json({ message: "Parameter schedule deleted" });
       res.status(404).json({ message: "Parameter schedule not found" });
     } catch (error) {

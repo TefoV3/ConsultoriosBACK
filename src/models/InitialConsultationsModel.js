@@ -275,7 +275,7 @@ export class InitialConsultationsModel {
             User_HealthDocuments: healthDocument ? healthDocument.buffer : null,
             User_HealthDocumentsName: data.User_HealthDocumentsName,
           },
-          { transaction: t }
+          userId
         );
         console.log(
           "Buffer de documento de salud:",
@@ -285,14 +285,6 @@ export class InitialConsultationsModel {
         );
 
         userCreated = true; // Marcar que el usuario fue creado en esta transacción
-
-        // 🔹 Registrar en Audit que un usuario interno creó este usuario externo
-        await AuditModel.registerAudit(
-          userId,
-          "INSERT",
-          "User",
-          `El usuario interno ${userId} creó al usuario externo ${data.User_ID}`
-        );
       }
 
       // Verificar si el usuario interno existe
@@ -374,11 +366,55 @@ export class InitialConsultationsModel {
       }
 
       // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
+      // Get admin user information for audit (reuse from above if user was created)
+      let adminInfo = { name: 'Usuario Desconocido', area: 'Área no especificada' };
+      try {
+        const admin = await InternalUser.findOne({
+          where: { Internal_ID: userId },
+          attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"],
+          transaction: t
+        });
+        
+        if (admin) {
+          adminInfo = {
+            name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+            role: admin.Internal_Type || 'Rol no especificado', area: admin.Internal_Area || 'Área no especificada'
+          };
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+      }
+
+      // Get user information for audit (use the user variable that was already found/created)
+      let userFullName = 'Usuario Desconocido';
+      if (user && user.User_FirstName && user.User_LastName) {
+        userFullName = `${user.User_FirstName} ${user.User_LastName}`;
+      } else if (userCreated && data.User_FirstName && data.User_LastName) {
+        // If user was just created in this transaction, use the data from input
+        userFullName = `${data.User_FirstName} ${data.User_LastName}`;
+      } else {
+        // Fallback: try to fetch the user again if the user variable is null
+        try {
+          const externalUser = await User.findOne({
+            where: { User_ID: data.User_ID },
+            attributes: ["User_FirstName", "User_LastName"],
+            transaction: t
+          });
+          
+          if (externalUser) {
+            userFullName = `${externalUser.User_FirstName} ${externalUser.User_LastName}`;
+          }
+        } catch (err) {
+          console.warn("No se pudo obtener información del usuario externo para auditoría:", err.message);
+        }
+      }
+
       await AuditModel.registerAudit(
         userId,
         "INSERT",
         "Initial_Consultations",
-        `El usuario interno ${userId} creó la consulta inicial ${data.Init_Code} para el usuario ${data.User_ID}`
+        `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó la consulta inicial ${newConsultation.Init_Code} para el usuario ${userFullName} (ID: ${data.User_ID}) - Materia: ${data.Init_Subject}, Tipo: ${data.Init_Type}, Estado: ${data.Init_Status}, Oficina: ${data.Init_Office}, Abogado: ${data.Init_Lawyer || 'Sin asignar'}`,
+        { transaction: t }
       );
 
       // 🔹 Crear la evidencia asociada
@@ -402,11 +438,16 @@ export class InitialConsultationsModel {
       );
 
       // 🔹 Registrar en Audit la creación de la evidencia
+      const evidenceName = evidenceFile ? evidenceFile.originalname : "Sin Documento";
+      const evidenceType = evidenceFile ? evidenceFile.mimetype : 'Sin tipo';
+      const evidenceSize = evidenceFile ? `${(evidenceFile.buffer.length / 1024).toFixed(2)} KB` : 'Sin archivo';
+
       await AuditModel.registerAudit(
         userId,
         "INSERT",
         "Evidences",
-        `El usuario interno ${userId} subió la evidencia ${newEvidence.Evidence_ID} para la consulta ${data.Init_Code}`
+        `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó evidencia ID ${newEvidence.Evidence_ID} para la consulta ${newConsultation.Init_Code} del usuario ${userFullName} - Nombre archivo: "${evidenceName}", Tipo: ${evidenceType}, Tamaño: ${evidenceSize}`,
+        { transaction: t }
       );
 
 // --- Lógica para crear el registro en Social_Work si corresponde ---
@@ -449,7 +490,7 @@ if (newConsultation.Init_SocialWork === true) {
             userId,
             "INSERT",
             "Social_Work",
-            `El usuario interno ${userId} creó el registro de trabajo social ${swProcessNumber} para la consulta ${newConsultation.Init_Code}`,
+            `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó el registro de trabajo social ${swProcessNumber} para la consulta ${newConsultation.Init_Code} del usuario ${userFullName} - Estado: Activo`,
             { transaction: t }
         );
     } else {
@@ -478,7 +519,7 @@ if (newConsultation.Init_SocialWork === true) {
           userId,
           "DELETE",
           "User",
-          `El usuario interno ${userId} eliminó al usuario externo ${data.User_ID} debido a un error en la creación de la consulta inicial`
+          `${adminInfo.name || 'Usuario Desconocido'} (${adminInfo.area || 'Área no especificada'}) eliminó al usuario externo ${data.User_ID} debido a un error en la creación de la consulta inicial - Error: ${error.message}`
         );
       }
 
@@ -571,11 +612,51 @@ if (newConsultation.Init_SocialWork === true) {
       );
 
       // 🔹 Registrar en Audit que un usuario interno creó una consulta inicial
+      // Get admin user information for audit
+      let adminInfo = { name: 'Usuario Desconocido', area: 'Área no especificada' };
+      try {
+        const admin = await InternalUser.findOne({
+          where: { Internal_ID: internalId },
+          attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"],
+          transaction: t
+        });
+        
+        if (admin) {
+          adminInfo = {
+            name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+            role: admin.Internal_Type || 'Rol no especificado', area: admin.Internal_Area || 'Área no especificada'
+          };
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+      }
+
+      // Get external user full name for audit
+      let userFullName = 'Usuario Desconocido';
+      if (user && user.User_FirstName && user.User_LastName) {
+        userFullName = `${user.User_FirstName} ${user.User_LastName}`;
+      } else {
+        // Fallback: try to fetch the user again
+        try {
+          const externalUser = await User.findOne({
+            where: { User_ID: data.User_ID },
+            attributes: ["User_FirstName", "User_LastName"],
+            transaction: t
+          });
+          
+          if (externalUser) {
+            userFullName = `${externalUser.User_FirstName} ${externalUser.User_LastName}`;
+          }
+        } catch (err) {
+          console.warn("No se pudo obtener información del usuario externo para auditoría:", err.message);
+        }
+      }
+
       await AuditModel.registerAudit(
         internalId,
         "INSERT",
         "Initial_Consultations",
-        `El usuario interno ${internalId} creó una nueva consulta inicial ${newConsultation.Init_Code} para el usuario ${data.User_ID}`,
+        `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó nueva consulta inicial ${newConsultation.Init_Code} para el usuario ${userFullName} (ID: ${newConsultation.User_ID}) - Materia: ${data.Init_Subject}, Tipo: ${data.Init_Type}, Estado: ${data.Init_Status}, Oficina: ${data.Init_Office}, Abogado: ${data.Init_Lawyer || 'Sin asignar'}`,
         { transaction: t }
       );
 
@@ -626,7 +707,7 @@ if (newConsultation.Init_SocialWork === true) {
             internalId,
             "INSERT",
             "Social_Work",
-            `El usuario interno ${internalId} creó el registro de trabajo social ${swProcessNumber} para la consulta ${newConsultation.Init_Code}`,
+            `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó el registro de trabajo social ${swProcessNumber} para la consulta ${newConsultation.Init_Code} del usuario ${userFullName} - Estado: Activo`,
             { transaction: t }
           );
         } else {
@@ -688,6 +769,29 @@ if (newConsultation.Init_SocialWork === true) {
       const originalSocialWorkStatus = consultation.Init_SocialWork;
       const internalId = internalUser || getUserId();
 
+      // Store original values for audit comparison (all InitialConsultations schema attributes)
+      const originalValues = {
+        Init_ClientType: consultation.Init_ClientType,
+        Init_Subject: consultation.Init_Subject,
+        Init_Lawyer: consultation.Init_Lawyer,
+        Init_Date: consultation.Init_Date,
+        Init_EndDate: consultation.Init_EndDate,
+        Init_Office: consultation.Init_Office,
+        Init_Topic: consultation.Init_Topic,
+        Init_Service: consultation.Init_Service,
+        Init_Referral: consultation.Init_Referral,
+        Init_Status: consultation.Init_Status,
+        Init_CaseStatus: consultation.Init_CaseStatus,
+        Init_Notes: consultation.Init_Notes,
+        Init_Complexity: consultation.Init_Complexity,
+        Init_Type: consultation.Init_Type,
+        Init_SocialWork: consultation.Init_SocialWork,
+        Init_MandatorySW: consultation.Init_MandatorySW,
+        Init_AlertNote: consultation.Init_AlertNote,
+        Init_EndCaseReason: consultation.Init_EndCaseReason,
+        Init_EndCaseDescription: consultation.Init_EndCaseDescription
+      };
+
       const [rowsUpdated] = await InitialConsultations.update(consultationDataToUpdate, {
         where: { Init_Code: id },
         transaction: t,
@@ -701,11 +805,129 @@ if (newConsultation.Init_SocialWork === true) {
         return consultation;
       }
 
+      // Get admin user information for audit
+      let adminInfo = { name: 'Usuario Desconocido', area: 'Área no especificada' };
+      try {
+        const admin = await InternalUser.findOne({
+          where: { Internal_ID: internalId },
+          attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"],
+          transaction: t
+        });
+        
+        if (admin) {
+          adminInfo = {
+            name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+            role: admin.Internal_Type || 'Rol no especificado', area: admin.Internal_Area || 'Área no especificada'
+          };
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+      }
+
+      // Get external user full name for audit
+      let userFullName = 'Usuario Desconocido';
+      try {
+        const externalUser = await User.findOne({
+          where: { User_ID: consultation.User_ID },
+          attributes: ["User_FirstName", "User_LastName"],
+          transaction: t
+        });
+        
+        if (externalUser) {
+          userFullName = `${externalUser.User_FirstName} ${externalUser.User_LastName}`;
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del usuario externo para auditoría:", err.message);
+      }
+
+      // Build change description - only include fields that actually changed
+      let changeDetails = [];
+      
+      if (consultationDataToUpdate.hasOwnProperty('Init_Subject') && consultationDataToUpdate.Init_Subject !== originalValues.Init_Subject) {
+        changeDetails.push(`Materia: "${originalValues.Init_Subject}" → "${consultationDataToUpdate.Init_Subject}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_Type') && consultationDataToUpdate.Init_Type !== originalValues.Init_Type) {
+        changeDetails.push(`Tipo: "${originalValues.Init_Type}" → "${consultationDataToUpdate.Init_Type}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_Status') && consultationDataToUpdate.Init_Status !== originalValues.Init_Status) {
+        changeDetails.push(`Estado: "${originalValues.Init_Status}" → "${consultationDataToUpdate.Init_Status}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_CaseStatus') && consultationDataToUpdate.Init_CaseStatus !== originalValues.Init_CaseStatus) {
+        changeDetails.push(`Estado de caso: "${originalValues.Init_CaseStatus}" → "${consultationDataToUpdate.Init_CaseStatus}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_Lawyer') && consultationDataToUpdate.Init_Lawyer !== originalValues.Init_Lawyer) {
+        changeDetails.push(`Abogado: "${originalValues.Init_Lawyer || 'Sin asignar'}" → "${consultationDataToUpdate.Init_Lawyer}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_Office') && consultationDataToUpdate.Init_Office !== originalValues.Init_Office) {
+        changeDetails.push(`Oficina: "${originalValues.Init_Office}" → "${consultationDataToUpdate.Init_Office}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_Complexity') && consultationDataToUpdate.Init_Complexity !== originalValues.Init_Complexity) {
+        changeDetails.push(`Complejidad: "${originalValues.Init_Complexity}" → "${consultationDataToUpdate.Init_Complexity}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_SocialWork') && consultationDataToUpdate.Init_SocialWork !== originalValues.Init_SocialWork) {
+        changeDetails.push(`Trabajo Social: ${originalValues.Init_SocialWork ? 'Sí' : 'No'} → ${consultationDataToUpdate.Init_SocialWork ? 'Sí' : 'No'}`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_ClientType') && consultationDataToUpdate.Init_ClientType !== originalValues.Init_ClientType) {
+        changeDetails.push(`Tipo cliente: "${originalValues.Init_ClientType}" → "${consultationDataToUpdate.Init_ClientType}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_Topic') && consultationDataToUpdate.Init_Topic !== originalValues.Init_Topic) {
+        changeDetails.push(`Tema: "${originalValues.Init_Topic}" → "${consultationDataToUpdate.Init_Topic}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_Service') && consultationDataToUpdate.Init_Service !== originalValues.Init_Service) {
+        changeDetails.push(`Servicio: "${originalValues.Init_Service}" → "${consultationDataToUpdate.Init_Service}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_Referral') && consultationDataToUpdate.Init_Referral !== originalValues.Init_Referral) {
+        changeDetails.push(`Derivado por: "${originalValues.Init_Referral}" → "${consultationDataToUpdate.Init_Referral}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_MandatorySW') && consultationDataToUpdate.Init_MandatorySW !== originalValues.Init_MandatorySW) {
+        changeDetails.push(`TS Obligatorio: ${originalValues.Init_MandatorySW ? 'Sí' : 'No'} → ${consultationDataToUpdate.Init_MandatorySW ? 'Sí' : 'No'}`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_EndCaseReason') && consultationDataToUpdate.Init_EndCaseReason !== originalValues.Init_EndCaseReason) {
+        changeDetails.push(`Razón fin caso: "${originalValues.Init_EndCaseReason || 'Sin razón'}" → "${consultationDataToUpdate.Init_EndCaseReason}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_EndCaseDescription') && consultationDataToUpdate.Init_EndCaseDescription !== originalValues.Init_EndCaseDescription) {
+        changeDetails.push(`Descripción fin caso: "${originalValues.Init_EndCaseDescription || 'Sin descripción'}" → "${consultationDataToUpdate.Init_EndCaseDescription}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_Notes') && consultationDataToUpdate.Init_Notes !== originalValues.Init_Notes) {
+        const oldNotes = originalValues.Init_Notes ? (originalValues.Init_Notes.length > 50 ? originalValues.Init_Notes.substring(0, 50) + '...' : originalValues.Init_Notes) : 'Sin notas';
+        const newNotes = consultationDataToUpdate.Init_Notes.length > 50 ? consultationDataToUpdate.Init_Notes.substring(0, 50) + '...' : consultationDataToUpdate.Init_Notes;
+        changeDetails.push(`Notas: "${oldNotes}" → "${newNotes}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_EndDate') && consultationDataToUpdate.Init_EndDate !== originalValues.Init_EndDate) {
+        const oldDate = originalValues.Init_EndDate ? new Date(originalValues.Init_EndDate).toISOString().split('T')[0] : 'Sin fecha';
+        const newDate = new Date(consultationDataToUpdate.Init_EndDate).toISOString().split('T')[0];
+        changeDetails.push(`Fecha fin: "${oldDate}" → "${newDate}"`);
+      }
+
+      if (consultationDataToUpdate.hasOwnProperty('Init_AlertNote') && consultationDataToUpdate.Init_AlertNote !== originalValues.Init_AlertNote) {
+        const oldAlert = originalValues.Init_AlertNote ? (originalValues.Init_AlertNote.length > 30 ? originalValues.Init_AlertNote.substring(0, 30) + '...' : originalValues.Init_AlertNote) : 'Sin alerta';
+        const newAlert = consultationDataToUpdate.Init_AlertNote.length > 30 ? consultationDataToUpdate.Init_AlertNote.substring(0, 30) + '...' : consultationDataToUpdate.Init_AlertNote;
+        changeDetails.push(`Nota alerta: "${oldAlert}" → "${newAlert}"`);
+      }
+
+      const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
       await AuditModel.registerAudit(
         internalId,
         "UPDATE",
         "Initial_Consultations",
-        `El usuario interno ${internalId} actualizó la consulta inicial ${id}`,
+        `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la consulta inicial ${id} del usuario ${userFullName} (ID: ${consultation.User_ID})${changeDescription}`,
         { transaction: t }
       );
 
@@ -756,7 +978,7 @@ if (newConsultation.Init_SocialWork === true) {
             internalId,
             "INSERT",
             "Social_Work",
-            `El usuario interno ${internalId} creó el registro de trabajo social ${swProcessNumber} para la consulta ${id}`,
+            `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó el registro de trabajo social ${swProcessNumber} para la consulta ${id} del usuario ${userFullName} - Estado: Activo (activado desde actualización de consulta)`,
             { transaction: t }
           );
         } else {
@@ -782,14 +1004,54 @@ if (newConsultation.Init_SocialWork === true) {
       if (!consultation) return null;
 
       const internalId = internalUser || getUserId();
+
+      // Get admin user information for audit
+      let adminInfo = { name: 'Usuario Desconocido', area: 'Área no especificada' };
+      try {
+        const admin = await InternalUser.findOne({
+          where: { Internal_ID: internalId },
+          attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+        });
+        
+        if (admin) {
+          adminInfo = {
+            name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+            role: admin.Internal_Type || 'Rol no especificado', area: admin.Internal_Area || 'Área no especificada'
+          };
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+      }
+
+      // Get external user full name for audit
+      let userFullName = 'Usuario Desconocido';
+      try {
+        const externalUser = await User.findOne({
+          where: { User_ID: consultation.User_ID },
+          attributes: ["User_FirstName", "User_LastName"]
+        });
+        
+        if (externalUser) {
+          userFullName = `${externalUser.User_FirstName} ${externalUser.User_LastName}`;
+        }
+      } catch (err) {
+        console.warn("No se pudo obtener información del usuario externo para auditoría:", err.message);
+      }
+
       await InitialConsultations.destroy({ where: { Init_Code: id } });
+
+      const consultationDate = consultation.Init_Date ? new Date(consultation.Init_Date).toLocaleDateString('es-ES') : 'Sin fecha';
+      const consultationSubject = consultation.Init_Subject || 'Sin materia';
+      const consultationType = consultation.Init_Type || 'Sin tipo';
+      const consultationStatus = consultation.Init_Status || 'Sin estado';
+      const consultationLawyer = consultation.Init_Lawyer || 'Sin abogado asignado';
 
       // 🔹 Registrar en Audit que un usuario interno eliminó una consulta inicial
       await AuditModel.registerAudit(
         internalId,
         "DELETE",
         "Initial_Consultations",
-        `El usuario interno ${internalId} eliminó la consulta inicial ${id}`
+        `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó la consulta inicial ${id} del usuario ${userFullName} (ID: ${consultation.User_ID}) - Materia: ${consultationSubject}, Tipo: ${consultationType}, Estado: ${consultationStatus}, Abogado: ${consultationLawyer}, Fecha: ${consultationDate}`
       );
 
       return consultation;
@@ -808,123 +1070,224 @@ if (newConsultation.Init_SocialWork === true) {
           "User_LastName",
           "User_Age",
           "User_Phone",
+          "User_IncomeLevel",
+          "User_AcademicInstruction",
+          "User_Profession",
+          "User_VulnerableSituation"
         ],
       });
 
+      // Función para limpiar y normalizar texto HTML
+      const cleanHtmlText = (htmlText) => {
+        if (!htmlText || typeof htmlText !== 'string') return '';
+        
+        return htmlText
+          // Limpiar entidades HTML
+          .replace(/&nbsp;/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&apos;/g, "'")
+          // Remover etiquetas HTML
+          .replace(/<\/?[^>]+(>|$)/g, ' ')
+          // Normalizar espacios
+          .replace(/\s+/g, ' ')
+          .replace(/\n/g, ' ')
+          .trim();
+      };
+
+      // Función optimizada para dividir texto en líneas
+      const wrapTextForPDF = (text, maxWidth, font, fontSize) => {
+        const cleanText = cleanHtmlText(text);
+        if (!cleanText) return [];
+        
+        const words = cleanText.split(' ').filter(word => word.length > 0);
+        const lines = [];
+        let currentLine = '';
+
+        for (const word of words) {
+          const testLine = currentLine + (currentLine ? ' ' : '') + word;
+          
+          try {
+            const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+            
+            if (testWidth <= maxWidth) {
+              currentLine = testLine;
+            } else {
+              if (currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+              } else {
+                // Para palabras muy largas, intentar dividirlas
+                if (word.length > 30) {
+                  const chunks = [];
+                  let chunk = '';
+                  
+                  for (const char of word) {
+                    const testChunk = chunk + char;
+                    const chunkWidth = font.widthOfTextAtSize(testChunk, fontSize);
+                    
+                    if (chunkWidth <= maxWidth) {
+                      chunk = testChunk;
+                    } else {
+                      if (chunk) chunks.push(chunk);
+                      chunk = char;
+                    }
+                  }
+                  
+                  if (chunk) chunks.push(chunk);
+                  lines.push(...chunks.slice(0, -1));
+                  currentLine = chunks[chunks.length - 1] || '';
+                } else {
+                  currentLine = word;
+                }
+              }
+            }
+          } catch (error) {
+            console.warn('Error midiendo texto, usando estimación:', error.message);
+            // Fallback usando estimación de caracteres
+            const estimatedWidth = testLine.length * fontSize * 0.6;
+            if (estimatedWidth <= maxWidth) {
+              currentLine = testLine;
+            } else {
+              if (currentLine) lines.push(currentLine);
+              currentLine = word;
+            }
+          }
+        }
+        
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+        
+        return lines;
+      };
+
+      // Validar datos del usuario
       if (!userData) {
         throw new Error("No se encontraron datos del usuario.");
       }
 
-      console.log("Datos del usuario:", userData);
-
-      // Limpiar etiquetas HTML del campo Init_Notes
-      const cleanNotes = data.Init_Notes.replace(/&nbsp;/g, " ")
-        .replace(/<\/?[^>]+(>|$)/g, "")
-        .trim();
-
-      // Cargar la plantilla PDF
-      const templatePath = "./src/docs/FICHA DE ATENCION.pdf"; //Ruta de la plantilla
+      // Cargar y configurar el PDF
+      const templatePath = "./src/docs/FICHA DE ATENCION.pdf";
       const templateBytes = fs.readFileSync(templatePath);
-
-      // Crear un nuevo documento PDF basado en la plantilla
       const pdfDoc = await PDFDocument.load(templateBytes);
-
-      // Registrar fontkit antes de usarlo
+      
+      // Registrar fontkit
       pdfDoc.registerFontkit(fontkit);
 
-      // Cargar la fuente Aptos
-      const AptosBytes = fs.readFileSync("./src/docs/Aptos.ttf"); // Ruta de la fuente
-      const AptosFont = await pdfDoc.embedFont(AptosBytes);
+      // Cargar fuente con manejo de errores
+      let font;
+      try {
+        const fontBytes = fs.readFileSync("./src/docs/Aptos.ttf");
+        font = await pdfDoc.embedFont(fontBytes);
+        console.log('Fuente Aptos cargada correctamente');
+      } catch (error) {
+        console.error('Error cargando fuente Aptos:', error.message);
+        throw new Error('No se pudo cargar la fuente requerida para el PDF');
+      }
 
+      // Configuración general
       const userTimezone = 'America/Guayaquil'; 
       const formattedInitDate = data.Init_Date
         ? moment(data.Init_Date).tz(userTimezone).format('DD/MM/YYYY') 
         : "";
 
-      // Obtener la primera página del PDF
       const pages = pdfDoc.getPages();
       const firstPage = pages[0];
-      const fontSize = 11; // Tamaño de fuente para los textos
+      const fontSize = 11;
 
-      // Rellenar los campos con los datos proporcionados
-      firstPage.drawText(`${data.User_ID}`, {
-        x: 113,
-        y: 655,
-        size: fontSize,
-        font: AptosFont,
-      });
-
-      firstPage.drawText(
-        `${userData.User_FirstName} ${userData.User_LastName}`,
-        {
-          x: 123,
-          y: 632,
-          size: fontSize,
-          font: AptosFont,
+      // Función helper para dibujar texto con validación
+      const drawTextSafely = (text, options) => {
+        const safeText = text ? String(text).trim() : '';
+        if (safeText) {
+          firstPage.drawText(safeText, { ...options, font });
         }
-      );
+      };
 
-      firstPage.drawText(
-        formattedInitDate, // Use the formatted date string
-        {
-          x: 397,
-          y: 655,
-          size: fontSize,
-          font: AptosFont,
-        }
-      );
-
-      firstPage.drawText(`${userData.User_Age}`, {
-        x: 391,
-        y: 632,
-        size: fontSize,
-        font: AptosFont,
+      // COLUMNA 1 - Datos del usuario
+      drawTextSafely(`${userData.User_FirstName} ${userData.User_LastName}`, {
+        x: 156, y: 736, size: fontSize
+      });
+      
+      drawTextSafely(data.User_ID, {
+        x: 156, y: 715, size: fontSize
+      });
+      
+      drawTextSafely(userData.User_Phone, {
+        x: 156, y: 690, size: fontSize
+      });
+      
+      drawTextSafely(data.Init_Subject, {
+        x: 156, y: 660, size: fontSize
+      });
+      
+      drawTextSafely(data.Init_Service, {
+        x: 156, y: 620, size: fontSize
       });
 
-      firstPage.drawText(`${userData.User_Phone}`, {
-        x: 120,
-        y: 608,
-        size: fontSize,
-        font: AptosFont,
+      // COLUMNA 2 - Información adicional
+      drawTextSafely(formattedInitDate, {
+        x: 420, y: 736, size: fontSize
+      });
+      
+      drawTextSafely(userData.User_Age, {
+        x: 420, y: 715, size: fontSize
+      });
+      
+      drawTextSafely(userData.User_IncomeLevel, {
+        x: 420, y: 690, size: fontSize
+      });
+      
+      drawTextSafely(userData.User_AcademicInstruction, {
+        x: 420, y: 668, size: fontSize
+      });
+      
+      // Truncar profesión si es muy larga
+      const profession = userData.User_Profession ? String(userData.User_Profession).trim() : '';
+      const truncatedProfession = profession.length > 15 ? profession.substring(0, 26) + '(...)' : profession;
+      drawTextSafely(truncatedProfession, {
+        x: 420, y: 646, size: fontSize
+      });
+      
+      drawTextSafely(userData.User_VulnerableSituation, {
+        x: 420, y: 620, size: fontSize
       });
 
-      firstPage.drawText(`${data.Init_Subject}`, {
-        x: 116,
-        y: 584.5,
-        size: fontSize,
-        font: AptosFont,
+      // NOTAS DE ATENCIÓN - Manejo avanzado de texto
+      const notesLines = wrapTextForPDF(data.Init_Notes, 500, font, 9);
+      const startY = 570;
+      const lineHeight = 14;
+      const maxLines = 15; // Límite de líneas visibles
+      
+      notesLines.slice(0, maxLines).forEach((line, index) => {
+        firstPage.drawText(line, {
+          x: 47,
+          y: startY - (index * lineHeight),
+          size: 9,
+          font
+        });
       });
 
-      firstPage.drawText(`${data.Init_Service}`, {
-        x: 448,
-        y: 608,
-        size: fontSize,
-        font: AptosFont,
-      });
+      // Si hay más líneas de las que caben, mostrar indicador
+      if (notesLines.length > maxLines) {
+        firstPage.drawText('...', {
+          x: 47,
+          y: startY - (maxLines * lineHeight),
+          size: 9,
+          font
+        });
+      }
 
-      firstPage.drawText(cleanNotes, {
-        x: 76,
-        y: 536,
-        size: 10,
-        font: AptosFont,
-        maxWidth: 500,
-        lineHeight: 14,
+      // CONSENTIMIENTO INFORMADO
+      drawTextSafely(`${userData.User_FirstName} ${userData.User_LastName}`, {
+        x: 78, y: 460, size: 10.5
       });
-
-      firstPage.drawText(
-        `${userData.User_FirstName} ${userData.User_LastName}`,
-        {
-          x: 92,
-          y: 194.5,
-          size: 10,
-          font: AptosFont,
-        }
-      );
-      firstPage.drawText(`${data.User_ID}`, {
-        x: 284,
-        y: 194.5,
-        size: 10,
-        font: AptosFont,
+      
+      drawTextSafely(data.User_ID, {
+        x: 78, y: 446, size: 10.5
       });
 
       // Generar el PDF modificado
@@ -987,7 +1350,7 @@ if (newConsultation.Init_SocialWork === true) {
         workbook.created = new Date();
         workbook.modified = new Date();
 
-        const worksheet = workbook.addWorksheet('Reporte Consultas Iniciales');
+        const worksheet = workbook.addWorksheet('Reporte Primeras Consultas');
 
         // --- Define Column Keys and Main Headers (Row 1) ---
         const columnsDefinition = [
@@ -999,7 +1362,7 @@ if (newConsultation.Init_SocialWork === true) {
              { header: 'Apellidos', key: 'User_LastName', width: 25 },
              { header: 'Edad', key: 'User_Age', width: 10 },
              { header: 'Género', key: 'User_Gender', width: 15 },
-             { header: 'Fecha Nacimiento', key: 'Init_EndDate', width: 18, style: { numFmt: 'dd/mm/yyyy' } },
+             { header: 'Fecha Nacimiento', key: 'User_BirthDate', width: 18, style: { numFmt: 'dd/mm/yyyy' } },
              { header: 'Nacionalidad', key: 'User_Nationality', width: 20 },
              { header: 'Etnia', key: 'User_Ethnicity', width: 15 },
              { header: 'Provincia', key: 'User_Province', width: 15 },
@@ -1019,9 +1382,9 @@ if (newConsultation.Init_SocialWork === true) {
              { header: 'Instrucción', key: 'User_AcademicInstruction', width: 25 },
              { header: 'Ocupación', key: 'User_Profession', width: 20 },
              { header: 'Estado Civil', key: 'User_MaritalStatus', width: 15 },
-             { header: 'Dependientes', key: 'User_Dependents', width: 12 },
+             { header: 'Cargas Familiares', key: 'User_Dependents', width: 12 },
              { header: 'Nivel Ingresos', key: 'User_IncomeLevel', width: 15 },
-             { header: 'Ingresos Fam.', key: 'User_FamilyIncome', width: 18 },
+             { header: 'Ingresos Familiares.', key: 'User_FamilyIncome', width: 18 },
              { header: 'Grupo Familiar', key: 'User_FamilyGroup', width: 30 },
              { header: 'Pers. Econ. Activas', key: 'User_EconomicActivePeople', width: 15 },
              { header: 'Bienes Propios', key: 'User_OwnAssets', width: 30 },
@@ -1059,7 +1422,7 @@ if (newConsultation.Init_SocialWork === true) {
         // --- Add Sub-Headers (Row 2) ---
         // ... (existing sub-header logic) ...
         worksheet.insertRow(2, []); // Insert a blank row at position 2
-        const mergeRanges = { personal: 'A2:K2', contacto: 'L2:S2', socioEco: 'T2:AI2', salud: 'AJ2:AM2', consulta: 'AN2:BF2' };
+        const mergeRanges = { personal: 'A2:K2', contacto: 'L2:S2', socioEco: 'T2:AI2', salud: 'AJ2:AL2', consulta: 'AM2:BD2' };
         worksheet.mergeCells(mergeRanges.personal); worksheet.getCell('A2').value = 'DATOS PERSONALES DEL USUARIO';
         worksheet.mergeCells(mergeRanges.contacto); worksheet.getCell('L2').value = 'CONTACTO';
         worksheet.mergeCells(mergeRanges.socioEco); worksheet.getCell('T2').value = 'DATOS DEMOGRÁFICOS Y SOCIOECONÓMICOS';
@@ -1078,7 +1441,7 @@ if (newConsultation.Init_SocialWork === true) {
         worksheet.getRow(2).eachCell({ includeEmpty: true }, cell => { cell.style = subHeaderStyleDefault; });
         worksheet.getRow(2).height = 20;
 
-        const consultaStartCol = 'AN'; const consultaEndCol = 'BF';
+        const consultaStartCol = 'AM'; const consultaEndCol = 'BD';
         const consultaStartColNum = worksheet.getColumn(consultaStartCol).number;
         const consultaEndColNum = worksheet.getColumn(consultaEndCol).number;
         // Apply specific styles to Row 1 (Main Header) for Consulta section
@@ -1139,9 +1502,26 @@ if (newConsultation.Init_SocialWork === true) {
         // Add data rows starting from Row 3
         rowsToAdd.forEach((rowData, index) => {
             const row = worksheet.addRow(rowData);
+            
+            // Apply alternating row colors
             if ((index + 3) % 2 === 0) {
                  row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } };
              }
+             
+             // Center align all cells in this row
+             row.eachCell({ includeEmpty: true }, (cell) => {
+                 cell.alignment = { 
+                     vertical: 'middle', 
+                     horizontal: 'center' 
+                 };
+                 // Add borders to each cell
+                 cell.border = {
+                     top: { style: 'thin' },
+                     left: { style: 'thin' },
+                     bottom: { style: 'thin' },
+                     right: { style: 'thin' }
+                 };
+             });
         });
 
 

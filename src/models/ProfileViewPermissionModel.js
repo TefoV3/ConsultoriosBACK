@@ -2,6 +2,7 @@ import { Profiles } from "../schemas/parameter_tables/Profiles.js";
 import { ProfileViewPermission } from "../schemas/Profile_View_Permission.js";
 import { sequelize } from "../database/database.js";
 import { AuditModel } from "../models/AuditModel.js";
+import { InternalUser } from "../schemas/Internal_User.js";
 
 const ALL_APPLICATION_VIEWS = [
 
@@ -153,13 +154,33 @@ export class ProfilePermissionModel {
             }
 
             await transaction.commit();
+
+            // Obtener información del usuario interno para auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
-                            internalId, 
-                            "UPDATE",
-                            "Profile_View_Permission",
-                            `El usuario interno ${internalId} actualizó los permisos del rol de ${profile.Profile_Name}`
-                        );
+                internalId, 
+                "UPDATE",
+                "Profile_View_Permission",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó los permisos del perfil ${profile.Profile_Name}`
+            );
             return { message: `Permisos para el perfil '${profile.Profile_Name}' actualizados.` };
+
 
         } catch (error) {
             await transaction.rollback();

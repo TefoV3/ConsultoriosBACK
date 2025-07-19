@@ -26,7 +26,11 @@ export class AlertController {
   // Create alert
   static async create(req, res) {
     try {
-      const newAlert = await AlertModel.create(req.body);
+      const internalId = req.headers['internal-id'];
+      const newAlert = await AlertModel.create(req.body, {
+        internalUser: internalId,
+        isAutomatic: false // Manual creation from controller
+      });
       return res.status(201).json(newAlert);
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -37,7 +41,11 @@ export class AlertController {
   static async update(req, res) {
     try {
       const { id } = req.params;
-      const updatedAlert = await AlertModel.update(id, req.body);
+      const internalId = req.headers['internal-id'];
+      const updatedAlert = await AlertModel.update(id, req.body, {
+        internalUser: internalId,
+        isAutomatic: false // Manual update from controller
+      });
       if (!updatedAlert) return res.status(404).json({ message: "Alert not found" });
       return res.json(updatedAlert);
     } catch (error) {
@@ -49,7 +57,11 @@ export class AlertController {
   static async delete(req, res) {
     try {
       const { id } = req.params;
-      const deletedAlert = await AlertModel.delete(id);
+      const internalId = req.headers['internal-id'];
+      const deletedAlert = await AlertModel.delete(id, {
+        internalUser: internalId,
+        isAutomatic: false // Manual deletion from controller
+      });
       if (!deletedAlert) return res.status(404).json({ message: "Alert not found" });
       return res.json({ message: "Alert deleted logically", alert: deletedAlert });
     } catch (error) {

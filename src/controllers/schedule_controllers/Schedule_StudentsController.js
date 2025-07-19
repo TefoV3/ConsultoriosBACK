@@ -104,11 +104,12 @@ export class Schedule_StudentsController {
   static async adminChange(req, res) {
     try {
       const { userXPeriodId, newSchedules } = req.body;
+      const internalId = req.headers['internal-id'];
       console.log(userXPeriodId, newSchedules);
       if (!userXPeriodId || !Array.isArray(newSchedules) || newSchedules.length === 0) {
         return res.status(400).json({ message: "Incomplete data for administrative change" });
       }
-      const result = await ScheduleStudentsModel.adminChange(userXPeriodId, newSchedules);
+      const result = await ScheduleStudentsModel.adminChange(userXPeriodId, newSchedules, internalId);
       res.status(200).json({ message: result.message });
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -118,7 +119,8 @@ export class Schedule_StudentsController {
   static async update(req, res) {
     try {
       const { id } = req.params;
-      const updated = await ScheduleStudentsModel.update(id, req.body);
+      const internalId = req.headers['internal-id'];
+      const updated = await ScheduleStudentsModel.update(id, req.body, internalId);
       if (!updated) return res.status(404).json({ message: "Schedule not found" });
       res.json(updated);
     } catch (error) {
@@ -129,7 +131,8 @@ export class Schedule_StudentsController {
   static async delete(req, res) {
     try {
       const { id } = req.params;
-      const deleted = await ScheduleStudentsModel.delete(id);
+      const internalId = req.headers['internal-id'];
+      const deleted = await ScheduleStudentsModel.delete(id, internalId);
       if (!deleted) return res.status(404).json({ message: "Schedule not found" });
       res.json({ message: "Schedule logically deleted", schedule: deleted });
     } catch (error) {
@@ -139,7 +142,8 @@ export class Schedule_StudentsController {
 
   static async create(req, res) {
     try {
-      const newSchedule = await ScheduleStudentsModel.create(req.body);
+      const internalId = req.headers['internal-id'];
+      const newSchedule = await ScheduleStudentsModel.create(req.body, internalId);
       res.status(201).json(newSchedule);
     } catch (error) {
       res.status(500).json({ message: error.message });

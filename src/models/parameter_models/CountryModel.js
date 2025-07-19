@@ -1,6 +1,6 @@
 import { Country } from "../../schemas/parameter_tables/Country.js";
 import { AuditModel } from "../../models/AuditModel.js";
-
+import { InternalUser } from "../../schemas/Internal_User.js";
 export class CountryModel {
 
     static async getAll() {
@@ -35,14 +35,32 @@ export class CountryModel {
             data.Country_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Country.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Country",
-                            `El usuario interno ${internalId} creó un nuevo registro de Country con ID ${newRecord.Country_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Country",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de país con ID ${newRecord.Country_ID} - Nombre: ${newRecord.Country_Name}`
+            );
             
-                        return newRecord;
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating country: ${error.message}`);
         }
@@ -51,14 +69,31 @@ export class CountryModel {
         try {
             const createdRecords = await Country.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Country",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Country.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Country",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de país.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Country: ${error.message}`);
         }
@@ -74,11 +109,28 @@ export class CountryModel {
 
             if (rowsUpdated === 0) return null;
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Country",
-                `El usuario interno ${internalId} actualizó Country con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el país con ID ${id} - Nombre: ${countryRecord.Country_Name}`
             );
 
             return await this.getById(id);
@@ -96,12 +148,30 @@ export class CountryModel {
                 { Country_Status: false },
                 { where: { Country_ID: id, Country_Status: true }
             });
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Country",
-                `El usuario interno ${internalId} eliminó lógicamente Country con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente el país con ID ${id} - Nombre: ${countryRecord.Country_Name}`
             );
+            
             return countryRecord;
         } catch (error) {
             throw new Error(`Error deleting country: ${error.message}`);

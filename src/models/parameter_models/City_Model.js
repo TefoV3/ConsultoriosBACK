@@ -1,6 +1,7 @@
 import { City } from "../../schemas/parameter_tables/City.js";
 import { Province } from "../../schemas/parameter_tables/Province.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class CityModel {
 
@@ -61,13 +62,33 @@ export class CityModel {
             data.City_Status = true; // Aseguramos que la ciudad esté activa al crearlo
             data.City_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await City.create(data);
-                                await AuditModel.registerAudit(
-                                    internalId,
-                                    "INSERT",
-                                    "City",
-                                    `El usuario interno ${internalId} creó un nuevo registro de City con ID ${newRecord.City_ID}`
-                                );
-                                    return newRecord
+
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "City",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de ciudad con ID ${newRecord.City_ID} - Nombre: ${newRecord.City_Name}`
+            );
+
+            return newRecord
         } catch (error) {
             throw new Error(`Error creating city: ${error.message}`);
         }
@@ -83,14 +104,32 @@ export class CityModel {
             });
 
             if (rowsUpdated === 0) return null;
-                    await AuditModel.registerAudit(
-                        internalId,
-                        "UPDATE",
-                        "City",
-                        `El usuario interno ${internalId} actualizó la City con ID ${id}`
-                    );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
 
-                    return await this.getById(id);
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "City",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la ciudad con ID ${id} - Nombre: ${cityRecord.City_Name}`
+            );
+
+            return await this.getById(id);
+
         } catch (error) {
             throw new Error(`Error updating city: ${error.message}`);
         }
@@ -106,12 +145,30 @@ export class CityModel {
                 { where: { City_ID: id, City_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
-                        internalId,
-                        "DELETE",
-                        "City",
-                        `El usuario interno ${internalId} eliminó lógicamente la enfermedad City con ID ${id}`
-                    );
+                internalId,
+                "DELETE",
+                "City",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente la ciudad con ID ${id} - Nombre: ${cityRecord.City_Name}`
+            );
+            
             return cityRecord;
         } catch (error) {
             throw new Error(`Error deleting city: ${error.message}`);

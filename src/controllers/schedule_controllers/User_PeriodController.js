@@ -90,7 +90,8 @@ export class UserXPeriodController {
 
   static async create(req, res) {
     try {
-      const newRecord = await UserXPeriodModel.create(req.body);
+      const internalId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+      const newRecord = await UserXPeriodModel.create(req.body, internalId); // Pasar el Internal_ID al modelo
       return res.status(201).json(newRecord);
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -100,7 +101,8 @@ export class UserXPeriodController {
   static async update(req, res) {
     try {
       const { periodId, internalId } = req.params;
-      const updated = await UserXPeriodModel.update(periodId, internalId, req.body);
+      const userId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+      const updated = await UserXPeriodModel.update(periodId, internalId, req.body, userId); // Pasar el Internal_ID al modelo
 
       if (!updated) return res.status(404).json({ message: "UserXPeriod not found" });
 
@@ -113,7 +115,8 @@ export class UserXPeriodController {
   static async delete(req, res) {
     try {
       const { periodId, internalId } = req.params;
-      const deleted = await UserXPeriodModel.delete(periodId, internalId);
+      const userId = req.headers["internal-id"]; // Obtener el Internal_ID desde los encabezados
+      const deleted = await UserXPeriodModel.delete(periodId, internalId, userId); // Pasar el Internal_ID al modelo
 
       if (!deleted) return res.status(404).json({ message: "UserXPeriod not found" });
       return res.json({ message: "UserXPeriod logically deleted", userPeriod: deleted });

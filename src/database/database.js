@@ -67,18 +67,18 @@ export const sequelize = new Sequelize(
 //     }
 // );
 
-/*
+
 //Francis
 export const sequelize = new Sequelize(
-    'consultoriosjuridicos2', 
-    'fvelasco', 
-    'ltic', 
+    'ConsultoriosJuridicosevi', 
+    'Cliente', 
+    '2444', 
     {
-        host: '192.168.161.3',
-       dialect: 'mysql'
+        host: '192.168.100.105', 
+        dialect: 'mysql'
     }
 );
-*/
+
 // export const sequelize = new Sequelize(
 //     'seguimiento_final3', 
 //     'user_control', 

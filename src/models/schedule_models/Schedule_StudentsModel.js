@@ -1,6 +1,145 @@
 import { Schedule_Students } from "../../schemas/schedules_tables/Schedule_Students.js";
 import { sequelize } from "../../database/database.js";
 import { QueryTypes } from "sequelize";
+import { AuditModel } from "../AuditModel.js";
+import { getUserId } from "../../sessionData.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
+import { Period } from "../../schemas/schedules_tables/Period.js";
+import { Parameter_Schedule } from "../../schemas/schedules_tables/Parameter_Schedule.js";
+import { UserXPeriodModel } from "./User_PeriodModel.js";
+
+// Helper function to get user information for audit
+async function getUserInfo(internalId) {
+  try {
+    const admin = await InternalUser.findOne({
+      where: { Internal_ID: internalId },
+      attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+    });
+    
+    if (admin) {
+      return `${admin.Internal_Name} ${admin.Internal_LastName} (${admin.Internal_Type || 'Sin rol'} - ${admin.Internal_Area || 'Sin área'})`;
+    }
+    return `Usuario ID ${internalId} (Información no disponible)`;
+  } catch (err) {
+    console.warn("No se pudo obtener información del usuario para auditoría:", err.message);
+    return `Usuario ID ${internalId} (Error al obtener información)`;
+  }
+}
+
+// Helper function to get schedule details for audit
+async function getScheduleDetails(scheduleData) {
+  try {
+    const details = {
+      monday: null,
+      tuesday: null,
+      wednesday: null,
+      thursday: null,
+      friday: null
+    };
+
+    const dayFields = [
+      { day: 'monday', field: scheduleData.Schedule_Day_Monday },
+      { day: 'tuesday', field: scheduleData.Schedule_Day_Tuesday },
+      { day: 'wednesday', field: scheduleData.Schedule_Day_Wednesday },
+      { day: 'thursday', field: scheduleData.Schedule_Day_Thursday },
+      { day: 'friday', field: scheduleData.Schedule_Day_Friday }
+    ];
+
+    for (const { day, field } of dayFields) {
+      if (field) {
+        try {
+          const paramSchedule = await Parameter_Schedule.findOne({
+            where: { Parameter_Schedule_ID: field },
+            attributes: ["Parameter_Schedule_Start_Time", "Parameter_Schedule_End_Time", "Parameter_Schedule_Type"]
+          });
+
+          if (paramSchedule) {
+            details[day] = {
+              startTime: paramSchedule.Parameter_Schedule_Start_Time,
+              endTime: paramSchedule.Parameter_Schedule_End_Time,
+              type: paramSchedule.Parameter_Schedule_Type
+            };
+          }
+        } catch (err) {
+          console.warn(`Error obteniendo detalles del horario para ${day}:`, err.message);
+        }
+      }
+    }
+
+    return details;
+  } catch (error) {
+    console.warn("Error obteniendo detalles del horario:", error.message);
+    return null;
+  }
+}
+
+// Helper function to format schedule details for audit message
+function formatScheduleForAudit(scheduleDetails, mode) {
+  const dayNames = {
+    monday: 'Lunes',
+    tuesday: 'Martes',
+    wednesday: 'Miércoles',
+    thursday: 'Jueves',
+    friday: 'Viernes'
+  };
+
+  const activeDays = [];
+  
+  for (const [day, details] of Object.entries(scheduleDetails || {})) {
+    if (details && details.startTime && details.endTime) {
+      activeDays.push(`${dayNames[day]}: ${details.startTime} a ${details.endTime} (${details.type || 'Sin tipo'})`);
+    }
+  }
+
+  const daysText = activeDays.length > 0 
+    ? activeDays.join(', ') 
+    : 'Sin horarios específicos';
+
+  return `Modo: ${mode || 'Sin modo'} - Horarios: ${daysText}`;
+}
+
+// Helper function to get student and period information
+async function getStudentAndPeriodInfo(userXPeriodId) {
+  try {
+    const userXPeriodRecord = await UserXPeriodModel.getByUserXPeriodId(userXPeriodId);
+    
+    if (!userXPeriodRecord) {
+      return {
+        studentName: 'Estudiante Desconocido',
+        studentId: 'ID Desconocido',
+        studentArea: 'Área no especificada',
+        periodName: 'Período Desconocido',
+        periodId: 'ID Desconocido'
+      };
+    }
+
+    const studentName = userXPeriodRecord.user 
+      ? `${userXPeriodRecord.user.Internal_Name} ${userXPeriodRecord.user.Internal_LastName}`
+      : 'Estudiante Desconocido';
+    
+    const studentId = userXPeriodRecord.user?.Internal_ID || 'ID Desconocido';
+    const studentArea = userXPeriodRecord.user?.Internal_Area || 'Área no especificada';
+    const periodName = userXPeriodRecord.period?.Period_Name || 'Período Desconocido';
+    const periodId = userXPeriodRecord.period?.Period_ID || 'ID Desconocido';
+
+    return {
+      studentName,
+      studentId,
+      studentArea,
+      periodName,
+      periodId
+    };
+  } catch (error) {
+    console.warn("Error obteniendo información del estudiante y período:", error.message);
+    return {
+      studentName: 'Estudiante Desconocido',
+      studentId: 'ID Desconocido',
+      studentArea: 'Área no especificada',
+      periodName: 'Período Desconocido',
+      periodId: 'ID Desconocido'
+    };
+  }
+}
 
 export class ScheduleStudentsModel {
   // 1. Get all active schedules
@@ -77,21 +216,64 @@ export class ScheduleStudentsModel {
   }
 
   // 5. Create a new schedule
-  static async create(data) {
+  static async create(data, internalUser) {
+    const t = await sequelize.transaction(); // Start transaction
     try {
-      return await Schedule_Students.create(data);
+      const internalId = internalUser || getUserId();
+
+      const newSchedule = await Schedule_Students.create(data, { transaction: t });
+
+      // Get detailed information for audit
+      const userInfo = await getUserInfo(internalId);
+      const { studentName, studentId, studentArea, periodName, periodId } = await getStudentAndPeriodInfo(data.UserXPeriod_ID);
+      const scheduleDetails = await getScheduleDetails(data);
+      const scheduleText = formatScheduleForAudit(scheduleDetails, data.Schedule_Mode);
+
+      // Register detailed audit
+      await AuditModel.registerAudit(
+        internalId,
+        "INSERT",
+        "Schedule_Students",
+        `${userInfo} creó un horario de estudiante ID ${newSchedule.Schedule_Students_ID} para ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) en el período "${periodName}" (ID: ${periodId}) - ${scheduleText}`
+      );
+
+      await t.commit(); // Commit transaction
+      return newSchedule;
     } catch (error) {
-      console.error(`Error creating schedule: ${error.message}`);
+      await t.rollback(); // Rollback on error
+      console.error("Error en ScheduleStudentsModel.create:", error);
       throw new Error(`Error creating schedule: ${error.message}`);
     }
   }
 
   // 6. Administrative change
-  static async adminChange(userXPeriodId, newSchedules) {
+  static async adminChange(userXPeriodId, newSchedules, internalUser) {
     const t = await sequelize.transaction();
     try {
+      const internalId = internalUser || getUserId();
       const scheduleMode = newSchedules[0]?.Schedule_Mode; // ⬅️ obtener el modo actual
   
+      // Get existing schedules for audit
+      const existingSchedules = await Schedule_Students.findAll({
+        where: {
+          UserXPeriod_ID: userXPeriodId,
+          Schedule_Mode: scheduleMode,
+          Schedule_IsDeleted: false,
+        },
+        transaction: t,
+      });
+
+      // Get detailed information for audit
+      const userInfo = await getUserInfo(internalId);
+      const { studentName, studentId, studentArea, periodName, periodId } = await getStudentAndPeriodInfo(userXPeriodId);
+
+      // Get old schedule details for audit
+      let oldScheduleText = 'Sin horarios previos';
+      if (existingSchedules.length > 0) {
+        const oldScheduleDetails = await getScheduleDetails(existingSchedules[0]);
+        oldScheduleText = formatScheduleForAudit(oldScheduleDetails, scheduleMode);
+      }
+
       await Schedule_Students.update(
         { Schedule_IsDeleted: true },
         {
@@ -104,8 +286,11 @@ export class ScheduleStudentsModel {
         }
       );
   
+      const createdScheduleIds = [];
+      let newScheduleText = 'Sin horarios nuevos';
+      
       for (const schedule of newSchedules) {
-        await Schedule_Students.create(
+        const created = await Schedule_Students.create(
           {
             UserXPeriod_ID: userXPeriodId,
             Schedule_Day_Monday: schedule.Schedule_Day_Monday,
@@ -117,46 +302,157 @@ export class ScheduleStudentsModel {
           },
           { transaction: t }
         );
+        createdScheduleIds.push(created.Schedule_Students_ID);
       }
+
+      // Get new schedule details for audit
+      if (newSchedules.length > 0) {
+        const newScheduleDetails = await getScheduleDetails(newSchedules[0]);
+        newScheduleText = formatScheduleForAudit(newScheduleDetails, scheduleMode);
+      }
+
+      // Register detailed audit for administrative change
+      const deletedIds = existingSchedules.map(s => s.Schedule_Students_ID).join(', ');
+      const createdIds = createdScheduleIds.join(', ');
+      
+      await AuditModel.registerAudit(
+        internalId,
+        "UPDATE",
+        "Schedule_Students",
+        `${userInfo} realizó cambio administrativo de horario para ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) en el período "${periodName}" (ID: ${periodId}) - Horarios eliminados [${deletedIds}]: ${oldScheduleText} → Horarios nuevos [${createdIds}]: ${newScheduleText}`
+      );
   
       await t.commit();
       return { ok: true, message: "Administrative schedule change completed" };
     } catch (error) {
       await t.rollback();
+      console.error("Error en ScheduleStudentsModel.adminChange:", error);
       throw new Error(`Error in administrative change: ${error.message}`);
     }
   }
   
 
   // 7. Update a schedule
-  static async update(id, data) {
+  static async update(id, data, internalUser) {
+    const t = await sequelize.transaction(); // Start transaction
     try {
+      const internalId = internalUser || getUserId();
       const record = await this.getById(id);
       if (!record) return null;
 
+      // Store original values for detailed comparison
+      const originalData = {
+        Schedule_Day_Monday: record.Schedule_Day_Monday,
+        Schedule_Day_Tuesday: record.Schedule_Day_Tuesday,
+        Schedule_Day_Wednesday: record.Schedule_Day_Wednesday,
+        Schedule_Day_Thursday: record.Schedule_Day_Thursday,
+        Schedule_Day_Friday: record.Schedule_Day_Friday,
+        Schedule_Mode: record.Schedule_Mode,
+        UserXPeriod_ID: record.UserXPeriod_ID
+      };
+
       const [updated] = await Schedule_Students.update(data, {
         where: { Schedule_Students_ID: id, Schedule_IsDeleted: false },
+        transaction: t,
       });
 
-      return updated ? await this.getById(id) : null;
+      if (updated) {
+        // Get detailed information for audit
+        const userInfo = await getUserInfo(internalId);
+        const { studentName, studentId, studentArea, periodName, periodId } = await getStudentAndPeriodInfo(record.UserXPeriod_ID);
+
+        // Get original schedule details
+        const originalScheduleDetails = await getScheduleDetails(originalData);
+        const originalScheduleText = formatScheduleForAudit(originalScheduleDetails, originalData.Schedule_Mode);
+
+        // Get new schedule details
+        const updatedScheduleData = { ...originalData, ...data };
+        const newScheduleDetails = await getScheduleDetails(updatedScheduleData);
+        const newScheduleText = formatScheduleForAudit(newScheduleDetails, updatedScheduleData.Schedule_Mode);
+
+        // Build detailed change description
+        let changeDetails = [];
+        
+        const dayFields = [
+          { name: 'Lunes', old: originalData.Schedule_Day_Monday, new: data.Schedule_Day_Monday },
+          { name: 'Martes', old: originalData.Schedule_Day_Tuesday, new: data.Schedule_Day_Tuesday },
+          { name: 'Miércoles', old: originalData.Schedule_Day_Wednesday, new: data.Schedule_Day_Wednesday },
+          { name: 'Jueves', old: originalData.Schedule_Day_Thursday, new: data.Schedule_Day_Thursday },
+          { name: 'Viernes', old: originalData.Schedule_Day_Friday, new: data.Schedule_Day_Friday }
+        ];
+
+        for (const field of dayFields) {
+          if (field.new !== undefined && field.new !== field.old) {
+            changeDetails.push(`${field.name}: ID ${field.old || 'Sin horario'} → ID ${field.new || 'Sin horario'}`);
+          }
+        }
+
+        if (data.Schedule_Mode !== undefined && data.Schedule_Mode !== originalData.Schedule_Mode) {
+          changeDetails.push(`Modo: "${originalData.Schedule_Mode}" → "${data.Schedule_Mode}"`);
+        }
+
+        const changeDescription = changeDetails.length > 0 
+          ? ` - Cambios específicos: ${changeDetails.join(', ')}` 
+          : ' - Sin cambios detectados';
+
+        // Register detailed audit
+        await AuditModel.registerAudit(
+          internalId,
+          "UPDATE",
+          "Schedule_Students",
+          `${userInfo} actualizó el horario de estudiante ID ${id} para ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) en el período "${periodName}" (ID: ${periodId})${changeDescription} - Horario anterior: ${originalScheduleText} → Horario nuevo: ${newScheduleText}`
+        );
+
+        await t.commit(); // Commit transaction
+        return await this.getById(id);
+      } else {
+        await t.rollback();
+        return null;
+      }
     } catch (error) {
+      await t.rollback(); // Rollback on error
+      console.error("Error en ScheduleStudentsModel.update:", error);
       throw new Error(`Error updating schedule: ${error.message}`);
     }
   }
 
   // 8. Delete (soft) a schedule
-  static async delete(id) {
+  static async delete(id, internalUser) {
+    const t = await sequelize.transaction(); // Start transaction
     try {
+      const internalId = internalUser || getUserId();
       const record = await this.getById(id);
       if (!record) return null;
 
+      // Get detailed information for audit before deletion
+      const userInfo = await getUserInfo(internalId);
+      const { studentName, studentId, studentArea, periodName, periodId } = await getStudentAndPeriodInfo(record.UserXPeriod_ID);
+      
+      // Get schedule details before deletion
+      const scheduleDetails = await getScheduleDetails(record);
+      const scheduleText = formatScheduleForAudit(scheduleDetails, record.Schedule_Mode);
+
       await Schedule_Students.update(
         { Schedule_IsDeleted: true },
-        { where: { Schedule_Students_ID: id, Schedule_IsDeleted: false } }
+        { 
+          where: { Schedule_Students_ID: id, Schedule_IsDeleted: false },
+          transaction: t,
+        }
       );
 
+      // Register detailed audit
+      await AuditModel.registerAudit(
+        internalId,
+        "DELETE",
+        "Schedule_Students",
+        `${userInfo} eliminó el horario de estudiante ID ${id} para ${studentName} (Cédula: ${studentId}, Área: ${studentArea}) en el período "${periodName}" (ID: ${periodId}) - Horario eliminado: ${scheduleText}`
+      );
+
+      await t.commit(); // Commit transaction
       return record;
     } catch (error) {
+      await t.rollback(); // Rollback on error
+      console.error("Error en ScheduleStudentsModel.delete:", error);
       throw new Error(`Error deleting schedule: ${error.message}`);
     }
   }
