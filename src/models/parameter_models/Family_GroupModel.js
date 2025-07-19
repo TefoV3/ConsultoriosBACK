@@ -1,5 +1,6 @@
 import { Family_Group } from "../../schemas/parameter_tables/Family_Group.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class FamilyGroupModel {
     
@@ -36,14 +37,32 @@ export class FamilyGroupModel {
             data.Family_Group_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Family_Group.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Family_Group",
-                            `El usuario interno ${internalId} creó un nuevo registro de Family_Group con ID ${newRecord.Family_Group_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Family_Group",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de grupo familiar con ID ${newRecord.Family_Group_ID} - Nombre: ${newRecord.Family_Group_Name}`
+            );
             
-                        return newRecord;
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating case Status: ${error.message}`);
         }
@@ -52,14 +71,32 @@ export class FamilyGroupModel {
         try {
             const createdRecords = await Family_Group.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Family_Group",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registro de Family_Group.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Family_Group",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de grupo familiar.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
+
         } catch (error) {
             throw new Error(`Error creating Family Group: ${error.message}`);
         }
@@ -75,12 +112,29 @@ export class FamilyGroupModel {
 
             if (rowsUpdated === 0) return null;
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "UPDATE",
-                            "Family_Group",
-                            `El usuario interno ${internalId} actualizó Family_Group con ID ${id}`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Family_Group",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el grupo familiar con ID ${id} - Nombre: ${Family_GroupRecord.Family_Group_Name}`
+            );
             
                         return await this.getById(id);
         } catch (error) {
@@ -97,12 +151,30 @@ export class FamilyGroupModel {
                 { Family_Group_Status: false },
                 { where: { Family_Group_ID: id, Family_Group_Status: true } }
             );
+
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
-                            internalId,
-                            "DELETE",
-                            "Family_Group",
-                            `El usuario interno ${internalId} eliminó lógicamente Family_Group con ID ${id}`
-                        );
+                internalId,
+                "DELETE",
+                "Family_Group",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente el grupo familiar con ID ${id} - Nombre: ${Family_GroupRecord.Family_Group_Name}`
+            );
 
             return Family_GroupRecord;
         } catch (error) {

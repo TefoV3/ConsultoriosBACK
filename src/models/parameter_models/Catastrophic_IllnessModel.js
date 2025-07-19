@@ -1,5 +1,6 @@
 import { Catastrophic_Illness } from "../../schemas/parameter_tables/Catastrophic_Illness.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class CatastrophicIllnessModel {
         
@@ -36,11 +37,30 @@ export class CatastrophicIllnessModel {
 
 
                     const newRecord = await Catastrophic_Illness.create(data);
+
+                    // Auditoría detallada
+                    let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+                    try {
+                        const admin = await InternalUser.findOne({
+                            where: { Internal_ID: internalId },
+                            attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                        });
+                        if (admin) {
+                            adminInfo = {
+                                name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                                role: admin.Internal_Type || 'Rol no especificado',
+                                area: admin.Internal_Area || 'Área no especificada'
+                            };
+                        }
+                    } catch (err) {
+                        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+                    }
+
                     await AuditModel.registerAudit(
                         internalId,
                         "INSERT",
                         "Catastrophic_Illness",
-                        `El usuario interno ${internalId} creó un nuevo registro de enfermedad catastrófica con ID ${newRecord.Catastrophic_Illness_ID}`
+                        `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de enfermedad catastrófica con ID ${newRecord.Catastrophic_Illness_ID} - Nombre: ${newRecord.Catastrophic_Illness_Name}`
                     );
                         return newRecord
                 } catch (error) {
@@ -50,13 +70,30 @@ export class CatastrophicIllnessModel {
             static async bulkCreate(data, internalId) {
                 try {
                     const createdRecords = await Catastrophic_Illness.bulkCreate(data);
-                    
-                            await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Catastrophic_Illness",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de enfermedad catastrófica.`
-                        );
+
+                    let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+                    try {
+                        const admin = await InternalUser.findOne({
+                            where: { Internal_ID: internalId },
+                            attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                        });
+                        if (admin) {
+                            adminInfo = {
+                                name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                                role: admin.Internal_Type || 'Rol no especificado',
+                                area: admin.Internal_Area || 'Área no especificada'
+                            };
+                        }
+                    } catch (err) {
+                        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+                    }
+
+                    await AuditModel.registerAudit(
+                        internalId,
+                        "INSERT",
+                        "Catastrophic_Illness",
+                        `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de enfermedad catastrófica.`
+                    );
                     
                     return createdRecords;
                 } catch (error) {
@@ -73,11 +110,29 @@ export class CatastrophicIllnessModel {
                     });
         
                     if (rowsUpdated === 0) return null;
+
+                    let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+                    try {
+                        const admin = await InternalUser.findOne({
+                            where: { Internal_ID: internalId },
+                            attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                        });
+                        if (admin) {
+                            adminInfo = {
+                                name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                                role: admin.Internal_Type || 'Rol no especificado',
+                                area: admin.Internal_Area || 'Área no especificada'
+                            };
+                        }
+                    } catch (err) {
+                        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+                    }
+
                     await AuditModel.registerAudit(
                         internalId,
                         "UPDATE",
                         "Catastrophic_Illness",
-                        `El usuario interno ${internalId} actualizó la enfermedad catastrófica con ID ${id}`
+                        `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la enfermedad catastrófica con ID ${id} - Nombre: ${catastrophicIllnessRecord.Catastrophic_Illness_Name}`
                     );
 
                     return await this.getById(id);
@@ -95,11 +150,28 @@ export class CatastrophicIllnessModel {
                         { Catastrophic_Illness_Status: false },
                         { where: { Catastrophic_Illness_ID: id, Catastrophic_Illness_Status: true } }
                     );
+                    let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+                    try {
+                        const admin = await InternalUser.findOne({
+                            where: { Internal_ID: internalId },
+                            attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                        });
+                        if (admin) {
+                            adminInfo = {
+                                name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                                role: admin.Internal_Type || 'Rol no especificado',
+                                area: admin.Internal_Area || 'Área no especificada'
+                            };
+                        }
+                    } catch (err) {
+                        console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+                    }
+
                     await AuditModel.registerAudit(
                         internalId,
                         "DELETE",
                         "Catastrophic_Illness",
-                        `El usuario interno ${internalId} eliminó lógicamente la enfermedad catastrófica con ID ${id}`
+                        `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente la enfermedad catastrófica con ID ${id} - Nombre: ${catastrophicIllnessRecord.Catastrophic_Illness_Name}`
                     );
                     return catastrophicIllnessRecord;
                 } catch (error) {

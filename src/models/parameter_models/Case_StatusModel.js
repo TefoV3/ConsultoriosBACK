@@ -1,5 +1,6 @@
 import { Case_Status } from "../../schemas/parameter_tables/Case_Status.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class CaseStatusModel {
     
@@ -38,14 +39,33 @@ export class CaseStatusModel {
 
 
             const newRecord = await Case_Status.create(data);
+
+            // Auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "INSERT",
                 "Case_Status",
-                `El usuario interno ${internalId} creó un nuevo registro de CaseStatus con ID ${newRecord.Case_Status_ID}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo estado de caso con ID ${newRecord.Case_Status_ID} - Nombre: ${newRecord.Case_Status_Name}`
             );
 
-            return newRecord
+            return newRecord;
 
         } catch (error) {
             throw new Error(`Error creating case Status: ${error.message}`);
@@ -54,13 +74,30 @@ export class CaseStatusModel {
     static async bulkCreate(data, internalId) {
         try {
             const createdRecords = await Case_Status.bulkCreate(data);
-            
+
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Case_Status",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de CaseStatus.`
-                        );
+                internalId,
+                "INSERT",
+                "Case_Status",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} estados de caso.`
+            );
             
             return createdRecords;
         } catch (error) {
@@ -78,12 +115,30 @@ export class CaseStatusModel {
             });
             if (rowsUpdated === 0) return null;
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Case_Status",
-                `El usuario interno ${internalId} actualizó la CaseStatus con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el estado de caso con ID ${id} - Nombre: ${caseStatusRecord.Case_Status_Name}`
             );
+             
             return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating case Status: ${error.message}`);
@@ -100,11 +155,28 @@ export class CaseStatusModel {
                 { where: { Case_Status_ID: id, Case_Status_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Case_Status",
-                `El usuario interno ${internalId} eliminó lógicamente la CaseStatus con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente el estado de caso con ID ${id} - Nombre: ${caseStatusRecord.Case_Status_Name}`
             );
             
             return caseStatusRecord;

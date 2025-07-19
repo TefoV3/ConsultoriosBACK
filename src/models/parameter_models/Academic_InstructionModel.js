@@ -1,6 +1,7 @@
 // Importa el modelo de auditoría
 import { AuditModel } from "../../models/AuditModel.js";
 import { Academic_Instruction } from "../../schemas/parameter_tables/Academic_Instruction.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class AcademicInstructionModel {
 
@@ -39,12 +40,29 @@ export class AcademicInstructionModel {
 
 
             const newRecord = await Academic_Instruction.create(data);
+            // Obtener información del usuario interno para la auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
 
             await AuditModel.registerAudit(
                 internalId,
                 "INSERT",
                 "Academic_Instruction",
-                `El usuario interno ${internalId} creó un nuevo registro de instrucción académica con ID ${newRecord.Academic_Instruction_ID}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de instrucción académica con ID ${newRecord.Academic_Instruction_ID} - Nombre: ${newRecord.Academic_Instruction_Name}`
             );
 
             return newRecord;
@@ -57,11 +75,28 @@ export class AcademicInstructionModel {
         try {
             const createdRecords = await Academic_Instruction.bulkCreate(data);
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "INSERT",
                 "Academic_Instruction",
-                `El usuario interno ${internalId} creó ${createdRecords.length} registros de instrucción académica.`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de instrucción académica.`
             );
 
             return createdRecords;
@@ -81,11 +116,29 @@ export class AcademicInstructionModel {
 
             if (rowsUpdated === 0) return null;
 
+            // Obtener información del usuario interno para la auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Academic_Instruction",
-                `El usuario interno ${internalId} actualizó la instrucción académica con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la instrucción académica con ID ${id} - Nombre: ${academic_InstructionRecord.Academic_Instruction_Name}`
             );
 
             return await this.getById(id);
@@ -104,12 +157,31 @@ export class AcademicInstructionModel {
                 { where: { Academic_Instruction_ID: id, Academic_Instruction_Status: true } }
             );
 
+            // Obtener información del usuario interno para la auditoría
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Academic_Instruction",
-                `El usuario interno ${internalId} eliminó lógicamente la instrucción académica con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente la instrucción académica con ID ${id} - Nombre: ${academic_InstructionRecord.Academic_Instruction_Name}`
             );
+
 
             return academic_InstructionRecord;
         } catch (error) {

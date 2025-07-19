@@ -1,5 +1,6 @@
 import { Complexity } from "../../schemas/parameter_tables/Complexity.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class ComplexityModel {
 
@@ -37,14 +38,32 @@ export class ComplexityModel {
             data.Complexity_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Complexity.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Complexity",
-                            `El usuario interno ${internalId} creó un nuevo registro de Complexity con ID ${newRecord.Complexity_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Complexity",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de complejidad con ID ${newRecord.Complexity_ID} - Nombre: ${newRecord.Complexity_Name}`
+            );
             
-                        return newRecord;
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating complexity: ${error.message}`);
         }
@@ -53,14 +72,31 @@ export class ComplexityModel {
         try {
             const createdRecords = await Complexity.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Complexity",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Complexity.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Complexity",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de complejidad.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Complexity: ${error.message}`);
         }
@@ -76,14 +112,32 @@ export class ComplexityModel {
 
             if (rowsUpdated === 0) return null;
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "UPDATE",
-                            "Complexity",
-                            `El usuario interno ${internalId} actualizó la Complexity con ID ${id}`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Complexity",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la complejidad con ID ${id} - Nombre: ${complexityRecord.Complexity_Name}`
+            );
             
-                        return await this.getById(id);
+            return await this.getById(id);
+
         } catch (error) {
             throw new Error(`Error updating complexity: ${error.message}`);
         }
@@ -98,12 +152,30 @@ export class ComplexityModel {
                 { Complexity_Status: false },
                 { where: { Complexity_ID: id, Complexity_Status: true } }
             );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
-                            internalId,
-                            "DELETE",
-                            "Complexity",
-                            `El usuario interno ${internalId} eliminó lógicamente la Complexity con ID ${id}`
-                        );
+                internalId,
+                "DELETE",
+                "Complexity",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente la complejidad con ID ${id} - Nombre: ${complexityRecord.Complexity_Name}`
+            );
+            
             return complexityRecord;
         } catch (error) {
             throw new Error(`Error deleting complexity: ${error.message}`);

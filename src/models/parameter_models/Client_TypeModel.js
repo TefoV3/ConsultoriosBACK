@@ -1,5 +1,6 @@
 import { Client_Type } from "../../schemas/parameter_tables/Client_Type.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class ClientTypeModel {
     static async getAll() {
@@ -36,14 +37,32 @@ export class ClientTypeModel {
             data.Client_Type_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Client_Type.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Client_Type",
-                            `El usuario interno ${internalId} creó un nuevo registro de Client Type con ID ${newRecord.Client_Type_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Client_Type",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de tipo de cliente con ID ${newRecord.Client_Type_ID} - Nombre: ${newRecord.Client_Type_Name}`
+            );
             
-                        return newRecord;
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating client type: ${error.message}`);
         }
@@ -52,14 +71,32 @@ export class ClientTypeModel {
         try {
             const createdRecords = await Client_Type.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Client_Type",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Client Type.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Client_Type",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de tipo de cliente.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
+
         } catch (error) {
             throw new Error(`Error creating Client Type: ${error.message}`);
         }
@@ -75,12 +112,29 @@ export class ClientTypeModel {
 
             if (rowsUpdated === 0) return null;
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "UPDATE",
-                            "Client_Type",
-                            `El usuario interno ${internalId} actualizó la Client Type con ID ${id}`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Client_Type",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó el tipo de cliente con ID ${id} - Nombre: ${clientTypeRecord.Client_Type_Name}`
+            );
             
             return await this.getById(id);
         } catch (error) {
@@ -98,12 +152,29 @@ export class ClientTypeModel {
                 { where: { Client_Type_ID: id, Client_Type_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
-                            internalId,
-                            "DELETE",
-                            "Client_Type",
-                            `El usuario interno ${internalId} eliminó lógicamente la Client Type con ID ${id}`
-                        );
+                internalId,
+                "DELETE",
+                "Client_Type",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente el tipo de cliente con ID ${id} - Nombre: ${clientTypeRecord.Client_Type_Name}`
+            );
             return clientTypeRecord;
         } catch (error) {
             throw new Error(`Error deleting client type: ${error.message}`);
