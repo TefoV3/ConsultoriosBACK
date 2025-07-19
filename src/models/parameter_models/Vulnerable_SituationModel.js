@@ -1,5 +1,6 @@
 import { Vulnerable_Situation } from "../../schemas/parameter_tables/Vulnerable_Situation.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class VulnerableSituationModel {
 
@@ -37,14 +38,31 @@ export class VulnerableSituationModel {
             }
             const newRecord = await Vulnerable_Situation.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Vulnerable_Situation",
-                            `El usuario interno ${internalId} creó un nuevo registro de Vulnerable_Situation con ID ${newRecord.Vulnerable_Situation}`
-                        );
-            
-                        return newRecord;
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Vulnerable_Situation",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de Vulnerable_Situation con ID ${newRecord.Vulnerable_Situation_ID} - Nombre: ${newRecord.Vulnerable_Situation_Name}`
+            );
+            return newRecord;
 
         } catch (error) {
             throw new Error(`Error creating vulnerable situation: ${error.message}`);
@@ -54,13 +72,29 @@ export class VulnerableSituationModel {
         try {
             const createdRecords = await Vulnerable_Situation.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Vulnerable_Situation",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Vulnerable_Situation.`
-                        );
-            
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Vulnerable_Situation",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de Vulnerable_Situation.`
+            );
                         return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Vulnerable Situation: ${error.message}`);
@@ -77,14 +111,40 @@ export class VulnerableSituationModel {
 
             if (rowsUpdated === 0) return null;
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "UPDATE",
-                            "Vulnerable_Situation",
-                            `El usuario interno ${internalId} actualizó la Vulnerable_Situation con ID ${id}`
-                        );
-            
-                        return await this.getById(id);
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios
+            let changeDetails = [];
+            if (data.hasOwnProperty('Vulnerable_Situation_Name') && data.Vulnerable_Situation_Name !== originalValues.Vulnerable_Situation_Name) {
+                changeDetails.push(`Nombre: "${originalValues.Vulnerable_Situation_Name}" → "${data.Vulnerable_Situation_Name}"`);
+            }
+            if (data.hasOwnProperty('Vulnerable_Situation_Status') && data.Vulnerable_Situation_Status !== originalValues.Vulnerable_Situation_Status) {
+                changeDetails.push(`Estado: "${originalValues.Vulnerable_Situation_Status}" → "${data.Vulnerable_Situation_Status}"`);
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Vulnerable_Situation",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Vulnerable_Situation con ID ${id} - Nombre: ${vulnerableSituationRecord.Vulnerable_Situation_Name}${changeDescription}`
+            );
+            return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating vulnerable situation: ${error.message}`);
         }
@@ -100,12 +160,29 @@ export class VulnerableSituationModel {
                 { where: { Vulnerable_Situation_ID: id, Vulnerable_Situation_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
-                            internalId,
-                            "DELETE",
-                            "Vulnerable_Situation",
-                            `El usuario interno ${internalId} eliminó lógicamente Vulnerable_Situation con ID ${id}`
-                        );
+                internalId,
+                "DELETE",
+                "Vulnerable_Situation",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente Vulnerable_Situation con ID ${id} - Nombre: ${vulnerableSituationRecord.Vulnerable_Situation_Name}`
+            );
             return vulnerableSituationRecord;
         } catch (error) {
             throw new Error(`Error deleting vulnerable situation: ${error.message}`);

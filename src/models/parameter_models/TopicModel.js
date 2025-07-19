@@ -1,6 +1,7 @@
 import { Topic } from "../../schemas/parameter_tables/Topic.js";
 import { Subject } from "../../schemas/parameter_tables/Subject.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
 
 export class TopicModel {
 
@@ -49,14 +50,32 @@ export class TopicModel {
             }
             const newRecord = await Topic.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Topic",
-                            `El usuario interno ${internalId} creó un nuevo registro de Topic con ID ${newRecord.Topic_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Topic",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro de Topic con ID ${newRecord.Topic_ID} - Nombre: ${newRecord.Topic_Name}`
+            );
             
-                        return newRecord;
+            return newRecord;
         } catch (error) {
             throw new Error(`Error creating topic: ${error.message}`);
         }
@@ -65,14 +84,30 @@ export class TopicModel {
         try {
             const createdRecords = await Topic.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Topic",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros de Topic.`
-                        );
-            
-                        return createdRecords;
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Topic",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros de Topic.`
+            );
+            return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Topic: ${error.message}`);
         }
@@ -88,11 +123,6 @@ export class TopicModel {
         }
     }
 
-
-
-
-
-
     static async update(id, data, internalId) {
         try {
             const topicRecord = await this.getById(id);
@@ -104,11 +134,41 @@ export class TopicModel {
 
             if (rowsUpdated === 0) return null;
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios
+            let changeDetails = [];
+            if (data.hasOwnProperty('Topic_Name') && data.Topic_Name !== originalValues.Topic_Name) {
+                changeDetails.push(`Nombre: "${originalValues.Topic_Name}" → "${data.Topic_Name}"`);
+            }
+            if (data.hasOwnProperty('Topic_Status') && data.Topic_Status !== originalValues.Topic_Status) {
+                changeDetails.push(`Estado: "${originalValues.Topic_Status}" → "${data.Topic_Status}"`);
+            }
+            if (data.hasOwnProperty('Subject_FK') && data.Subject_FK !== originalValues.Subject_FK) {
+                changeDetails.push(`Subject_FK: "${originalValues.Subject_FK}" → "${data.Subject_FK}"`);
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
             await AuditModel.registerAudit(
                 internalId,
                 "UPDATE",
                 "Topic",
-                `El usuario interno ${internalId} actualizó la Topic con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó la Topic con ID ${id} - Nombre: ${topicRecord.Topic_Name}${changeDescription}`
             );
 
             return await this.getById(id);
@@ -128,11 +188,28 @@ export class TopicModel {
                 { where: { Topic_ID: id, Topic_Status: true } }
             );
 
+           let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
                 internalId,
                 "DELETE",
                 "Topic",
-                `El usuario interno ${internalId} eliminó lógicamente Topic con ID ${id}`
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente Topic con ID ${id} - Nombre: ${topicRecord.Topic_Name}`
             );
             return topicRecord;
         } catch (error) {

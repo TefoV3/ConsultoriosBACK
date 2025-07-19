@@ -1,5 +1,7 @@
 import { Profiles } from "../../schemas/parameter_tables/Profiles.js";
 import { AuditModel } from "../../models/AuditModel.js";
+import { InternalUser } from "../../schemas/Internal_User.js";
+
 export class ProfilesModel {
 
 
@@ -36,12 +38,30 @@ export class ProfilesModel {
             data.Profile_ID = undefined; // Aseguramos que el ID no se envíe, ya que es autoincremental
             const newRecord = await Profiles.create(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Profiles",
-                            `El usuario interno ${internalId} creó un nuevo registro Profiles con ID ${newRecord.Profile_ID}`
-                        );
+            // Auditoría detallada
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Profiles",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó un nuevo registro Profiles con ID ${newRecord.Profile_ID} - Nombre: ${newRecord.Profile_Name}`
+            );
             
             return newRecord;
 
@@ -53,14 +73,31 @@ export class ProfilesModel {
         try {
             const createdRecords = await Profiles.bulkCreate(data);
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "INSERT",
-                            "Profiles",
-                            `El usuario interno ${internalId} creó ${createdRecords.length} registros Profiles.`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            await AuditModel.registerAudit(
+                internalId,
+                "INSERT",
+                "Profiles",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) creó ${createdRecords.length} registros Profiles.`
+            );
             
-                        return createdRecords;
+            return createdRecords;
         } catch (error) {
             throw new Error(`Error creating Profiles: ${error.message}`);
         }
@@ -76,14 +113,42 @@ export class ProfilesModel {
 
             if (rowsUpdated === 0) return null;
             
-                        await AuditModel.registerAudit(
-                            internalId,
-                            "UPDATE",
-                            "Profiles",
-                            `El usuario interno ${internalId} actualizó Profiles con ID ${id}`
-                        );
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
+            // Describir cambios
+            let changeDetails = [];
+            if (data.hasOwnProperty('Profile_Name') && data.Profile_Name !== originalValues.Profile_Name) {
+                changeDetails.push(`Nombre: "${originalValues.Profile_Name}" → "${data.Profile_Name}"`);
+            }
+            if (data.hasOwnProperty('Profile_Status') && data.Profile_Status !== originalValues.Profile_Status) {
+                changeDetails.push(`Estado: "${originalValues.Profile_Status}" → "${data.Profile_Status}"`);
+            }
+            const changeDescription = changeDetails.length > 0 ? ` - Cambios: ${changeDetails.join(', ')}` : '';
+
+            await AuditModel.registerAudit(
+                internalId,
+                "UPDATE",
+                "Profiles",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó Profiles con ID ${id} - Nombre: ${profileRecord.Profile_Name}${changeDescription}`
+            );
+
             
-                        return await this.getById(id);
+            return await this.getById(id);
         } catch (error) {
             throw new Error(`Error updating profile: ${error.message}`);
         }
@@ -99,12 +164,29 @@ export class ProfilesModel {
                 { where: { Profile_ID: id, Profile_Status: true } }
             );
 
+            let adminInfo = { name: 'Usuario Desconocido', role: 'Rol no especificado', area: 'Área no especificada' };
+            try {
+                const admin = await InternalUser.findOne({
+                    where: { Internal_ID: internalId },
+                    attributes: ["Internal_Name", "Internal_LastName", "Internal_Type", "Internal_Area"]
+                });
+                if (admin) {
+                    adminInfo = {
+                        name: `${admin.Internal_Name} ${admin.Internal_LastName}`,
+                        role: admin.Internal_Type || 'Rol no especificado',
+                        area: admin.Internal_Area || 'Área no especificada'
+                    };
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
+            }
+
             await AuditModel.registerAudit(
-                            internalId,
-                            "DELETE",
-                            "Profiles",
-                            `El usuario interno ${internalId} eliminó lógicamente Profiles con ID ${id}`
-                        );
+                internalId,
+                "DELETE",
+                "Profiles",
+                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) eliminó lógicamente Profiles con ID ${id} - Nombre: ${profileRecord.Profile_Name}`
+            );
             return profileRecord;
         } catch (error) {
             throw new Error(`Error deleting profile: ${error.message}`);
