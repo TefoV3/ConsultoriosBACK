@@ -3,6 +3,7 @@ import { ProfileViewPermission } from "../schemas/Profile_View_Permission.js";
 import { sequelize } from "../database/database.js";
 import { AuditModel } from "../models/AuditModel.js";
 import { InternalUser } from "../schemas/Internal_User.js";
+import { getUserId } from '../sessionData.js';
 
 const ALL_APPLICATION_VIEWS = [
 
@@ -140,10 +141,48 @@ export class ProfilePermissionModel {
                 throw new Error("El formato de datos es inválido, se esperaba un array.");
             }
 
+            // Obtener permisos actuales antes de la actualización para comparar cambios
+            const currentPermissions = await ProfileViewPermission.findAll({
+                where: { Profile_ID: profileId },
+                transaction
+            });
+
+            const currentPermissionsMap = new Map(
+                currentPermissions.map(p => [p.View_Name, p.Has_Permission])
+            );
+
+            // Arrays para rastrear cambios específicos
+            const permissionsGranted = [];
+            const permissionsRevoked = [];
+            const permissionsUpdated = [];
+
             for (const perm of permissionsToUpdate) {
                  if (!ALL_APPLICATION_VIEWS.includes(perm.View_Name)) {
                     console.warn(`Intento de actualizar permiso para vista no reconocida: ${perm.View_Name}. Se omitirá.`);
                     continue;
+                }
+
+                const currentPermission = currentPermissionsMap.get(perm.View_Name);
+                const newPermission = perm.Has_Permission;
+
+                // Determinar el tipo de cambio
+                if (currentPermission === undefined || currentPermission === false) {
+                    if (newPermission === true) {
+                        permissionsGranted.push(perm.View_Name);
+                    }
+                } else if (currentPermission === true) {
+                    if (newPermission === false) {
+                        permissionsRevoked.push(perm.View_Name);
+                    }
+                }
+
+                // Registrar si hubo un cambio real
+                if (currentPermission !== newPermission) {
+                    permissionsUpdated.push({
+                        viewName: perm.View_Name,
+                        oldValue: currentPermission || false,
+                        newValue: newPermission
+                    });
                 }
                 
                 await ProfileViewPermission.upsert({
@@ -173,14 +212,39 @@ export class ProfilePermissionModel {
                 console.warn("No se pudo obtener información del administrador para auditoría:", err.message);
             }
 
+            // Construir mensaje detallado de auditoría
+            let auditDetails = [];
+            
+            if (permissionsGranted.length > 0) {
+                auditDetails.push(`Permisos otorgados: [${permissionsGranted.join(', ')}]`);
+            }
+            
+            if (permissionsRevoked.length > 0) {
+                auditDetails.push(`Permisos revocados: [${permissionsRevoked.join(', ')}]`);
+            }
+
+            // Calcular el total real de cambios (otorgados + revocados)
+            const totalRealChanges = permissionsGranted.length + permissionsRevoked.length;
+
+            const auditMessage = totalRealChanges > 0 
+                ? `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó los permisos del perfil "${profile.Profile_Name}" (ID: ${profileId}) - ${auditDetails.join(', ')} - Total de cambios: ${totalRealChanges}`
+                : `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) revisó los permisos del perfil "${profile.Profile_Name}" (ID: ${profileId}) - No se realizaron cambios`;
+
             await AuditModel.registerAudit(
                 internalId, 
                 "UPDATE",
                 "Profile_View_Permission",
-                `${adminInfo.name} (${adminInfo.role} - ${adminInfo.area}) actualizó los permisos del perfil ${profile.Profile_Name}`
+                auditMessage
             );
-            return { message: `Permisos para el perfil '${profile.Profile_Name}' actualizados.` };
 
+            return { 
+                message: `Permisos para el perfil '${profile.Profile_Name}' actualizados.`,
+                changes: {
+                    granted: permissionsGranted,
+                    revoked: permissionsRevoked,
+                    totalChanges: totalRealChanges
+                }
+            };
 
         } catch (error) {
             await transaction.rollback();
