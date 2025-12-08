@@ -32,15 +32,15 @@ import dotenv from "dotenv";
 //USO LOCAL
 
 
-// export const sequelize = new Sequelize(
-//       'prueba', 
-//        'root', 
-//       '123456', 
-//       {
-//          host: 'localhost',
-//           dialect: 'mysql'
-//      }
-//     )
+export const sequelize = new Sequelize(
+      'prueba', 
+       'root', 
+      '123456', 
+      {
+         host: 'localhost',
+          dialect: 'mysql'
+     }
+    )
 
 
 
@@ -68,16 +68,16 @@ import dotenv from "dotenv";
 // );
 
 
-// //Francis
-export const sequelize = new Sequelize(
-    'consultoriosjuridicos2', 
-    'fvelasco', 
-    'ltic', 
-    {
-        host: '192.168.161.3', 
-        dialect: 'mysql'
-    }
-);
+// // //Francis
+// export const sequelize = new Sequelize(
+//     'consultoriosjuridicos2', 
+//     'fvelasco', 
+//     'ltic', 
+//     {
+//         host: '192.168.161.3', 
+//         dialect: 'mysql'
+//     }
+// );
 
 // export const sequelize = new Sequelize(
 //     'seguimiento_final3', 

@@ -221,6 +221,9 @@ export class Social_WorkModel {
             const record = await this.getById(id);
             if (!record) return null;
 
+            // Capture original values BEFORE updating
+            const originalValues = { ...record.dataValues };
+
             const internalId = internalUser || getUserId();
             const [rowsUpdated] = await Social_Work.update(data, { where: { SW_ProcessNumber: id } });
 
@@ -263,9 +266,9 @@ export class Social_WorkModel {
 
             return await this.getById(id);
         } catch (error) {
-          throw new Error(`Error updating social work record: ${error.message}`);
+        throw new Error(`Error updating social work record: ${error.message}`);
         }
-      }
+    }
     static async updateStatus(social_WorkId, status, status_observations, internalUser) { // Parameter is socialWorkId
         try {
             // First check if the record exists
