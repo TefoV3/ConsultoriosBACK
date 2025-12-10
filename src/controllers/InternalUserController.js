@@ -26,44 +26,20 @@ function generateRandomPassword(length = 8) {
   return password;
 }
 
-// Función helper para crear transporter de correo multiplataforma
+// Función helper para crear transporter de correo con Gmail
 function createEmailTransporter() {
-  // Configuración basada en el servicio especificado
-  if (EMAIL_SERVICE && EMAIL_SERVICE !== 'custom') {
-    // Usar servicio predefinido
-    return nodemailer.createTransport({
-      service: EMAIL_SERVICE, // 'gmail', 'hotmail', 'outlook'
-      auth: {
-        user: EMAIL_USER,
-        pass: EMAIL_PASS
-      }
-    });
-  } else {
-    // Usar configuración SMTP personalizada
-    const config = {
-      host: EMAIL_HOST,
-      port: parseInt(EMAIL_PORT),
-      secure: EMAIL_SECURE === 'true' || EMAIL_SECURE === true,
-      auth: {
-        user: EMAIL_USER,
-        pass: EMAIL_PASS
-      }
-    };
-
-    // Agregar configuración TLS si es necesario
-    if (!config.secure) {
-      config.tls = {
-        rejectUnauthorized: EMAIL_TLS_REJECT_UNAUTHORIZED === 'true' || EMAIL_TLS_REJECT_UNAUTHORIZED === true
-      };
-      
-      // Configuraciones específicas para Outlook/Office365
-      if (EMAIL_HOST.includes('outlook') || EMAIL_HOST.includes('office365')) {
-        config.tls.ciphers = 'SSLv3';
-      }
-    }
-
-    return nodemailer.createTransport(config);
-  }
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: EMAIL_USER,
+      pass: EMAIL_PASS
+    },
+    pool: true, // Usar pool de conexiones
+    maxConnections: 5, // Máximo de conexiones simultáneas
+    maxMessages: 100, // Máximo de mensajes por conexión
+    rateDelta: 1000, // Tiempo entre envíos (ms)
+    rateLimit: 5 // Límite de mensajes por rateDelta
+  });
 }
 
 export class InternalUserController {
@@ -803,16 +779,38 @@ export class InternalUserController {
         }
       }
 
-      // 🔹 1. Crear usuarios y asignaciones en transaction
+      // 🔹 1. Crear usuarios en transaction
       await InternalUserModel.bulkCreateUsers(usersToCreate, internalId, { transaction }); // Pasar el Internal_ID al modelo
-      if (userXPeriodToCreate.length > 0) {
-        await UserXPeriodModel.create(userXPeriodToCreate, { transaction });
-      }
+      
+      await transaction.commit(); // Confirmamos transacción de usuarios primero
 
-      await transaction.commit(); // Confirmamos
+      // 🔹 1.5 Crear asignaciones de período SIN transacción anidada (el modelo maneja su propia transacción)
+      if (userXPeriodToCreate.length > 0) {
+        await UserXPeriodModel.create(userXPeriodToCreate);
+      }
 
       // 🔹 2. Enviar correos después de confirmar la transacción
       const transporter = createEmailTransporter();
+      
+      // Contador de éxitos y fallos
+      let emailsSent = 0;
+      let emailsFailed = 0;
+      const failedEmails = [];
+
+      // Verificar conexión del transporter
+      try {
+        await transporter.verify();
+        console.log('✓ Servidor de correo listo para enviar mensajes');
+      } catch (verifyError) {
+        console.error('✗ Error verificando servidor de correo:', verifyError);
+        return res.status(201).json({ 
+          message: "Usuarios creados correctamente, pero hay problemas con el servidor de correo. No se enviaron notificaciones.",
+          warning: "Servidor de correo no disponible"
+        });
+      }
+
+      // Función auxiliar para delay entre envíos
+      const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
       for (const emailInfo of emailsToSend) {
         const mailOptions = {
@@ -865,15 +863,57 @@ export class InternalUserController {
       `,
         };
       
+        try {
+          // Intentar enviar el correo con reintentos
+          let attempts = 0;
+          let sent = false;
+          
+          while (attempts < 3 && !sent) {
             try {
               await transporter.sendMail(mailOptions);
-              console.log(`Correo enviado exitosamente a ${emailInfo.to}`);
-            } catch (errorEmail) {
-              console.error(`Error al enviar correo a ${emailInfo.to}:`, errorEmail);
+              console.log(`✓ Correo enviado exitosamente a ${emailInfo.to}`);
+              emailsSent++;
+              sent = true;
+            } catch (sendError) {
+              attempts++;
+              if (attempts < 3) {
+                console.log(`⚠ Reintentando envío a ${emailInfo.to} (intento ${attempts}/3)...`);
+                await delay(2000); // Esperar 2 segundos antes de reintentar
+              } else {
+                throw sendError; // Si fallan los 3 intentos, lanzar error
+              }
             }
           }
+          
+          // Delay entre correos exitosos para evitar rate limiting
+          if (emailsToSend.indexOf(emailInfo) < emailsToSend.length - 1) {
+            await delay(1500); // 1.5 segundos entre cada correo
+          }
+          
+        } catch (errorEmail) {
+          emailsFailed++;
+          failedEmails.push(emailInfo.to);
+          console.error(`✗ Error al enviar correo a ${emailInfo.to}:`, errorEmail.message);
+        }
+      }
       
-          return res.status(201).json({ message: "Usuarios creados y correos enviados correctamente." });
+      // Cerrar el transporter
+      transporter.close();
+      
+      // Respuesta con resumen del envío
+      const summary = {
+        message: "Proceso de creación de usuarios completado",
+        usersCreated: usersToCreate.length,
+        emailsSent: emailsSent,
+        emailsFailed: emailsFailed
+      };
+      
+      if (failedEmails.length > 0) {
+        summary.failedEmails = failedEmails;
+        summary.warning = "Algunos correos no pudieron ser enviados";
+      }
+      
+      return res.status(201).json(summary);
       
         } catch (error) {
           console.error("Error en createInternalUsersBulk:", error);

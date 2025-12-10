@@ -1,4 +1,4 @@
-import Sequelize from 'sequelize';
+import Sequelize from "sequelize";
 import dotenv from "dotenv";
 
 // // Cargar las variables de entorno
@@ -31,58 +31,52 @@ import dotenv from "dotenv";
 
 //USO LOCAL
 
-
-export const sequelize = new Sequelize(
-      'prueba', 
-       'root', 
-      '123456', 
-      {
-         host: 'localhost',
-          dialect: 'mysql'
-     }
-    )
-
-
+// export const sequelize = new Sequelize(
+//       'prueba',
+//        'root',
+//       '123456',
+//       {
+//          host: 'localhost',
+//           dialect: 'mysql'
+//      }
+//     )
 
 // export const sequelize = new Sequelize(
-//     'prueba', 
-//     'root', 
-//     '12345678', 
+//     'prueba',
+//     'root',
+//     '12345678',
 //     {
 //         host: 'localhost',
 //         dialect: 'mysql'
 //     }
 // );
 
-
-
 //TefoVirtual
 // export const sequelize = new Sequelize(
-//     'ConsultoriosJuridicosevi', 
-//     'Cliente', 
-//     '2444', 
+//     'ConsultoriosJuridicosevi',
+//     'Cliente',
+//     '2444',
 //     {
-//         host: '192.168.100.105', 
+//         host: '192.168.100.105',
 //         dialect: 'mysql'
 //     }
 // );
-
 
 // // //Francis
-// export const sequelize = new Sequelize(
-//     'consultoriosjuridicos2', 
-//     'fvelasco', 
-//     'ltic', 
-//     {
-//         host: '192.168.161.3', 
-//         dialect: 'mysql'
-//     }
-// );
+export const sequelize = new Sequelize(
+  "consultoriosjuridicos",
+  "fvelasco",
+  "ltic",
+  {
+    host: "192.168.56.102",
+    dialect: "mysql",
+  }
+);
 
 // export const sequelize = new Sequelize(
-//     'seguimiento_final3', 
-//     'user_control', 
-//     'ltic', 
+//     'seguimiento_final3',
+//     'user_control',
+//     'ltic',
 //     {
 //         host: 'localhost',
 //         dialect: 'mysql',
