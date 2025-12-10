@@ -1,7 +1,16 @@
 import { InternalUserModel } from "../models/InternalUserModel.js";
 import { Profiles } from "../schemas/parameter_tables/Profiles.js";
 import { z } from "zod";
-import { SALT_ROUNDS, EMAIL_SERVICE, EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER, EMAIL_PASS, EMAIL_TLS_REJECT_UNAUTHORIZED } from "../config.js";
+import {
+  SALT_ROUNDS,
+  EMAIL_SERVICE,
+  EMAIL_HOST,
+  EMAIL_PORT,
+  EMAIL_SECURE,
+  EMAIL_USER,
+  EMAIL_PASS,
+  EMAIL_TLS_REJECT_UNAUTHORIZED,
+} from "../config.js";
 import { cloudinary } from "../cloudinary.js";
 import { UserXPeriodModel } from "../models/schedule_models/User_PeriodModel.js"; // Modelo de asignaciones a períodos
 import { sequelize } from "../database/database.js";
@@ -29,16 +38,16 @@ function generateRandomPassword(length = 8) {
 // Función helper para crear transporter de correo con Gmail
 function createEmailTransporter() {
   return nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
       user: EMAIL_USER,
-      pass: EMAIL_PASS
+      pass: EMAIL_PASS,
     },
     pool: true, // Usar pool de conexiones
     maxConnections: 5, // Máximo de conexiones simultáneas
     maxMessages: 100, // Máximo de mensajes por conexión
     rateDelta: 1000, // Tiempo entre envíos (ms)
-    rateLimit: 5 // Límite de mensajes por rateDelta
+    rateLimit: 5, // Límite de mensajes por rateDelta
   });
 }
 
@@ -139,7 +148,7 @@ export class InternalUserController {
   static async createInternalUser(req, res) {
     try {
       // Definir el esquema de validación con Zod
-      const internalId = req.headers["internal-id"]
+      const internalId = req.headers["internal-id"];
       console.log("Internal ID:", internalId);
       const internalUserSchema = z.object({
         Internal_ID: z.string().min(1, { message: "El ID es obligatorio" }),
@@ -165,13 +174,21 @@ export class InternalUserController {
       });
 
       //Validar que no haya un usuario con el mismo ID y correo electrónico
-      const existingUserById = await InternalUserModel.getById(req.body.Internal_ID);
-      const existingUserByEmail = await InternalUserModel.getByEmail(req.body.Internal_Email);
+      const existingUserById = await InternalUserModel.getById(
+        req.body.Internal_ID
+      );
+      const existingUserByEmail = await InternalUserModel.getByEmail(
+        req.body.Internal_Email
+      );
       if (existingUserById) {
-        return res.status(400).json({ message: "Ya existe un usuario con este ID." });
+        return res
+          .status(400)
+          .json({ message: "Ya existe un usuario con este ID." });
       }
       if (existingUserByEmail) {
-        return res.status(400).json({ message: "Ya existe un usuario con este correo electrónico." });
+        return res.status(400).json({
+          message: "Ya existe un usuario con este correo electrónico.",
+        });
       }
 
       // Validar el request body
@@ -190,14 +207,16 @@ export class InternalUserController {
 
       // --- BUSCAR EL PROFILE_ID ---
       // 1. Buscamos el perfil en la BD usando el nombre que llegó.
-      const profile = await Profiles.findOne({ where: { Profile_Name: data.Internal_Type } });
+      const profile = await Profiles.findOne({
+        where: { Profile_Name: data.Internal_Type },
+      });
 
       // 2. Si no se encuentra, devolvemos un error.
       if (!profile) {
-          return res.status(400).json({ message: `El perfil '${data.Internal_Type}' no es válido.` });
+        return res
+          .status(400)
+          .json({ message: `El perfil '${data.Internal_Type}' no es válido.` });
       }
-
-
 
       const plainPassword = data.Internal_Password;
 
@@ -211,16 +230,16 @@ export class InternalUserController {
         SALT_ROUNDS
       );
 
+      const dataToCreate = {
+        ...data,
+        Profile_ID: profile.Profile_ID,
+        Internal_Password: hashedPassword,
+      };
 
-        const dataToCreate = {
-            ...data,
-            Profile_ID: profile.Profile_ID,
-            Internal_Password: hashedPassword 
-        };
-
-
-
-      const internalUser = await InternalUserModel.create(dataToCreate, internalId);
+      const internalUser = await InternalUserModel.create(
+        dataToCreate,
+        internalId
+      );
 
       // --- Send welcome email ---
       try {
@@ -315,27 +334,35 @@ export class InternalUserController {
 
       // 1.1 Check if the new email already exists for another user
       if (emailChanged) {
-        const existingUserWithNewEmail = await InternalUserModel.getByEmail(newEmail);
+        const existingUserWithNewEmail = await InternalUserModel.getByEmail(
+          newEmail
+        );
         // Check if a user was found AND if that user is not the current user being updated
-        if (existingUserWithNewEmail && existingUserWithNewEmail.Internal_ID !== id) {
-          return res.status(409).json({ message: "El correo electrónico ya está registrado por otro usuario." });
+        if (
+          existingUserWithNewEmail &&
+          existingUserWithNewEmail.Internal_ID !== id
+        ) {
+          return res.status(409).json({
+            message:
+              "El correo electrónico ya está registrado por otro usuario.",
+          });
         }
       }
 
-
       // Si en los datos a actualizar viene un nuevo tipo de perfil...
       if (updateData.Internal_Type) {
-          // ...buscamos su ID correspondiente.
-          const profile = await Profiles.findOne({ where: { Profile_Name: updateData.Internal_Type } });
-          if (!profile) {
-              return res.status(400).json({ message: `El perfil '${updateData.Internal_Type}' no es válido.` });
-          }
-          // Y lo añadimos a los datos a actualizar.
-          updateData.Profile_ID = profile.Profile_ID;
+        // ...buscamos su ID correspondiente.
+        const profile = await Profiles.findOne({
+          where: { Profile_Name: updateData.Internal_Type },
+        });
+        if (!profile) {
+          return res.status(400).json({
+            message: `El perfil '${updateData.Internal_Type}' no es válido.`,
+          });
+        }
+        // Y lo añadimos a los datos a actualizar.
+        updateData.Profile_ID = profile.Profile_ID;
       }
-
-
-
 
       // 2. Perform the update
       const updatedInternalUser = await InternalUserModel.update(
@@ -345,13 +372,14 @@ export class InternalUserController {
       );
 
       if (!updatedInternalUser) {
-        return res.status(404).json({ message: "Internal user not found or update failed" });
+        return res
+          .status(404)
+          .json({ message: "Internal user not found or update failed" });
       }
 
       // 3. Send email notification if email was changed successfully
       if (emailChanged) {
         try {
-
           // Configure nodemailer transporter
           const transporter = createEmailTransporter();
 
@@ -359,7 +387,8 @@ export class InternalUserController {
           const mailOptions = {
             from: `"Support Balanza Web" <${EMAIL_USER}>`,
             to: newEmail, // Send to the new email address
-            subject: "📧 Tu correo electrónico ha sido actualizado en Balanza Web",
+            subject:
+              "📧 Tu correo electrónico ha sido actualizado en Balanza Web",
             html: `
               <html>
                 <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px;">
@@ -374,7 +403,9 @@ export class InternalUserController {
                           </tr>
                           <tr>
                             <td style="padding-top: 20px;">
-                              <p style="color: #333333; line-height: 1.6;">Hola ${updatedInternalUser.Internal_Name},</p>
+                              <p style="color: #333333; line-height: 1.6;">Hola ${
+                                updatedInternalUser.Internal_Name
+                              },</p>
                               <p style="color: #333333; line-height: 1.6;">Te informamos que el correo electrónico asociado a tu cuenta en <strong>Balanza Web</strong> ha sido actualizado.</p>
                               <div style="background-color: #eef5ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
                                 <p style="margin: 5px 0; color: #333;"><strong>Nuevo Correo:</strong> ${newEmail}</p>
@@ -400,10 +431,14 @@ export class InternalUserController {
 
           // Send the email
           await transporter.sendMail(mailOptions);
-          console.log(`Correo de notificación de cambio de email enviado a ${newEmail}`);
-
+          console.log(
+            `Correo de notificación de cambio de email enviado a ${newEmail}`
+          );
         } catch (emailError) {
-          console.error(`Error al enviar notificación de cambio de email a ${newEmail}:`, emailError);
+          console.error(
+            `Error al enviar notificación de cambio de email a ${newEmail}:`,
+            emailError
+          );
           // Decide how to handle email failure: Log it but still return success for the update?
           // Or return a specific status indicating update success but email failure?
           // For now, just log it. The user update was successful.
@@ -412,16 +447,22 @@ export class InternalUserController {
 
       // 4. Return the updated user data
       return res.json(updatedInternalUser);
-
     } catch (error) {
       console.error("Error al actualizar el usuario interno:", error);
       // Check for specific database errors if needed (e.g., unique constraint violation if email must be unique)
       // The check above handles the specific case of changing to an existing email.
       // This catch block can handle other potential errors like database connection issues.
-      if (error.name === 'SequelizeUniqueConstraintError') { // This might still be relevant if the model itself enforces uniqueness on update
-          return res.status(409).json({ message: "Error de restricción única al actualizar.", error: error.message });
+      if (error.name === "SequelizeUniqueConstraintError") {
+        // This might still be relevant if the model itself enforces uniqueness on update
+        return res.status(409).json({
+          message: "Error de restricción única al actualizar.",
+          error: error.message,
+        });
       }
-      return res.status(500).json({ message: "Error interno del servidor al actualizar el usuario.", error: error.message });
+      return res.status(500).json({
+        message: "Error interno del servidor al actualizar el usuario.",
+        error: error.message,
+      });
     }
   }
 
@@ -557,20 +598,16 @@ export class InternalUserController {
             .status(500)
             .json({ message: "Error al enviar el correo.", error });
         }
-        return res
-          .status(200)
-          .json({
-            message:
-              "En caso de estar registrado este email, se enviará un código de verificación.",
-          });
+        return res.status(200).json({
+          message:
+            "En caso de estar registrado este email, se enviará un código de verificación.",
+        });
       });
     } catch (error) {
-      return res
-        .status(500)
-        .json({
-          message: "Error al solicitar el código",
-          error: error.message,
-        });
+      return res.status(500).json({
+        message: "Error al solicitar el código",
+        error: error.message,
+      });
     }
   }
 
@@ -591,12 +628,10 @@ export class InternalUserController {
 
       return res.status(200).json({ message: "Código válido" });
     } catch (error) {
-      return res
-        .status(500)
-        .json({
-          message: "Error al verificar el código",
-          error: error.message,
-        });
+      return res.status(500).json({
+        message: "Error al verificar el código",
+        error: error.message,
+      });
     }
   }
 
@@ -634,12 +669,10 @@ export class InternalUserController {
         .status(200)
         .json({ message: "Contraseña actualizada correctamente" });
     } catch (error) {
-      return res
-        .status(500)
-        .json({
-          message: "Error al restablecer la contraseña",
-          error: error.message,
-        });
+      return res.status(500).json({
+        message: "Error al restablecer la contraseña",
+        error: error.message,
+      });
     }
   }
 
@@ -647,8 +680,8 @@ export class InternalUserController {
   static async actualizarHuella(req, res) {
     try {
       const { usuarioCedula, template } = req.body;
-      const internalId = req.headers['internal-id'];
-      
+      const internalId = req.headers["internal-id"];
+
       if (!usuarioCedula || !template) {
         return res
           .status(400)
@@ -727,12 +760,16 @@ export class InternalUserController {
 
         // --- BUSCAR EL PROFILE_ID ---
         // 1. Buscamos el perfil en la BD usando el nombre que llegó.
-        const profile = await Profiles.findOne({ where: { Profile_Name: data.Internal_Type } });
+        const profile = await Profiles.findOne({
+          where: { Profile_Name: data.Internal_Type },
+        });
 
         // 2. Si no se encuentra, devolvemos un error.
         if (!profile) {
           await transaction.rollback();
-          return res.status(400).json({ message: `El perfil '${data.Internal_Type}' no es válido para el usuario ${data.Internal_ID}.` });
+          return res.status(400).json({
+            message: `El perfil '${data.Internal_Type}' no es válido para el usuario ${data.Internal_ID}.`,
+          });
         }
 
         // Email temporal si no hay válido
@@ -780,8 +817,10 @@ export class InternalUserController {
       }
 
       // 🔹 1. Crear usuarios en transaction
-      await InternalUserModel.bulkCreateUsers(usersToCreate, internalId, { transaction }); // Pasar el Internal_ID al modelo
-      
+      await InternalUserModel.bulkCreateUsers(usersToCreate, internalId, {
+        transaction,
+      }); // Pasar el Internal_ID al modelo
+
       await transaction.commit(); // Confirmamos transacción de usuarios primero
 
       // 🔹 1.5 Crear asignaciones de período SIN transacción anidada (el modelo maneja su propia transacción)
@@ -791,7 +830,7 @@ export class InternalUserController {
 
       // 🔹 2. Enviar correos después de confirmar la transacción
       const transporter = createEmailTransporter();
-      
+
       // Contador de éxitos y fallos
       let emailsSent = 0;
       let emailsFailed = 0;
@@ -800,17 +839,18 @@ export class InternalUserController {
       // Verificar conexión del transporter
       try {
         await transporter.verify();
-        console.log('✓ Servidor de correo listo para enviar mensajes');
+        console.log("✓ Servidor de correo listo para enviar mensajes");
       } catch (verifyError) {
-        console.error('✗ Error verificando servidor de correo:', verifyError);
-        return res.status(201).json({ 
-          message: "Usuarios creados correctamente, pero hay problemas con el servidor de correo. No se enviaron notificaciones.",
-          warning: "Servidor de correo no disponible"
+        console.error("✗ Error verificando servidor de correo:", verifyError);
+        return res.status(201).json({
+          message:
+            "Usuarios creados correctamente, pero hay problemas con el servidor de correo. No se enviaron notificaciones.",
+          warning: "Servidor de correo no disponible",
         });
       }
 
       // Función auxiliar para delay entre envíos
-      const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+      const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
       for (const emailInfo of emailsToSend) {
         const mailOptions = {
@@ -826,7 +866,9 @@ export class InternalUserController {
                 <table width="600" border="0" cellspacing="0" cellpadding="20" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                   <tr>
                     <td align="center" style="border-bottom: 1px solid #e0e0e0; padding-bottom: 20px;">
-                      <h1 style="color: #0056b3; margin: 0;">¡Bienvenido/a, ${emailInfo.name}!</h1>
+                      <h1 style="color: #0056b3; margin: 0;">¡Bienvenido/a, ${
+                        emailInfo.name
+                      }!</h1>
                     </td>
                   </tr>
                   <tr>
@@ -834,8 +876,12 @@ export class InternalUserController {
                       <p style="color: #333333; line-height: 1.6;">Estamos encantados de tenerte en <strong>Balanza Web</strong>.</p>
                       <p style="color: #333333; line-height: 1.6;">Aquí tienes tus credenciales para acceder a la plataforma:</p>
                       <div style="background-color: #eef5ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                        <p style="margin: 5px 0; color: #333;"><strong>Correo Electrónico:</strong> ${emailInfo.to}</p>
-                        <p style="margin: 5px 0; color: #333;"><strong>Contraseña Temporal:</strong> ${emailInfo.password}</p>
+                        <p style="margin: 5px 0; color: #333;"><strong>Correo Electrónico:</strong> ${
+                          emailInfo.to
+                        }</p>
+                        <p style="margin: 5px 0; color: #333;"><strong>Contraseña Temporal:</strong> ${
+                          emailInfo.password
+                        }</p>
                       </div>
                       <p style="color: #555555; line-height: 1.6;"><strong>Importante:</strong> Por tu seguridad, te recomendamos encarecidamente que cambies tu contraseña la primera vez que inicies sesión.</p>
                       <p style="color: #555555; line-height: 1.6;">Puedes hacerlo fácilmente:</p>
@@ -862,12 +908,12 @@ export class InternalUserController {
       </html>
       `,
         };
-      
+
         try {
           // Intentar enviar el correo con reintentos
           let attempts = 0;
           let sent = false;
-          
+
           while (attempts < 3 && !sent) {
             try {
               await transporter.sendMail(mailOptions);
@@ -877,85 +923,96 @@ export class InternalUserController {
             } catch (sendError) {
               attempts++;
               if (attempts < 3) {
-                console.log(`⚠ Reintentando envío a ${emailInfo.to} (intento ${attempts}/3)...`);
+                console.log(
+                  `⚠ Reintentando envío a ${emailInfo.to} (intento ${attempts}/3)...`
+                );
                 await delay(2000); // Esperar 2 segundos antes de reintentar
               } else {
                 throw sendError; // Si fallan los 3 intentos, lanzar error
               }
             }
           }
-          
+
           // Delay entre correos exitosos para evitar rate limiting
           if (emailsToSend.indexOf(emailInfo) < emailsToSend.length - 1) {
             await delay(1500); // 1.5 segundos entre cada correo
           }
-          
         } catch (errorEmail) {
           emailsFailed++;
           failedEmails.push(emailInfo.to);
-          console.error(`✗ Error al enviar correo a ${emailInfo.to}:`, errorEmail.message);
+          console.error(
+            `✗ Error al enviar correo a ${emailInfo.to}:`,
+            errorEmail.message
+          );
         }
       }
-      
+
       // Cerrar el transporter
       transporter.close();
-      
+
       // Respuesta con resumen del envío
       const summary = {
         message: "Proceso de creación de usuarios completado",
         usersCreated: usersToCreate.length,
         emailsSent: emailsSent,
-        emailsFailed: emailsFailed
+        emailsFailed: emailsFailed,
       };
-      
+
       if (failedEmails.length > 0) {
         summary.failedEmails = failedEmails;
         summary.warning = "Algunos correos no pudieron ser enviados";
       }
-      
+
       return res.status(201).json(summary);
-      
-        } catch (error) {
-          console.error("Error en createInternalUsersBulk:", error);
-          await transaction.rollback();
-          return res.status(500).json({ error: error.message });
-        }
+    } catch (error) {
+      console.error("Error en createInternalUsersBulk:", error);
+      await transaction.rollback();
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async resendCredentials(req, res) {
+    try {
+      const { internalId } = req.params;
+      const { newEmail } = req.body;
+
+      console.log(
+        "Resend credentials for ID:",
+        internalId,
+        "to email:",
+        newEmail
+      );
+
+      if (!internalId || !newEmail) {
+        return res.status(400).json({ message: "Faltan datos: ID o email." });
       }
 
-      static async resendCredentials(req, res) {
-        try {
-          const { internalId } = req.params;
-          const { newEmail } = req.body;
+      // Buscar usuario
+      const user = await InternalUserModel.getById(internalId);
+      if (!user) {
+        return res.status(404).json({ message: "Usuario no encontrado." });
+      }
 
-          console.log("Resend credentials for ID:", internalId, "to email:", newEmail);
-      
-          if (!internalId || !newEmail) {
-            return res.status(400).json({ message: "Faltan datos: ID o email." });
-          }
-      
-          // Buscar usuario
-          const user = await InternalUserModel.getById(internalId);
-          if (!user) {
-            return res.status(404).json({ message: "Usuario no encontrado." });
-          }
-      
-          // Generar nueva contraseña
-          const newPassword = generateRandomPassword(8);
-          console.log("Generated password: ", newPassword);
-          const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-      
-        // Actualizar correo y contraseña
-        await InternalUserModel.updateResendCredentials(internalId, newEmail, newPassword);
+      // Generar nueva contraseña
+      const newPassword = generateRandomPassword(8);
+      console.log("Generated password: ", newPassword);
+      const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
-      
-          // Enviar correo con las nuevas credenciales
-          const transporter = createEmailTransporter();
-      
-          const mailOptions = {
-            from: `"Soporte Balanza Web" <${EMAIL_USER}>`,
-            to: newEmail,
-            subject: "Tus nuevas credenciales",
-            html: `
+      // Actualizar correo y contraseña
+      await InternalUserModel.updateResendCredentials(
+        internalId,
+        newEmail,
+        newPassword
+      );
+
+      // Enviar correo con las nuevas credenciales
+      const transporter = createEmailTransporter();
+
+      const mailOptions = {
+        from: `"Soporte Balanza Web" <${EMAIL_USER}>`,
+        to: newEmail,
+        subject: "Tus nuevas credenciales",
+        html: `
               <div style="font-family: Arial, sans-serif; padding: 20px;">
                 <h2>🎓 Tus credenciales han sido actualizadas</h2>
                 <p>Se ha actualizado tu correo electrónico. Estas son tus nuevas credenciales:</p>
@@ -964,45 +1021,45 @@ export class InternalUserController {
                 <p>Por favor, ingresa al sistema y cambia tu contraseña cuanto antes.</p>
                 <p>Saludos,<br/>Equipo Balanza Web</p>
               </div>
-            `
-          };
-      
-          await transporter.sendMail(mailOptions);
-          return res.status(200).json({ message: "Correo enviado con nuevas credenciales." });
-      
-        } catch (error) {
-          console.error("Error en resendCredentials:", error);
-          return res.status(500).json({ message: "Error al enviar credenciales", error: error.message });
-        }
-      }
-      
-      
-      
-              
-    
-        /** 🔹 Obtener la huella de un usuario */
-        static async obtenerHuella(req, res) {
-            try {
-                const { usuarioCedula } = req.params;
-                if (!usuarioCedula) {
-                    return res.status(400).json({ message: "Cédula requerida." });
-                }
-    
-                // 🔹 Llamamos al modelo para obtener la huella
-                const huellaBase64 = await InternalUserModel.getHuella(usuarioCedula);
-    
-                if (!huellaBase64) {
-                    return res.status(404).json({ message: "No se encontró huella para este usuario." });
-                }
-    
-                res.json({ message: "Huella encontrada.", huella: huellaBase64 });
-            } catch (error) {
-                console.error("Error al obtener huella:", error);
-                res.status(500).json({ message: "Error interno del servidor." });
-            }
-        }
+            `,
+      };
 
-       
+      await transporter.sendMail(mailOptions);
+      return res
+        .status(200)
+        .json({ message: "Correo enviado con nuevas credenciales." });
+    } catch (error) {
+      console.error("Error en resendCredentials:", error);
+      return res.status(500).json({
+        message: "Error al enviar credenciales",
+        error: error.message,
+      });
+    }
+  }
+
+  /** 🔹 Obtener la huella de un usuario */
+  static async obtenerHuella(req, res) {
+    try {
+      const { usuarioCedula } = req.params;
+      if (!usuarioCedula) {
+        return res.status(400).json({ message: "Cédula requerida." });
+      }
+
+      // 🔹 Llamamos al modelo para obtener la huella
+      const huellaBase64 = await InternalUserModel.getHuella(usuarioCedula);
+
+      if (!huellaBase64) {
+        return res
+          .status(404)
+          .json({ message: "No se encontró huella para este usuario." });
+      }
+
+      res.json({ message: "Huella encontrada.", huella: huellaBase64 });
+    } catch (error) {
+      console.error("Error al obtener huella:", error);
+      res.status(500).json({ message: "Error interno del servidor." });
+    }
+  }
 
   static async getInternalUserByTypeEstudiante(req, res) {
     try {
@@ -1049,12 +1106,10 @@ export class InternalUserController {
         .status(200)
         .json({ message: "Contraseña actualizada correctamente" });
     } catch (error) {
-      return res
-        .status(500)
-        .json({
-          message: "Error al cambiar la contraseña",
-          error: error.message,
-        });
+      return res.status(500).json({
+        message: "Error al cambiar la contraseña",
+        error: error.message,
+      });
     }
   }
 
@@ -1152,11 +1207,9 @@ export class InternalUserController {
             cleanupError
           );
         }
-        return res
-          .status(500)
-          .json({
-            message: "No se pudo actualizar la URL en la base de datos.",
-          });
+        return res.status(500).json({
+          message: "No se pudo actualizar la URL en la base de datos.",
+        });
       }
 
       // Si la imagen se subió correctamente y se actualizó la base de datos, eliminamos la imagen anterior
@@ -1181,12 +1234,10 @@ export class InternalUserController {
       });
     } catch (error) {
       console.error("Error uploading profile picture:", error);
-      return res
-        .status(500)
-        .json({
-          message: "Error interno al subir la imagen.",
-          error: error.message,
-        });
+      return res.status(500).json({
+        message: "Error interno al subir la imagen.",
+        error: error.message,
+      });
     }
   }
 
@@ -1206,11 +1257,9 @@ export class InternalUserController {
         imageUrl
       );
       if (!updated) {
-        return res
-          .status(404)
-          .json({
-            message: "User not found or unable to update profile picture",
-          });
+        return res.status(404).json({
+          message: "User not found or unable to update profile picture",
+        });
       }
 
       return res
