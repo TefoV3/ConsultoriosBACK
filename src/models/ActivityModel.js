@@ -102,16 +102,7 @@ export class ActivityModel {
         where: {
           Internal_ID: internalId,
           Activity_IsInternal: false,
-          [Op.or]: [
-            {
-              Activity_StatusMobile: {
-                [Op.notIn]: ["finalizado", "cancelado"],
-              },
-            },
-            {
-              Activity_StatusMobile: null,
-            },
-          ],
+          Activity_Status: "En progreso",
         },
       });
     } catch (error) {
@@ -138,26 +129,37 @@ export class ActivityModel {
       const internalId = internalUser || getUserId();
       console.log("📥 Creando actividad con Internal_ID:", internalId);
 
+      // Si es actividad interna, rellenar campos vacíos con "N/A"
+      const isInternal =
+        data.Activity_IsInternal === true ||
+        data.Activity_IsInternal === "true";
+
       // Crear la actividad en la base de datos
       const newActivity = await Activity.create(
         {
           Init_Code: data.Init_Code,
           Internal_ID: internalId, // Usar el Internal_ID proporcionado o derivado
-          Activity_Type: data.Activity_Type,
-          Activity_Description: data.Activity_Description,
-          Activity_Location: data.Activity_Location,
+          Activity_Type: data.Activity_Type || (isInternal ? "N/A" : null),
+          Activity_Description:
+            data.Activity_Description || (isInternal ? "N/A" : null),
+          Activity_Location:
+            data.Activity_Location || (isInternal ? "N/A" : null),
           Activity_Date: data.Activity_Date,
           Activity_StartTime: data.Activity_StartTime,
           activityScheduledTime: data.activityScheduledTime,
           Activity_Status: data.Activity_Status,
-          Activity_JurisdictionType: data.Activity_JurisdictionType,
-          Activity_InternalReference: data.Activity_InternalReference,
-          Activity_CourtNumber: data.Activity_CourtNumber,
-          Activity_lastCJGActivity: data.Activity_lastCJGActivity,
+          Activity_JurisdictionType:
+            data.Activity_JurisdictionType || (isInternal ? "N/A" : null),
+          Activity_InternalReference:
+            data.Activity_InternalReference || (isInternal ? "N/A" : null),
+          Activity_CourtNumber:
+            data.Activity_CourtNumber || (isInternal ? "N/A" : null),
+          Activity_lastCJGActivity:
+            data.Activity_lastCJGActivity || (isInternal ? "N/A" : null),
           Activity_lastCJGActivityDate: data.Activity_lastCJGActivityDate,
-          Activity_Observation: data.Activity_Observation,
+          Activity_Observation:
+            data.Activity_Observation || (isInternal ? "N/A" : null),
           Activity_IsInternal: data.Activity_IsInternal,
-          Activity_StatusMobile: data.Activity_StatusMobile || null, // Asegurar que este campo sea opcional
           Activity_Document: file ? file.buffer : null, // Almacenar el archivo si existe
         },
         { transaction: t }
