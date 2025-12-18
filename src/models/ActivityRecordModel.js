@@ -43,9 +43,12 @@ export class ActivityRecordModel {
         "📥 Creando registro de actividad para Activity_ID:",
         data.Activity_ID
       );
-      
+
       // 🔍 LOG COMPLETO DE DATOS RECIBIDOS
-      console.log("🔍 TODOS LOS DATOS RECIBIDOS:", JSON.stringify(data, null, 2));
+      console.log(
+        "🔍 TODOS LOS DATOS RECIBIDOS:",
+        JSON.stringify(data, null, 2)
+      );
 
       // Crear registro de actividad
       // Calcular si está "on time" (menos de 30 minutos de diferencia)
@@ -79,8 +82,11 @@ export class ActivityRecordModel {
       if (data.Activity_Record_Type === "salida") {
         console.log("📝 Datos recibidos para actualizar Activity:");
         console.log("   - Activity_Status:", data.Activity_Status);
-        console.log("   - Activity_Record_Observation:", data.Activity_Record_Observation);
-        
+        console.log(
+          "   - Activity_Record_Observation:",
+          data.Activity_Record_Observation
+        );
+
         // 🔥 Usar el estado que viene del frontend, o "Completado" por defecto
         const activityStatus = data.Activity_Status || "Completado";
 
@@ -94,9 +100,14 @@ export class ActivityRecordModel {
           data.Activity_Record_Observation !== ""
         ) {
           updateFields.Activity_Observation = data.Activity_Record_Observation;
-          console.log("   ✓ Observación será actualizada con:", data.Activity_Record_Observation);
+          console.log(
+            "   ✓ Observación será actualizada con:",
+            data.Activity_Record_Observation
+          );
         } else {
-          console.log("   ✗ Observación NO será actualizada (vacía o no enviada)");
+          console.log(
+            "   ✗ Observación NO será actualizada (vacía o no enviada)"
+          );
         }
 
         console.log("📤 Campos a actualizar:", updateFields);
